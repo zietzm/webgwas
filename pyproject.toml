@@ -1,0 +1,25 @@
+[project]
+name = "webgwas"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "zietzm", email = "michael.zietz@gmail.com" }
+]
+dependencies = [
+    "numpy>=2.0.0",
+]
+readme = "README.md"
+requires-python = ">= 3.12"
+
+[build-system]
+requires = ["maturin>=1.2,<2.0"]
+build-backend = "maturin"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.maturin]
+python-source = "python"
+module-name = "webgwas._lowlevel"
+features = ["pyo3/extension-module"]

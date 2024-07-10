@@ -1,0 +1,13 @@
+# python generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+# Rust
+target/
+
+# venv
+.venv
+python/webgwas/_lowlevel.cpython-312-darwin.so
