@@ -17,7 +17,9 @@ build-backend = "maturin"
 
 [tool.rye]
 managed = true
-dev-dependencies = []
+dev-dependencies = [
+    "pytest>=8.2.2",
+]
 
 [tool.maturin]
 python-source = "python"
