@@ -111,3 +111,73 @@ class RPNParser:
                             raise ParserException(
                                 f"Unknown char '{char}' in '{self.raw_definition}', CONSTANT state"
                             )
+
+    def apply_definition(
+        self, record: dict[str, int | float | bool]
+    ) -> int | float | bool:
+        stack = list()
+        for node in self.parsed_definition:
+            match node:
+                case FieldNode(value=value):
+                    stack.append(record[value])
+                case ConstantNode(value=value):
+                    stack.append(value)
+                case OperatorNode.ADD:
+                    stack.append(stack.pop() + stack.pop())
+                case OperatorNode.SUB:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x - y)
+                case OperatorNode.MUL:
+                    stack.append(stack.pop() * stack.pop())
+                case OperatorNode.DIV:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x / y)
+                case OperatorNode.AND:
+                    y = stack.pop()
+                    x = stack.pop()
+                    verify_boolean(x)
+                    verify_boolean(y)
+                    stack.append(x and y)
+                case OperatorNode.OR:
+                    y = stack.pop()
+                    x = stack.pop()
+                    verify_boolean(x)
+                    verify_boolean(y)
+                    stack.append(x or y)
+                case OperatorNode.NOT:
+                    x = stack.pop()
+                    verify_boolean(x)
+                    stack.append(not x)
+                case OperatorNode.GT:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x > y)
+                case OperatorNode.GE:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x >= y)
+                case OperatorNode.LT:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x < y)
+                case OperatorNode.LE:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x <= y)
+                case OperatorNode.EQ:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x == y)
+                case _:
+                    raise ParserException(
+                        f"Unknown node type {type(node)} in '{self.raw_definition}'"
+                    )
+        return stack.pop()
+
+
+def verify_boolean(value: int | float | bool) -> None:
+    is_bool = isinstance(value, bool) or value in (0, 1)
+    if not is_bool:
+        raise ValueError(f"{value} is not a bool")

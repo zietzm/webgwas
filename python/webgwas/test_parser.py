@@ -1,6 +1,12 @@
 import pytest
 
-from webgwas.parser import ConstantNode, RPNParser, FieldNode, OperatorNode
+from webgwas.parser import (
+    ConstantNode,
+    FieldNode,
+    OperatorNode,
+    ParserException,
+    RPNParser,
+)
 
 
 @pytest.mark.parametrize("operator", ["AND", "OR", "EQ"])
@@ -30,3 +36,38 @@ def test_field(value):
     parsed_value = parsed[0]
     assert isinstance(parsed_value, FieldNode)
     assert parsed_value.value == value
+
+
+@pytest.mark.parametrize(
+    "definition,value",
+    [
+        # Numeric
+        ('"X" "Y" `ADD`', 3),
+        ('"X" "Y" `SUB`', -1),
+        ('"X" "Y" `MUL`', 2),
+        ('"X" "Y" `DIV`', 0.5),
+        ('"X" "Y" `GT`', False),
+        ('"X" "Y" `GE`', False),
+        ('"X" "Y" `LT`', True),
+        ('"X" "Y" `LE`', True),
+        ('"X" "Y" `EQ`', False),
+        # Boolean
+        ('"Z" `NOT`', False),
+        ('"W" `NOT`', True),
+        ('"Z" "W" `AND`', False),
+        ('"Z" "W" `OR`', True),
+        # Mixed
+        ('"X" "Y" `LT` `NOT` "Z" `AND`', False),
+        ('"X" "Y" `LT` `NOT` "Z" `OR`', True),
+    ],
+)
+def test_apply_definition(definition, value):
+    parser = RPNParser(definition)
+    record = {"X": 1, "Y": 2, "Z": True, "W": False}
+    assert parser.apply_definition(record) == value
+
+
+@pytest.mark.parametrize("definition", ["X", "X `ADD`", "`1`", "`ABC`"])
+def test_bad_definition(definition):
+    with pytest.raises(ParserException):
+        RPNParser(definition)
