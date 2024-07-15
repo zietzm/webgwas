@@ -42,23 +42,23 @@ class ParserState(enum.Enum):
 
 
 class RPNParser:
-    def __init__(self, definition: str) -> None:
-        self.definition = definition
-        self.state = ParserState.START
-        self.stack = list()
+    def __init__(self, raw_definition: str) -> None:
+        self.raw_definition = raw_definition
+        self.parsed_definition = list(self.parse())
 
     def parse(self) -> Generator[DefinitionNode]:
         current = ""
-        for char in self.definition + "\0":
-            match self.state:
+        state = ParserState.START
+        for char in self.raw_definition + "\0":
+            match state:
                 case ParserState.START:
                     match char:
                         case "`":
-                            self.state = ParserState.OPERATOR
+                            state = ParserState.OPERATOR
                         case '"':
-                            self.state = ParserState.FIELD
+                            state = ParserState.FIELD
                         case num if num.isdigit():
-                            self.state = ParserState.CONSTANT
+                            state = ParserState.CONSTANT
                             current += char
                         case " ":
                             pass
@@ -66,19 +66,19 @@ class RPNParser:
                             return
                         case _:
                             raise ParserException(
-                                f"Unknown char '{char}' in '{self.definition}', START state"
+                                f"Unknown char '{char}' in '{self.raw_definition}', START state"
                             )
                 case ParserState.FIELD:
                     match char:
                         case '"':
                             yield FieldNode(current)
-                            self.state = ParserState.START
+                            state = ParserState.START
                             current = ""
                         case c if c.isalnum():
                             current += char
                         case _:
                             raise ParserException(
-                                f"Unknown char '{char}' in '{self.definition}', FIELD state"
+                                f"Unknown char '{char}' in '{self.raw_definition}', FIELD state"
                             )
                 case ParserState.OPERATOR:
                     match char:
@@ -90,13 +90,13 @@ class RPNParser:
                                     f"No matching OperatorNode found for '{current}'"
                                 )
                             yield operator
-                            self.state = ParserState.START
+                            state = ParserState.START
                             current = ""
                         case c if c.isalpha():
                             current += char
                         case _:
                             raise ParserException(
-                                f"Unknown char '{char}' in '{self.definition}', OPERATOR state"
+                                f"Unknown char '{char}' in '{self.raw_definition}', OPERATOR state"
                             )
                 case ParserState.CONSTANT:
                     match char:
@@ -105,9 +105,9 @@ class RPNParser:
                         case " " | "\0":
                             value = float(current) if "." in current else int(current)
                             yield ConstantNode(value)
-                            self.state = ParserState.START
+                            state = ParserState.START
                             current = ""
                         case _:
                             raise ParserException(
-                                f"Unknown char '{char}' in '{self.definition}', CONSTANT state"
+                                f"Unknown char '{char}' in '{self.raw_definition}', CONSTANT state"
                             )
