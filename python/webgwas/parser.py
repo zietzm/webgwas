@@ -2,6 +2,10 @@ import enum
 from collections.abc import Generator
 
 
+class ParserException(Exception):
+    pass
+
+
 class OperatorNode(enum.StrEnum):
     ADD = "ADD"
     SUB = "SUB"
@@ -61,7 +65,7 @@ class RPNParser:
                         case "\0":
                             return
                         case _:
-                            raise ValueError(
+                            raise ParserException(
                                 f"Unknown char '{char}' in '{self.definition}', START state"
                             )
                 case ParserState.FIELD:
@@ -73,7 +77,7 @@ class RPNParser:
                         case c if c.isalnum():
                             current += char
                         case _:
-                            raise ValueError(
+                            raise ParserException(
                                 f"Unknown char '{char}' in '{self.definition}', FIELD state"
                             )
                 case ParserState.OPERATOR:
@@ -82,7 +86,7 @@ class RPNParser:
                             try:
                                 operator = OperatorNode(current)
                             except ValueError:
-                                raise ValueError(
+                                raise ParserException(
                                     f"No matching OperatorNode found for '{current}'"
                                 )
                             yield operator
@@ -91,7 +95,7 @@ class RPNParser:
                         case c if c.isalpha():
                             current += char
                         case _:
-                            raise ValueError(
+                            raise ParserException(
                                 f"Unknown char '{char}' in '{self.definition}', OPERATOR state"
                             )
                 case ParserState.CONSTANT:
@@ -104,6 +108,6 @@ class RPNParser:
                             self.state = ParserState.START
                             current = ""
                         case _:
-                            raise ValueError(
+                            raise ParserException(
                                 f"Unknown char '{char}' in '{self.definition}', CONSTANT state"
                             )
