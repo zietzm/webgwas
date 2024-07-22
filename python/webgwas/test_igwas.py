@@ -51,11 +51,8 @@ def setup_test_data(test_data, temp_dir):
         covariance_matrix = np.cov(phenotype_residuals.T)
 
         # Write files
-        extension = ".tsv.zst" if compress else ".tsv"
-        phenotype_names = [f"{i}{extension}" for i in range(test_data["n_phenotypes"])]
-        projection_names = [
-            f"proj_{i}{extension}" for i in range(test_data["n_projections"])
-        ]
+        phenotype_names = [f"{i}" for i in range(test_data["n_phenotypes"])]
+        projection_names = [f"proj_{i}" for i in range(test_data["n_projections"])]
         phenotype_idx = pd.Index(phenotype_names, name="phenotype_id")
         projection_idx = pd.Index(projection_names, name="projection_id")
         pd.DataFrame(

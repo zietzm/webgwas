@@ -289,7 +289,8 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "igwas"
-version = "1.0.7"
+version = "1.0.8"
+source = "git+https://github.com/tatonetti-lab/indirect-gwas#1ccc8d59aa9c4f646d02ce1fe527d257002273de"
 dependencies = [
  "anyhow",
  "clap",
