@@ -1,9 +1,7 @@
 import os
 import tempfile
 
-import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
 
 from webgwas._lowlevel import igwas_impl
 
