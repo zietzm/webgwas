@@ -12,3 +12,6 @@ target/
 .venv
 python/webgwas/_lowlevel.cpython-312-darwin.so
 *.so
+nb/.ipynb_checkpoints
+data
+.ipynb_checkpoints
