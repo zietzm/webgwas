@@ -9,7 +9,7 @@ name = "webgwas"
 crate-type = ["cdylib"]
 
 [dependencies]
-igwas = { git = "https://github.com/tatonetti-lab/indirect-gwas", version = "1.0.9" }
+igwas = { git = "https://github.com/tatonetti-lab/indirect-gwas", version = "1.0.10" }
 mdav = { git = "https://github.com/zietzm/mdav", version = "0.2.1" }
 numpy = "0.21.0"
 pyo3 = "0.21.0"
