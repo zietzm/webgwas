@@ -289,8 +289,8 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "igwas"
-version = "1.0.9"
-source = "git+https://github.com/tatonetti-lab/indirect-gwas#e9ef32f70ca3daf7115229422622bf1906f6088f"
+version = "1.1.12"
+source = "git+https://github.com/tatonetti-lab/indirect-gwas?rev=4f46fa1e#4f46fa1e8f8304326382d4718f6108d27e276cd2"
 dependencies = [
  "anyhow",
  "clap",
@@ -957,7 +957,7 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "webgwas"
-version = "0.1.1"
+version = "0.1.3"
 dependencies = [
  "igwas",
  "mdav",

@@ -141,12 +141,11 @@ def test_igwas_files(setup_test_data, test_data, temp_dir, compress):
     results = pd.read_csv(output_file, sep="\t")
     assert results.shape[0] == test_data["n_variants"] * test_data["n_projections"]
     assert set(results.columns) == {
-        "phenotype_id",
         "variant_id",
         "beta",
         "std_error",
         "t_stat",
-        "p_value",
+        "neg_log_p_value",
         "sample_size",
     }
 

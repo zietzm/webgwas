@@ -70,6 +70,7 @@ fn igwas_impl(
         capacity,
         compress,
         quiet,
+        write_phenotype_id: false,
     };
     match run_cli(args) {
         Ok(_) => Ok(()),
