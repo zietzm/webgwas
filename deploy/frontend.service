@@ -1,0 +1,13 @@
+[Unit]
+Description=Next.js Frontend Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/ubuntu/frontend
+ExecStart=/home/ubuntu/.bun/bin/bun --env-file=.env run start --port 3000
+Restart=always
+Environment=PATH=/home/ubuntu/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,133 @@
+---
+- name: Deploy FastAPI Backend and Next.js Frontend from GitHub using Rye and Bun
+  hosts: ec2_instance
+  become: yes
+  vars:
+    backend_port: 8000
+    frontend_port: 3000
+    backend_repo: https://github.com/zietzm/webgwas-backend.git
+    backend_branch: main
+    frontend_repo: https://github.com/zietzm/webgwas-frontend.git
+    frontend_branch: main
+    api_url: "http://{{ ansible_host }}:80"
+  
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+    
+    - name: Install required packages
+      apt:
+        name:
+          - nginx
+          - curl
+          - unzip
+          - git
+          - build-essential
+        state: present
+
+    - name: Install Rye
+      shell: |
+        wget https://github.com/astral-sh/rye/releases/latest/download/rye-x86_64-linux.gz
+        gunzip -f rye-x86_64-linux.gz
+        chmod +x rye-x86_64-linux
+        ./rye-x86_64-linux self install --yes
+        echo 'source "$HOME/.rye/env"' >> ~/.bashrc
+        mkdir -p ~/.rye/bin
+        mv -f rye-x86_64-linux ~/.rye/bin/rye
+      args:
+        creates: ~/.rye/bin/rye
+      register: rye_install
+
+    - name: Install Bun
+      shell: |
+        curl -fsSL https://bun.sh/install | bash
+      args:
+        creates: ~/.bun/bin/bun
+
+    - name: Install Cargo
+      shell: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        echo '. "$HOME/.cargo/env"' >> ~/.bashrc
+      args:
+        creates: ~/.cargo/bin/cargo
+
+    - name: Clone backend repository
+      git:
+        repo: "{{ backend_repo }}"
+        version: "{{ backend_branch }}"
+        dest: /home/ubuntu/backend
+        force: yes
+
+    - name: Set up backend with Rye
+      shell: |
+        source "$HOME/.rye/env"
+        cd /home/ubuntu/backend
+        . "$HOME/.cargo/env"
+        rye sync
+      args:
+        executable: /bin/bash
+
+    - name: Clone frontend repository
+      git:
+        repo: "{{ frontend_repo }}"
+        version: "{{ frontend_branch }}"
+        dest: /home/ubuntu/frontend
+        force: yes
+
+    - name: Write the .env file for Next.js frontend
+      copy:
+        dest: /home/ubuntu/frontend/.env
+        content: |
+          NEXT_PUBLIC_API_URL={{ api_url }}
+
+    - name: Install frontend dependencies with Bun
+      shell: |
+        export BUN_INSTALL="$HOME/.bun"
+        export PATH="$BUN_INSTALL/bin:$PATH"
+        cd /home/ubuntu/frontend
+        bun install
+      args:
+        executable: /bin/bash
+
+    - name: Build Next.js frontend with Bun
+      shell: |
+        export BUN_INSTALL="$HOME/.bun"
+        export PATH="$BUN_INSTALL/bin:$PATH"
+        cd /home/ubuntu/frontend
+        bun run build
+      args:
+        executable: /bin/bash
+
+    - name: Copy backend systemd service file
+      copy:
+        src: backend.service
+        dest: /etc/systemd/system/backend.service
+
+    - name: Copy frontend systemd service file
+      copy:
+        src: frontend.service
+        dest: /etc/systemd/system/frontend.service
+
+    - name: Reload the frontend systemd service
+      systemd:
+        name: frontend
+        daemon_reload: yes
+
+    - name: Reload the backend systemd service
+      systemd:
+        name: backend
+        daemon_reload: yes
+
+    - name: Configure Nginx
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+      notify: Reload Nginx
+
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
