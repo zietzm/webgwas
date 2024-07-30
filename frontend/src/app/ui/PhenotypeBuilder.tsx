@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, MinusCircle, Play, CheckCircle, Loader, XCircle } from 'lucide-react';
-import Select from 'react-select';
+import { Play, CheckCircle, Loader, XCircle } from 'lucide-react';
 import NodeSelector from './NodeSelector';
 import TreeNode from './TreeNode';
 import { Node } from '../lib/Node';
@@ -37,6 +36,7 @@ export default function PhenotypeBuilder() {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
+                'Access-Control-Allow-Private-Network': 'true',
               },
             }
         );
