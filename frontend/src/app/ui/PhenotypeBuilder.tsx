@@ -6,6 +6,8 @@ import NodeSelector from './NodeSelector';
 import TreeNode from './TreeNode';
 import { Node } from '../lib/Node';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 const rootNode: Node = {id: 0, type: 'operator', name: 'Root', minArity: 1, maxArity: 1, children: []};
 
 interface ValidationResult {
@@ -32,11 +34,10 @@ export default function PhenotypeBuilder() {
     const fetchCohorts = async () => {
       try {
         const response = await fetch(
-            'http://localhost:8000/api/cohorts', {
+            `${API_URL}/api/cohorts`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Private-Network': 'true',
               },
             }
         );
@@ -69,7 +70,7 @@ export default function PhenotypeBuilder() {
     try {
       const searchParams = new URLSearchParams({cohort_name: selectedCohort});
       const response = await fetch(
-        `http://localhost:8000/api/nodes?${searchParams.toString()}`,
+        `${API_URL}/api/nodes?${searchParams.toString()}`,
         {
           method: 'GET',
           headers: {
@@ -209,7 +210,7 @@ export default function PhenotypeBuilder() {
     const rpn = convertToRPN(tree);
     try {
       setJobStatus('submitting');
-      const response = await fetch('http://localhost:8000/api/igwas', {
+      const response = await fetch(`${API_URL}/api/igwas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -237,7 +238,7 @@ export default function PhenotypeBuilder() {
   const pollJobStatus = async (requestId: string) => {
     try {
       const response = await fetch(
-          `http://localhost:8000/api/igwas/status/${requestId}`, {
+          `${API_URL}/api/igwas/status/${requestId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -267,7 +268,7 @@ export default function PhenotypeBuilder() {
   const downloadResults = async (requestId: string) => {
     console.log(jobStatus);
     try {
-      const response = await fetch(`http://localhost:8000/api/igwas/results/${requestId}`);
+      const response = await fetch(`${API_URL}/api/igwas/results/${requestId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch results');
       }
