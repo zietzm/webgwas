@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { PlusCircle, MinusCircle, Play, CheckCircle, Loader, XCircle } from 'lucide-react';
 import Select from 'react-select';
+import { Node } from '../lib/Node';
 
-export default function NodeSelector ({ nodes, onSelect, onClose }) {
+export default function NodeSelector ({ nodes, onSelect, onClose }: { nodes: Node[], onSelect: (node: Node | null) => void, onClose: () => void }) {
   const [showConstantInput, setShowConstantInput] = useState(false);
   const [constantValue, setConstantValue] = useState('');
   const [constantError, setConstantError] = useState('');
@@ -17,7 +18,7 @@ export default function NodeSelector ({ nodes, onSelect, onClose }) {
     if (isNaN(num)) {
       setConstantError('Please enter a valid number');
     } else {
-      onSelect({ id: Date.now(), type: 'constant', name: num.toString() });
+      onSelect({ id: Date.now(), type: 'constant', name: num.toString(), children: [], minArity: 0, maxArity: 0 });
       setConstantValue('');
       setConstantError('');
       setShowConstantInput(false);
@@ -78,7 +79,7 @@ export default function NodeSelector ({ nodes, onSelect, onClose }) {
         <h3 className="text-lg font-semibold mb-2">Fields</h3>
         <Select
           options={fieldOptions}
-          onChange={(selectedOption) => onSelect(fields.find(f => f.id === selectedOption.value))}
+          onChange={(selectedOption) => onSelect(fields.find(f => f.id === selectedOption!.value) || null)}
           placeholder="Search for a field..."
           className="mb-2"
         />

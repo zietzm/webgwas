@@ -5,23 +5,29 @@ import { PlusCircle, MinusCircle, Play, CheckCircle, Loader, XCircle } from 'luc
 import Select from 'react-select';
 import NodeSelector from './NodeSelector';
 import TreeNode from './TreeNode';
+import { Node } from '../lib/Node';
 
+const rootNode: Node = {id: 0, type: 'operator', name: 'Root', minArity: 1, maxArity: 1, children: []};
+
+interface ValidationResult {
+  isValid: boolean;
+  message: string;
+}
 
 export default function PhenotypeBuilder() {
   const [cohorts, setCohorts] = useState([]);
-  const [selectedCohort, setSelectedCohort] = useState(null);
+  const [selectedCohort, setSelectedCohort] = useState(null as string | null);
   const [nodes, setNodes] = useState([]);
-  const [tree, setTree] = useState(null);
+  const [tree, setTree] = useState(rootNode);
   const [showNodeSelector, setShowNodeSelector] = useState(false);
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [validationResult, setValidationResult] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null as Node | null);
+  const [validationResult, setValidationResult] = useState(null as ValidationResult | null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobId, setJobId] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState(null as string | null);
 
-  const rootNode = {id: 0, type: 'operator', name: 'Root', minArity: 1, maxArity: 1, children: []};
 
   useEffect(() => {
     const fetchCohorts = async () => {
@@ -34,7 +40,11 @@ export default function PhenotypeBuilder() {
         setCohorts(data);
         setIsLoading(false);
       } catch (error) {
-        setError('Failed to fetch cohorts: ' + error.message);
+        let errorMessage = "Failed to fetch cohorts";
+        if (error instanceof Error) {
+          errorMessage = `Failed to fetch cohorts: ${error.message}`;
+        }
+        setError(errorMessage);
         setIsLoading(false);
       }
     };
@@ -44,14 +54,15 @@ export default function PhenotypeBuilder() {
 
   useEffect(() => {
     if (selectedCohort) {
-      fetchNodes();
+      fetchNodes(selectedCohort);
     }
   }, [selectedCohort]);
 
-  const fetchNodes = async () => {
+  const fetchNodes = async (selectedCohort: string) => {
     try {
+      const searchParams = new URLSearchParams({cohort_name: selectedCohort});
       const response = await fetch(
-        `http://localhost:8000/api/nodes?${new URLSearchParams({cohort_name: selectedCohort}).toString()}`,
+        `http://localhost:8000/api/nodes?${searchParams.toString()}`,
         {
           method: 'GET',
           headers: {
@@ -63,30 +74,34 @@ export default function PhenotypeBuilder() {
         throw new Error('Failed to fetch nodes');
       }
       const data = await response.json();
-      data.forEach(node => {
+      data.forEach((node: Node) => {
         if (node.minArity === null) node.minArity = 0;
         if (node.maxArity === null) node.maxArity = Infinity;
       });
       setNodes(data);
       setTree(rootNode);
     } catch (error) {
-      setError('Failed to fetch nodes: ' + error.message);
+      let errorMessage = "Failed to fetch nodes";
+      if (error instanceof Error) {
+        errorMessage = `Failed to fetch nodes: ${error.message}`;
+      }
+      setError(errorMessage);
     }
   };
 
-  const handleCohortSelect = (cohort) => {
+  const handleCohortSelect = (cohort: string) => {
     setSelectedCohort(cohort);
     setTree(rootNode);
     setValidationResult(null);
   };
 
-  const handleAdd = (parentNode) => {
+  const handleAdd = (parentNode: Node) => {
     setSelectedNode(parentNode);
     setShowNodeSelector(true);
   };
 
-  const handleRemove = (nodeToRemove) => {
-    const removeNodeRecursive = (currentNode) => {
+  const handleRemove = (nodeToRemove: Node) => {
+    const removeNodeRecursive = (currentNode: Node) => {
       if (currentNode.children) {
         currentNode.children = currentNode.children.filter(
           (child) => child.id !== nodeToRemove.id
@@ -102,26 +117,29 @@ export default function PhenotypeBuilder() {
     });
   };
 
-  const handleSelect = (newNode) => {
+  const handleSelect = (newNode: Node | null) => {
+    if (!newNode) {
+      return;
+    }
     setTree((prevTree) => {
-      const addNodeRecursive = (currentNode) => {
-        if (currentNode.id === selectedNode.id) {
-          return {
-            ...currentNode,
-            children: [
-              ...(currentNode.children || []),
-              { ...newNode, id: Date.now(), children: [] },
-            ],
-          };
+      function addNodeRecursive(currentNode: Node): Node {
+            if (currentNode.id === selectedNode!.id) {
+                return {
+                    ...currentNode,
+                    children: [
+                        ...(currentNode.children || []),
+                        { ...newNode!, id: Date.now(), children: [] },
+                    ],
+                };
+            }
+            if (currentNode.children) {
+                return {
+                    ...currentNode,
+                    children: currentNode.children.map(addNodeRecursive),
+                };
+            }
+            return currentNode;
         }
-        if (currentNode.children) {
-          return {
-            ...currentNode,
-            children: currentNode.children.map(addNodeRecursive),
-          };
-        }
-        return currentNode;
-      };
 
       return addNodeRecursive(prevTree);
     });
@@ -129,7 +147,7 @@ export default function PhenotypeBuilder() {
     setShowNodeSelector(false);
   };
 
-  const validateTree = (node) => {
+  const validateTree = (node: Node): ValidationResult => {
     if (node.type === 'operator') {
       const childCount = node.children ? node.children.length : 0;
       if (childCount < node.minArity || childCount > node.maxArity) {
@@ -157,7 +175,7 @@ export default function PhenotypeBuilder() {
     setValidationResult(result);
   };
 
-  const convertToRPN = (node) => {
+  const convertToRPN = (node: Node): string => {
     switch (node.type) {
       case 'constant':
         return node.name;
@@ -200,12 +218,16 @@ export default function PhenotypeBuilder() {
       console.log(result.status);
       pollJobStatus(result.request_id);
     } catch (err) {
-      alert(`Error running GWAS: ${err.message}`);
+      let errorMessage = "Error running GWAS";
+      if (err instanceof Error) {
+        errorMessage = `Error running GWAS: ${err.message}`;
+      }
+      alert(errorMessage);
       setJobStatus('error');
     }
   };
 
-  const pollJobStatus = async (requestId) => {
+  const pollJobStatus = async (requestId: string) => {
     try {
       const response = await fetch(
           `http://localhost:8000/api/igwas/status/${requestId}`, {
@@ -235,7 +257,7 @@ export default function PhenotypeBuilder() {
     }
   };
 
-  const downloadResults = async (requestId) => {
+  const downloadResults = async (requestId: string) => {
     console.log(jobStatus);
     try {
       const response = await fetch(`http://localhost:8000/api/igwas/results/${requestId}`);
@@ -292,7 +314,7 @@ export default function PhenotypeBuilder() {
             <button
               onClick={handleValidate}
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center mr-2"
-              disabled={!tree || jobStatus}
+              disabled={!tree || jobStatus === 'running' || jobStatus === 'queued'}
             >
               <CheckCircle className="mr-2" size={20} />
               Validate Phenotype
@@ -302,7 +324,7 @@ export default function PhenotypeBuilder() {
               className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center mr-2 ${
                 (!validationResult || !validationResult.isValid || jobStatus) ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              disabled={!validationResult || !validationResult.isValid || jobStatus}
+              disabled={!validationResult || !validationResult.isValid || jobStatus === 'running' || jobStatus === 'queued'}
             >
               <Play className="mr-2" size={20} />
               Run GWAS
@@ -334,7 +356,7 @@ export default function PhenotypeBuilder() {
           )}
           {jobStatus && jobStatus === 'done' && (
             <div className="mb-4 p-4 rounded bg-blue-100 text-blue-700">
-              <p>Download results from <a href={downloadUrl} download className="underline">{downloadUrl}</a></p>
+              <p>Download results from <a href={downloadUrl!} download className="underline">{downloadUrl}</a></p>
             </div>
           )}
           {showNodeSelector && (

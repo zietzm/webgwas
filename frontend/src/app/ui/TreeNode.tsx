@@ -1,8 +1,9 @@
 import { PlusCircle, MinusCircle } from 'lucide-react';
 import { useState } from 'react';
+import { Node } from '../lib/Node';
 
 
-const Tooltip = ({ children, text }) => {
+const Tooltip = ({ children, text }: { children: React.ReactNode, text: string }) => {
   const [isVisible, setIsVisible] = useState(false);
   return (
     <div className="relative inline-block">
@@ -22,7 +23,7 @@ const Tooltip = ({ children, text }) => {
 };
 
 
-export default function TreeNode ({ node, onAdd, onRemove }) {
+export default function TreeNode ({ node, onAdd, onRemove }: { node: Node, onAdd: (node: Node) => void, onRemove: (node: Node) => void }) {
   const canAddChild = node.type === 'operator' && node.children.length < node.maxArity;
   const tooltipText = node.type === 'operator' 
     ? `${node.name} can have ${node.maxArity} child${node.maxArity > 1 ? 'ren' : ''}`
