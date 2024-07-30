@@ -7,11 +7,6 @@ import TreeNode from './TreeNode';
 import { Node } from '../lib/Node';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-console.log(`API URL: ${API_URL}`);
-if (!API_URL) {
-  throw new Error('API_URL environment variable is not set');
-}
-console.log(`API URL: ${API_URL}`);
 
 const rootNode: Node = {id: 0, type: 'operator', name: 'Root', minArity: 1, maxArity: 1, children: []};
 
@@ -228,7 +223,6 @@ export default function PhenotypeBuilder() {
       const result = await response.json();
       setJobId(result.request_id);
       setJobStatus(result.status);
-      console.log(result.status);
       pollJobStatus(result.request_id);
     } catch (err) {
       let errorMessage = "Error running GWAS";
@@ -261,7 +255,6 @@ export default function PhenotypeBuilder() {
         setJobStatus('error');
         alert('GWAS job failed. Please try again.');
       } else {
-        console.log(result.status);
         setTimeout(() => pollJobStatus(requestId), 5000); // Poll every 5 seconds
       }
     } catch (err) {
@@ -271,7 +264,6 @@ export default function PhenotypeBuilder() {
   };
 
   const downloadResults = async (requestId: string) => {
-    console.log(jobStatus);
     try {
       const response = await fetch(`${API_URL}/api/igwas/results/${requestId}`);
       if (!response.ok) {
@@ -356,7 +348,7 @@ export default function PhenotypeBuilder() {
                 <span>
                   {jobStatus === 'queued' && 'GWAS job queued...'}
                   {jobStatus === 'running' && 'GWAS job running...'}
-                  {jobStatus === 'done' && 'GWAS job completed. Downloading results...'}
+                  {jobStatus === 'done' && 'GWAS job completed.'}
                   {jobStatus === 'failed' && 'GWAS job failed. Please try again.'}
                 </span>
               </div>
