@@ -6,7 +6,12 @@ import NodeSelector from './NodeSelector';
 import TreeNode from './TreeNode';
 import { Node } from '../lib/Node';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+console.log(`API URL: ${API_URL}`);
+if (!API_URL) {
+  throw new Error('API_URL environment variable is not set');
+}
+console.log(`API URL: ${API_URL}`);
 
 const rootNode: Node = {id: 0, type: 'operator', name: 'Root', minArity: 1, maxArity: 1, children: []};
 
