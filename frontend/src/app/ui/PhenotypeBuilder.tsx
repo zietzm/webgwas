@@ -32,7 +32,14 @@ export default function PhenotypeBuilder() {
   useEffect(() => {
     const fetchCohorts = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/cohorts');
+        const response = await fetch(
+            'http://localhost:8000/api/cohorts', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch cohorts');
         }
