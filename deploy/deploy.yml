@@ -1,5 +1,5 @@
 ---
-- name: Deploy FastAPI Backend and Next.js Frontend from GitHub using Rye and Bun
+- name: Deploy WebGWAS from GitHub
   hosts: ec2_instance
   become: yes
   vars:
