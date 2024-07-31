@@ -124,15 +124,15 @@
         src: frontend.service
         dest: /etc/systemd/system/frontend.service
 
-    - name: Reload the frontend systemd service
+    - name: Restart the frontend systemd service
       systemd:
         name: frontend
-        daemon_reload: yes
+        state: restarted
 
-    - name: Reload the backend systemd service
+    - name: Restart the backend systemd service
       systemd:
         name: backend
-        daemon_reload: yes
+        state: restarted
 
     - name: Configure Nginx
       template:
