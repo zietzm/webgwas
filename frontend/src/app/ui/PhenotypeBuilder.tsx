@@ -253,7 +253,7 @@ export default function PhenotypeBuilder() {
         downloadResults(requestId);
       } else if (result.status === 'error') {
         setJobStatus('error');
-        alert('GWAS job failed. Please try again.');
+        console.error('GWAS job failed. Please try again.', result);
       } else {
         setTimeout(() => pollJobStatus(requestId), 5000); // Poll every 5 seconds
       }
@@ -279,25 +279,24 @@ export default function PhenotypeBuilder() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-64"><Loader className="animate-spin" size={40} /></div>;
+  }
+  if (error) {
+    return <div className="text-red-600 text-center">{error}</div>;
   }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Phenotype Builder</h1>
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold mb-2">Select Cohort</h2>
-        <div className="flex space-x-2">
+    <div className="bg-white shadow-md rounded-lg p-6">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-4">Select Cohort</h2>
+        <div className="flex flex-wrap gap-2">
           {cohorts.map((cohort) => (
             <button
               key={cohort}
               onClick={() => handleCohortSelect(cohort)}
-              className={`py-2 px-4 rounded ${
+              className={`py-2 px-4 rounded-full transition-colors ${
                 selectedCohort === cohort
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-indigo-600 text-white'
                   : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
               }`}
             >
@@ -308,17 +307,17 @@ export default function PhenotypeBuilder() {
       </div>
       {selectedCohort && (
         <>
-          <div className="border p-4 rounded">
+          <div className="border border-gray-200 p-4 rounded-lg mb-6">
             {tree ? (
               <TreeNode node={tree} onAdd={handleAdd} onRemove={handleRemove} />
             ) : (
-              <p>Select a cohort to start building your phenotype.</p>
+              <p className="text-gray-600">Select a cohort to start building your phenotype.</p>
             )}
           </div>
-          <div className="mt-4 mb-4 flex items-center">
+          <div className="flex flex-wrap gap-4 mb-6">
             <button
               onClick={handleValidate}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center mr-2"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
               disabled={!tree || jobStatus === 'running' || jobStatus === 'queued'}
             >
               <CheckCircle className="mr-2" size={20} />
@@ -326,7 +325,7 @@ export default function PhenotypeBuilder() {
             </button>
             <button
               onClick={handleRunGWAS}
-              className={`bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center mr-2 ${
+              className={`bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors ${
                 (!validationResult || !validationResult.isValid || jobStatus) ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               disabled={!validationResult || !validationResult.isValid || jobStatus === 'running' || jobStatus === 'queued'}
@@ -335,33 +334,33 @@ export default function PhenotypeBuilder() {
               Run GWAS
             </button>
             {jobStatus && (
-              <div className="flex items-center">
+              <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                 {(jobStatus === 'submitting' || jobStatus === 'queued' || jobStatus === 'running') && (
                   <Loader className="animate-spin mr-2" size={20} />
                 )}
                 {jobStatus === 'done' && (
-                  <CheckCircle className="mr-2" size={20} />
+                  <CheckCircle className="mr-2 text-green-600" size={20} />
                 )}
                 {jobStatus === 'error' && (
-                  <XCircle className="mr-2" size={20} />
+                  <XCircle className="mr-2 text-red-600" size={20} />
                 )}
-                <span>
+                <span className="text-gray-700">
                   {jobStatus === 'queued' && 'GWAS job queued...'}
                   {jobStatus === 'running' && 'GWAS job running...'}
                   {jobStatus === 'done' && 'GWAS job completed.'}
-                  {jobStatus === 'failed' && 'GWAS job failed. Please try again.'}
+                  {jobStatus === 'error' && 'GWAS job failed. Please try again.'}
                 </span>
               </div>
             )}
           </div>
           {validationResult && (
-            <div className={`mb-4 p-4 rounded ${validationResult.isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <div className={`mb-6 p-4 rounded-lg ${validationResult.isValid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
               {validationResult.message}
             </div>
           )}
           {jobStatus && jobStatus === 'done' && (
-            <div className="mb-4 p-4 rounded bg-blue-100 text-blue-700">
-              <p>Download results from <a href={downloadUrl!} download className="underline">{downloadUrl}</a></p>
+            <div className="mb-6 p-4 rounded-lg bg-blue-100 text-blue-800">
+              <p>Download results from <a href={downloadUrl!} download className="underline hover:text-blue-600">{downloadUrl}</a></p>
             </div>
           )}
           {showNodeSelector && (
@@ -375,4 +374,4 @@ export default function PhenotypeBuilder() {
       )}
     </div>
   );
-};
+}
