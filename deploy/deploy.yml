@@ -9,7 +9,8 @@
     backend_branch: main
     frontend_repo: https://github.com/zietzm/webgwas-frontend.git
     frontend_branch: main
-    api_url: "http://{{ ansible_host }}:80"
+    email: michael.zietz@gmail.com
+    api_url: "https://webgwas.org"
   
   tasks:
     - name: Update and upgrade apt packages
@@ -25,7 +26,20 @@
           - unzip
           - git
           - build-essential
+          - certbot
+          - python3-certbot-nginx
         state: present
+
+    - name: Obtain SSL certificate
+      command: certbot --nginx -d webgwas.org -d www.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+      args:
+        creates: /etc/letsencrypt/live/webgwas.org/fullchain.pem
+
+    - name: Ensure Certbot renew timer is enabled
+      systemd:
+        name: certbot.timer
+        enabled: yes
+        state: started
 
     - name: Install Rye
       shell: |
@@ -126,8 +140,21 @@
         dest: /etc/nginx/sites-available/default
       notify: Reload Nginx
 
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+      notify: Reload Nginx
+
+    - name: Ensure Nginx is started and enabled
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
   handlers:
     - name: Reload Nginx
-      service:
+      systemd:
         name: nginx
         state: reloaded
