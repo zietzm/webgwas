@@ -10,7 +10,6 @@ export default function About() {
           <li>User-friendly interface for building complex phenotypes</li>
           <li>Fast and efficient GWAS calculations</li>
           <li>Support for multiple cohorts</li>
-          <li>Interactive result visualization</li>
         </ul>
         <br />
         <p>WebGWAS aims to democratize genetic research by providing a powerful, accessible tool for researchers worldwide.</p>
