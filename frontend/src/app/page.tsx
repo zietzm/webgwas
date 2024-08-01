@@ -21,7 +21,7 @@ export default function Home() {
             <p className="mb-2 text-gray-600 dark:text-gray-400">To get started, select a cohort from the buttons below. Then define the phenotype that interests you by clicking the "+" button and selecting the type of node you want to add.</p>
             <p className="mb-2 text-gray-600 dark:text-gray-400">As an example, suppose we are interested hypertensive diabetes (diabetes and hypertension). To build this phenotype, we would select first the "AND" operator, then add both diabetes (E11) and hypertension (I10) as children.</p>
             <p className="mb-2 text-gray-600 dark:text-gray-400">The resulting phenotype would look like this:</p>
-            <Image src={"/hypertensive_diabetes_example.png"} alt="Example phenotype" width={250} height={131} />
+            <Image src={"/hypertensive_diabetes_example.png"} alt={"Example phenotype"} width={250} height={131} />
             <p className="mb-2 text-gray-600 dark:text-gray-400">Once built, you can validate your phenotype and run the GWAS. Our server will then start the GWAS calculation and display the status of the job. Once complete, a download link to your results will appear.</p>
     </div>
   </div>
