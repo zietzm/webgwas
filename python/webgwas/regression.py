@@ -28,3 +28,16 @@ def regress(y: Series, x: DataFrame) -> Series:
         The regression coefficients
     """
     return Series(regress_array(np.asarray(y.values), x.values), index=x.columns)
+
+
+def regress_left_inverse(y: Series, left_inverse: DataFrame) -> Series:
+    """Regress y on x using the left inverse of x.
+
+    Args:
+        y: The dependent variable (N x 1)
+        left_inverse: The left inverse of x (m x N)
+
+    Returns:
+        The regression coefficients
+    """
+    return Series(left_inverse @ y, index=left_inverse.index)
