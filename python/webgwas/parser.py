@@ -1,6 +1,8 @@
 import enum
 from collections.abc import Generator
 
+import pandas as pd
+
 
 class ParserException(Exception):
     pass
@@ -150,6 +152,72 @@ class RPNParser:
                     x = stack.pop()
                     verify_boolean(x)
                     stack.append(not x)
+                case OperatorNode.GT:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x > y)
+                case OperatorNode.GE:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x >= y)
+                case OperatorNode.LT:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x < y)
+                case OperatorNode.LE:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x <= y)
+                case OperatorNode.EQ:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x == y)
+                case _:
+                    raise ParserException(
+                        f"Unknown node type {type(node)} in '{self.raw_definition}'"
+                    )
+        return stack.pop()
+
+    def apply_definition_pandas(self, data: pd.DataFrame) -> pd.Series:
+        stack = list()
+        for node in self.parsed_definition:
+            match node:
+                case FieldNode(value=value):
+                    stack.append(data[value])
+                case ConstantNode(value=value):
+                    stack.append(value)
+                case OperatorNode.ADD:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x + y)
+                case OperatorNode.SUB:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x - y)
+                case OperatorNode.MUL:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x * y)
+                case OperatorNode.DIV:
+                    y = stack.pop()
+                    x = stack.pop()
+                    stack.append(x / y)
+                case OperatorNode.AND:
+                    y = stack.pop()
+                    x = stack.pop()
+                    verify_boolean(x)
+                    verify_boolean(y)
+                    stack.append(x & y)
+                case OperatorNode.OR:
+                    y = stack.pop()
+                    x = stack.pop()
+                    verify_boolean(x)
+                    verify_boolean(y)
+                    stack.append(x | y)
+                case OperatorNode.NOT:
+                    x = stack.pop()
+                    verify_boolean(x)
+                    stack.append(~x)
                 case OperatorNode.GT:
                     y = stack.pop()
                     x = stack.pop()
