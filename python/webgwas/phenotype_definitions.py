@@ -9,13 +9,26 @@ from pydantic import BaseModel, NonNegativeInt
 class NodeType(StrEnum):
     BOOL = "BOOL"
     REAL = "REAL"
+    ANY = "ANY"
     # Categorical, etc. intentionally omitted here. May implement later.
 
 
 class Operator(BaseModel):
     id: int
     name: Literal[
-        "ADD", "SUB", "MUL", "DIV", "AND", "OR", "NOT", "GT", "GE", "LT", "LE", "EQ"
+        "ROOT",
+        "ADD",
+        "SUB",
+        "MUL",
+        "DIV",
+        "AND",
+        "OR",
+        "NOT",
+        "GT",
+        "GE",
+        "LT",
+        "LE",
+        "EQ",
     ]
     arity: NonNegativeInt
     input_type: NodeType
@@ -23,6 +36,9 @@ class Operator(BaseModel):
 
 
 class OperatorType(Enum):
+    ROOT = Operator(
+        id=0, name="ROOT", arity=1, input_type=NodeType.ANY, output_type=NodeType.ANY
+    )
     ADD = Operator(
         id=1, name="ADD", arity=2, input_type=NodeType.REAL, output_type=NodeType.REAL
     )
