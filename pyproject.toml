@@ -8,6 +8,7 @@ authors = [
 dependencies = [
     "numpy>=2.0.0",
     "pandas>=2.2.2",
+    "pydantic>=2.8.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"

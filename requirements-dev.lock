@@ -8,6 +8,8 @@
 #   with-sources: false
 
 -e file:.
+annotated-types==0.7.0
+    # via pydantic
 anyio==4.4.0
     # via httpx
     # via jupyter-server
@@ -188,6 +190,10 @@ pyarrow==16.1.0
 pycanon==1.0.1.post2
 pycparser==2.22
     # via cffi
+pydantic==2.8.2
+    # via webgwas
+pydantic-core==2.20.1
+    # via pydantic
 pygments==2.18.0
     # via ipython
     # via nbconvert
@@ -274,6 +280,8 @@ typer==0.12.3
 types-python-dateutil==2.9.0.20240316
     # via arrow
 typing-extensions==4.12.2
+    # via pydantic
+    # via pydantic-core
     # via typer
 tzdata==2024.1
     # via pandas
