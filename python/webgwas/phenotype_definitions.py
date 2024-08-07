@@ -104,6 +104,13 @@ class KnowledgeBase(BaseModel):
     operators: list[Operator]
     fields: list[Field]
 
+    @classmethod
+    def default(cls, fields: list[Field]) -> KnowledgeBase:
+        operators = [
+            OperatorType.__members__[name].value for name in OperatorType.__members__
+        ]
+        return cls(operators=operators, fields=fields)
+
     def query_field(self, name: str) -> Field:
         results = [field for field in self.fields if field.name == name]
         if len(results) == 0:
