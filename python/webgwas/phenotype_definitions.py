@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from enum import Enum, StrEnum
-from typing import Literal
+from typing import Any, Literal
 
+import pandas as pd
 from pydantic import BaseModel, NonNegativeInt
 
 
@@ -192,3 +193,80 @@ def type_check_nodes(nodes: list[Node]) -> None:
     if len(stack) != 1:
         raise ValueError(f"Invalid definition Stack: {[s for s in stack]}")
     return
+
+
+def validate_item(item: Any, expected_type: NodeType, arity: int, name: str) -> None:
+    if not isinstance(item, pd.Series):
+        raise ValueError(f"Operator {name} expects {arity} operands")
+    if item.dtype != expected_type:
+        raise ValueError(f"Operator {name} expects {expected_type} operand")
+
+
+def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
+    """Apply a definition to a pandas DataFrame."""
+    stack = list()
+    for node in nodes:
+        match node:
+            case Field(name=name):
+                stack.append(df[name])
+            case Operator(name=name, narity=arity, input_type=input_type):
+                match arity:
+                    case 1:
+                        item = stack.pop()
+                        validate_item(item, input_type, arity, node.name)
+                        match name:
+                            case "ROOT":
+                                stack.append(item)
+                            case "ADD":
+                                stack.append(~item)
+                            case _:
+                                raise ValueError(
+                                    f"Unknown operator {name} with arity 1"
+                                )
+                    case 2:
+                        item2 = stack.pop()
+                        validate_item(item2, input_type, arity, node.name)
+                        item1 = stack.pop()
+                        validate_item(item1, input_type, arity, node.name)
+                        match name:
+                            case "ADD":
+                                stack.append(item1 + item2)
+                            case "SUB":
+                                stack.append(item1 - item2)
+                            case "MUL":
+                                stack.append(item1 * item2)
+                            case "DIV":
+                                stack.append(item1 / item2)
+                            case "AND":
+                                stack.append(item1 & item2)
+                            case "OR":
+                                stack.append(item1 | item2)
+                            case "NOT":
+                                stack.append(~item1)
+                            case "GT":
+                                stack.append(item1 > item2)
+                            case "GE":
+                                stack.append(item1 >= item2)
+                            case "LT":
+                                stack.append(item1 < item2)
+                            case "LE":
+                                stack.append(item1 <= item2)
+                            case "EQ":
+                                stack.append(item1 == item2)
+                            case _:
+                                raise ValueError(
+                                    f"Unknown operator {name} with arity 2"
+                                )
+                    case _:
+                        raise ValueError(f"Unknown operator {name} with arity {arity}")
+            case Constant(value=value, type=type):
+                match type:
+                    case NodeType.BOOL:
+                        stack.append(bool(value))
+                    case NodeType.REAL:
+                        stack.append(float(value))
+                    case _:
+                        raise ValueError(f"Unknown constant type {type}")
+    if len(stack) != 1:
+        raise ValueError(f"Invalid definition Stack: {[s for s in stack]}")
+    return stack[0]
