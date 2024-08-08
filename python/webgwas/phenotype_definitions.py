@@ -168,13 +168,11 @@ def type_check_nodes(nodes: list[Node]) -> None:
     for node in nodes:
         match node:
             case Field() | Constant():
-                print(f"Pushing {node}")
                 stack.append(node)
             case Operator(arity=arity, input_type=input_type, output_type=output_type):
                 for _ in range(arity):
                     try:
                         item = stack.pop()
-                        print(f"Popped {item}")
                     except IndexError:
                         raise ValueError(
                             f"Operator {node.name} expects {arity} operands"
@@ -188,7 +186,6 @@ def type_check_nodes(nodes: list[Node]) -> None:
                             f"Operator {node.name} expects {input_type} operand"
                         )
                 result_node = Constant(value=0, type=output_type)
-                print(f"Pushing {result_node}")
                 stack.append(result_node)
     if len(stack) != 1:
         raise ValueError(f"Invalid definition Stack: {[s for s in stack]}")
