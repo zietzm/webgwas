@@ -79,7 +79,8 @@ class OperatorType(Enum):
 
 class Field(BaseModel):
     id: int | None = None
-    name: str
+    code: str
+    name: str | None = None
     type: NodeType | None = None
 
 
@@ -111,12 +112,12 @@ class KnowledgeBase(BaseModel):
         ]
         return cls(operators=operators, fields=fields)
 
-    def query_field(self, name: str) -> Field:
-        results = [field for field in self.fields if field.name == name]
+    def query_field(self, code: str) -> Field:
+        results = [field for field in self.fields if field.code == code]
         if len(results) == 0:
-            raise ValueError(f"Field {name} not found")
+            raise ValueError(f"Field {code} not found")
         elif len(results) > 1:
-            raise ValueError(f"Field {name} is ambiguous")
+            raise ValueError(f"Field {code} is ambiguous")
         return results[0]
 
 
@@ -131,7 +132,7 @@ def parse_string_definition(definition: str) -> list[Node]:
             case '"':
                 if item[-1] != '"':
                     raise ValueError(f"Invalid field name {item}")
-                node = Field(name=item[1:-1])  # check whether valid later
+                node = Field(code=item[1:-1])  # check whether valid later
                 results.append(node)
             case "`":
                 if item[-1] != "`":
@@ -152,8 +153,8 @@ def validate_nodes(nodes: list[Node], knowledge_base: KnowledgeBase) -> list[Nod
     results = list()
     for node in nodes:
         match node:
-            case Field(name=name):
-                node = knowledge_base.query_field(name)
+            case Field(code=code):
+                node = knowledge_base.query_field(code)
                 results.append(node)
             case Operator() | Constant():
                 results.append(node)
