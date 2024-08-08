@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum, StrEnum
 from typing import Any, Literal
 
+import numpy as np
 import pandas as pd
 from pydantic import BaseModel, NonNegativeInt
 
@@ -235,11 +236,11 @@ def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
                             case "DIV":
                                 stack.append(item1 / item2)
                             case "AND":
-                                stack.append(item1 & item2)
+                                stack.append(np.minimum(item1, item2))
                             case "OR":
-                                stack.append(item1 | item2)
+                                stack.append(np.maximum(item1, item2))
                             case "NOT":
-                                stack.append(~item1)
+                                stack.append(1 - item1)
                             case "GT":
                                 stack.append(item1 > item2)
                             case "GE":
