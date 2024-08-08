@@ -204,8 +204,8 @@ def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
     stack = list()
     for node in nodes:
         match node:
-            case Field(name=name):
-                stack.append(df[name])
+            case Field(code=code):
+                stack.append(df[code])
             case Operator(name=name, narity=arity, input_type=input_type):
                 match arity:
                     case 1:
