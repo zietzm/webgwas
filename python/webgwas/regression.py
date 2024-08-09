@@ -67,5 +67,5 @@ def compute_left_inverse(X: pd.DataFrame) -> pd.DataFrame:
     Returns:
         The left inverse of X (m x N)
     """
-    left_inverse = np.linalg.inv(X.T @ X) @ X.T
+    left_inverse = np.linalg.pinv(X.T @ X) @ X.T
     return pd.DataFrame(left_inverse, index=X.columns, columns=X.index)
