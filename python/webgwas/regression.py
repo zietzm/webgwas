@@ -56,3 +56,15 @@ def residualize(Y: pd.DataFrame, X: pd.DataFrame) -> pd.DataFrame:
     beta_array = regress_array(Y.values, X.values)
     beta_df = pd.DataFrame(beta_array, index=X.columns, columns=Y.columns)
     return Y - X @ beta_df
+
+
+def compute_left_inverse(X: pd.DataFrame) -> pd.DataFrame:
+    """Compute the left inverse of X -> inv(X' X) X'
+
+    Args:
+        X: The independent variable(s) (N x m)
+
+    Returns:
+        The left inverse of X (m x N)
+    """
+    return np.linalg.inv(X.T @ X) @ X.T
