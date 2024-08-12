@@ -193,11 +193,9 @@ def type_check_nodes(nodes: list[Node]) -> None:
     return
 
 
-def validate_item(item: Any, expected_type: NodeType, arity: int, name: str) -> None:
+def validate_item(item: Any, arity: int, name: str) -> None:
     if not isinstance(item, pd.Series):
         raise ValueError(f"Operator {name} expects {arity} operands")
-    if item.dtype != expected_type:
-        raise ValueError(f"Operator {name} expects {expected_type} operand")
 
 
 def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
@@ -207,25 +205,25 @@ def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
         match node:
             case Field(code=code):
                 stack.append(df[code])
-            case Operator(name=name, narity=arity, input_type=input_type):
+            case Operator(name=name, arity=arity):
                 match arity:
                     case 1:
                         item = stack.pop()
-                        validate_item(item, input_type, arity, node.name)
+                        validate_item(item, arity, node.name)
                         match name:
                             case "ROOT":
                                 stack.append(item)
-                            case "ADD":
-                                stack.append(~item)
+                            case "NOT":
+                                stack.append(1 - item)
                             case _:
                                 raise ValueError(
                                     f"Unknown operator {name} with arity 1"
                                 )
                     case 2:
                         item2 = stack.pop()
-                        validate_item(item2, input_type, arity, node.name)
+                        validate_item(item2, arity, node.name)
                         item1 = stack.pop()
-                        validate_item(item1, input_type, arity, node.name)
+                        validate_item(item1, arity, node.name)
                         match name:
                             case "ADD":
                                 stack.append(item1 + item2)
@@ -239,8 +237,6 @@ def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
                                 stack.append(np.minimum(item1, item2))
                             case "OR":
                                 stack.append(np.maximum(item1, item2))
-                            case "NOT":
-                                stack.append(1 - item1)
                             case "GT":
                                 stack.append(item1 > item2)
                             case "GE":
@@ -257,14 +253,16 @@ def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
                                 )
                     case _:
                         raise ValueError(f"Unknown operator {name} with arity {arity}")
-            case Constant(value=value, type=type):
-                match type:
+            case Constant(value=value, type=dtype):
+                match dtype:
                     case NodeType.BOOL:
                         stack.append(bool(value))
                     case NodeType.REAL:
                         stack.append(float(value))
                     case _:
                         raise ValueError(f"Unknown constant type {type}")
+            case _:
+                raise ValueError(f"Unknown node type `{type(node)}`")
     if len(stack) != 1:
         raise ValueError(f"Invalid definition Stack: {[s for s in stack]}")
     return stack[0]
