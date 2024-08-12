@@ -68,4 +68,8 @@ def compute_left_inverse(X: pd.DataFrame) -> pd.DataFrame:
         The left inverse of X (m x N)
     """
     left_inverse = np.linalg.pinv(X.T @ X) @ X.T
-    return pd.DataFrame(left_inverse, index=X.columns, columns=X.index)
+    return (
+        pd.DataFrame(left_inverse)
+        .assign(phenotype_id=X.columns)
+        .set_index("phenotype_id")
+    )
