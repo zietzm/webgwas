@@ -1,14 +1,21 @@
-'use client'
-
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
-import { Node } from '../lib/Node';
+import { Feature, Operator, Constant } from '../lib/types';
 
-export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node[], onSelect: (node: Node | null) => void, onClose: () => void }) {
-  const [showConstantInput, setShowConstantInput] = useState(false);
-  const [constantValue, setConstantValue] = useState('');
-  const [constantError, setConstantError] = useState('');
-  const [headerHeight, setHeaderHeight] = useState(0);
+export default function NodeSelector(
+    { operators, features, onSelect, onClose }: { 
+        operators: Operator[], 
+        features: Feature[], 
+        onSelect: (node: Feature | Operator | Constant | null) => void, 
+        onClose: () => void 
+    }
+) {
+  const [showConstantInput, setShowConstantInput] = useState<boolean>(false);
+  const [constantValue, setConstantValue] = useState<string>('');
+  const [constantError, setConstantError] = useState<string>('');
+  const [headerHeight, setHeaderHeight] = useState<number>(0);
+
+  const featureOptions = features.map(feature => ({ value: feature.id, label: feature.name }));
 
   useEffect(() => {
     const header = document.querySelector('header');
@@ -17,22 +24,18 @@ export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node
     }
   }, []);
 
-  const operators = nodes.filter(node => node.type === 'operator' && node.id !== 0);
-  const fields = nodes.filter(node => node.type === 'field');
-
   const handleConstantSubmit = () => {
     const num = parseFloat(constantValue);
     if (isNaN(num)) {
       setConstantError('Please enter a valid number');
     } else {
-      onSelect({ id: Date.now(), type: 'constant', name: num.toString(), children: [], minArity: 0, maxArity: 0 });
+      const constant: Constant = { value: num, type: 'real' };
+      onSelect(constant);
       setConstantValue('');
       setConstantError('');
       setShowConstantInput(false);
     }
   };
-
-  const fieldOptions = fields.map(field => ({ value: field.id, label: field.name }));
 
   return (
     <div className="fixed right-0 top-0 w-full h-full bg-black bg-opacity-50 flex justify-end z-50">
@@ -86,8 +89,8 @@ export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Fields</h3>
           <Select
-            options={fieldOptions}
-            onChange={(selectedOption) => onSelect(fields.find(f => f.id === selectedOption!.value) || null)}
+            options={featureOptions}
+            onChange={(selectedOption) => onSelect(features.find(f => f.id === selectedOption!.value) || null)}
             placeholder="Search for a field..."
             className="mb-2"
           />

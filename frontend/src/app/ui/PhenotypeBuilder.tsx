@@ -1,33 +1,32 @@
-'use client'
-
 import React, { useState, useEffect } from 'react';
 import { Play, CheckCircle, Loader, XCircle } from 'lucide-react';
 import NodeSelector from './NodeSelector';
 import TreeNode from './TreeNode';
-import { Node } from '../lib/Node';
+import { Cohort, Feature, Operator, PhenotypeNode, Constant, isFeature, isOperator, isConstant, operators } from '../lib/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-const rootNode: Node = {id: 0, type: 'operator', name: 'Root', minArity: 1, maxArity: 1, children: []};
 
 interface ValidationResult {
   isValid: boolean;
   message: string;
 }
 
+const rootOperator: Operator = {id: 0, name: 'Root', arity: 1, input_type: 'any', output_type: 'any'} as Operator;
+const rootNode: PhenotypeNode = {id: 0, data: rootOperator, children: []} as PhenotypeNode;
+
 export default function PhenotypeBuilder() {
-  const [cohorts, setCohorts] = useState([]);
-  const [selectedCohort, setSelectedCohort] = useState(null as string | null);
-  const [nodes, setNodes] = useState([]);
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [selectedCohort, setSelectedCohort] = useState<Cohort | null>(null);
+  const [features, setFeatures] = useState<Feature[]>([]);
   const [tree, setTree] = useState(rootNode);
   const [showNodeSelector, setShowNodeSelector] = useState(false);
-  const [selectedNode, setSelectedNode] = useState(null as Node | null);
-  const [validationResult, setValidationResult] = useState(null as ValidationResult | null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [selectedNode, setSelectedNode] = useState<PhenotypeNode | null>(null);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState("");
   const [jobStatus, setJobStatus] = useState<string | null>(null);
   const [jobId, setJobId] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState(null as string | null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -45,12 +44,12 @@ export default function PhenotypeBuilder() {
           throw new Error('Failed to fetch cohorts');
         }
         const data = await response.json();
-        setCohorts(data);
+        setCohorts(data as Cohort[]);
         setIsLoading(false);
       } catch (error) {
-        let errorMessage = "Failed to fetch cohorts";
+        let errorMessage = "Error fetching cohorts";
         if (error instanceof Error) {
-          errorMessage = `Failed to fetch cohorts: ${error.message}`;
+          errorMessage = `Error fetching cohorts: ${error.message}`;
         }
         setError(errorMessage);
         setIsLoading(false);
@@ -62,15 +61,15 @@ export default function PhenotypeBuilder() {
 
   useEffect(() => {
     if (selectedCohort) {
-      fetchNodes(selectedCohort);
+        fetchFeatures(selectedCohort);
     }
   }, [selectedCohort]);
 
-  const fetchNodes = async (selectedCohort: string) => {
+  async function fetchFeatures(cohort: Cohort) {
     try {
-      const searchParams = new URLSearchParams({cohort_name: selectedCohort});
+      const searchParams = new URLSearchParams({cohort_id: cohort.id.toString()});
       const response = await fetch(
-        `${API_URL}/api/nodes?${searchParams.toString()}`,
+        `${API_URL}/api/features?${searchParams.toString()}`,
         {
           method: 'GET',
           headers: {
@@ -82,11 +81,7 @@ export default function PhenotypeBuilder() {
         throw new Error('Failed to fetch nodes');
       }
       const data = await response.json();
-      data.forEach((node: Node) => {
-        if (node.minArity === null) node.minArity = 0;
-        if (node.maxArity === null) node.maxArity = Infinity;
-      });
-      setNodes(data);
+      setFeatures(data as Feature[]);
       setTree(rootNode);
     } catch (error) {
       let errorMessage = "Failed to fetch nodes";
@@ -97,19 +92,19 @@ export default function PhenotypeBuilder() {
     }
   };
 
-  const handleCohortSelect = (cohort: string) => {
+  const handleCohortSelect = (cohort: Cohort) => {
     setSelectedCohort(cohort);
     setTree(rootNode);
     setValidationResult(null);
   };
 
-  const handleAdd = (parentNode: Node) => {
+  const handleAdd = (parentNode: PhenotypeNode) => {
     setSelectedNode(parentNode);
     setShowNodeSelector(true);
   };
 
-  const handleRemove = (nodeToRemove: Node) => {
-    const removeNodeRecursive = (currentNode: Node) => {
+  const handleRemove = (nodeToRemove: PhenotypeNode) => {
+    const removeNodeRecursive = (currentNode: PhenotypeNode) => {
       if (currentNode.children) {
         currentNode.children = currentNode.children.filter(
           (child) => child.id !== nodeToRemove.id
@@ -125,18 +120,18 @@ export default function PhenotypeBuilder() {
     });
   };
 
-  const handleSelect = (newNode: Node | null) => {
+  const handleSelect = (newNode: Feature | Operator | Constant | null) => {
     if (!newNode) {
       return;
     }
     setTree((prevTree) => {
-      function addNodeRecursive(currentNode: Node): Node {
+      function addNodeRecursive(currentNode: PhenotypeNode): PhenotypeNode {
             if (currentNode.id === selectedNode!.id) {
                 return {
                     ...currentNode,
                     children: [
                         ...(currentNode.children || []),
-                        { ...newNode!, id: Date.now(), children: [] },
+                        { id: Date.now(), children: [], data: newNode! },
                     ],
                 };
             }
@@ -155,26 +150,8 @@ export default function PhenotypeBuilder() {
     setShowNodeSelector(false);
   };
 
-  const validateTree = (node: Node): ValidationResult => {
-    if (node.type === 'operator') {
-      const childCount = node.children ? node.children.length : 0;
-      if (childCount < node.minArity || childCount > node.maxArity) {
-        return {
-          isValid: false,
-          message: `${node.name} (${node.type}) should have between ${node.minArity} and ${node.maxArity} children, but has ${childCount}.`
-        };
-      }
-    }
-
-    if (node.children) {
-      for (let child of node.children) {
-        const childValidation = validateTree(child);
-        if (!childValidation.isValid) {
-          return childValidation;
-        }
-      }
-    }
-
+  const validateTree = (node: PhenotypeNode): ValidationResult => {
+    // TODO: Implement validation using the API
     return { isValid: true, message: 'Phenotype definition is valid.' };
   };
 
@@ -183,21 +160,20 @@ export default function PhenotypeBuilder() {
     setValidationResult(result);
   };
 
-  const convertToRPN = (node: Node): string => {
-    switch (node.type) {
-      case 'constant':
-        return node.name;
-      case 'operator':
-        const childrenRPN = node.children.map(convertToRPN);
-        if (node.name === 'Root') {
-          return childrenRPN.join(' ');
-        } else {
-          return [...childrenRPN, '`' + node.name + '`'].join(' ');
-        }
-      case 'field':
-        return '"' + node.name + '"';
-      default:
-        return node.name;
+  const convertToRPN = (node: PhenotypeNode): string => {
+    if (isFeature(node.data)) {
+      return '"' + node.data.name + '"';
+    } else if (isOperator(node.data)) {
+      const childrenRPN = node.children.map(convertToRPN);
+      if (node.data.name === 'Root') {
+        return childrenRPN.join(' ');
+      } else {
+        return [...childrenRPN, '`' + node.data.name + '`'].join(' ');
+      }
+    } else if (isConstant(node.data)) {
+      return node.data.value.toString();
+    } else {
+      throw new Error('Invalid node type' + node.data);
     }
   };
 
@@ -292,7 +268,7 @@ export default function PhenotypeBuilder() {
         <div className="flex flex-wrap gap-2">
           {cohorts.map((cohort) => (
             <button
-              key={cohort}
+              key={cohort.id}
               onClick={() => handleCohortSelect(cohort)}
               className={`py-2 px-4 rounded-full transition-colors ${
                 selectedCohort === cohort
@@ -300,7 +276,7 @@ export default function PhenotypeBuilder() {
                   : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
               }`}
             >
-              {cohort}
+              {cohort.name}
             </button>
           ))}
         </div>
@@ -365,7 +341,8 @@ export default function PhenotypeBuilder() {
           )}
           {showNodeSelector && (
             <NodeSelector
-              nodes={nodes}
+              features={features}
+              operators={operators.filter(op => op.id !== 0)}
               onSelect={handleSelect}
               onClose={() => setShowNodeSelector(false)}
             />

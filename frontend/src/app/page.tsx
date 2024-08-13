@@ -1,3 +1,5 @@
+'use client'
+
 import PhenotypeBuilder from "@/app/ui/PhenotypeBuilder";
 import Image from "next/image";
 
