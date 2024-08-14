@@ -42,16 +42,16 @@ class OperatorType(Enum):
         id=0, name="ROOT", arity=1, input_type=NodeType.ANY, output_type=NodeType.ANY
     )
     ADD = Operator(
-        id=1, name="ADD", arity=2, input_type=NodeType.REAL, output_type=NodeType.REAL
+        id=1, name="ADD", arity=2, input_type=NodeType.ANY, output_type=NodeType.REAL
     )
     SUB = Operator(
-        id=2, name="SUB", arity=2, input_type=NodeType.REAL, output_type=NodeType.REAL
+        id=2, name="SUB", arity=2, input_type=NodeType.ANY, output_type=NodeType.REAL
     )
     MUL = Operator(
-        id=3, name="MUL", arity=2, input_type=NodeType.REAL, output_type=NodeType.REAL
+        id=3, name="MUL", arity=2, input_type=NodeType.ANY, output_type=NodeType.REAL
     )
     DIV = Operator(
-        id=4, name="DIV", arity=2, input_type=NodeType.REAL, output_type=NodeType.REAL
+        id=4, name="DIV", arity=2, input_type=NodeType.ANY, output_type=NodeType.REAL
     )
     AND = Operator(
         id=5, name="AND", arity=2, input_type=NodeType.BOOL, output_type=NodeType.BOOL
@@ -63,19 +63,19 @@ class OperatorType(Enum):
         id=7, name="NOT", arity=1, input_type=NodeType.BOOL, output_type=NodeType.BOOL
     )
     GT = Operator(
-        id=8, name="GT", arity=2, input_type=NodeType.REAL, output_type=NodeType.BOOL
+        id=8, name="GT", arity=2, input_type=NodeType.ANY, output_type=NodeType.BOOL
     )
     GE = Operator(
-        id=9, name="GE", arity=2, input_type=NodeType.REAL, output_type=NodeType.BOOL
+        id=9, name="GE", arity=2, input_type=NodeType.ANY, output_type=NodeType.BOOL
     )
     LT = Operator(
-        id=10, name="LT", arity=2, input_type=NodeType.REAL, output_type=NodeType.BOOL
+        id=10, name="LT", arity=2, input_type=NodeType.ANY, output_type=NodeType.BOOL
     )
     LE = Operator(
-        id=11, name="LE", arity=2, input_type=NodeType.REAL, output_type=NodeType.BOOL
+        id=11, name="LE", arity=2, input_type=NodeType.ANY, output_type=NodeType.BOOL
     )
     EQ = Operator(
-        id=12, name="EQ", arity=2, input_type=NodeType.REAL, output_type=NodeType.BOOL
+        id=12, name="EQ", arity=2, input_type=NodeType.ANY, output_type=NodeType.BOOL
     )
 
 
