@@ -256,9 +256,9 @@ def apply_definition_pandas(nodes: list[Node], df: pd.DataFrame) -> pd.Series:
             case Constant(value=value, type=dtype):
                 match dtype:
                     case NodeType.BOOL:
-                        stack.append(bool(value))
+                        stack.append(df.assign(const=bool(value))["const"])
                     case NodeType.REAL:
-                        stack.append(float(value))
+                        stack.append(df.assign(const=float(value))["const"])
                     case _:
                         raise ValueError(f"Unknown constant type {type}")
             case _:
