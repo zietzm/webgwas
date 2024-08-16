@@ -29,14 +29,13 @@ export default function TreeNode ({ node, onAdd, onRemove }: { node: PhenotypeNo
     ? `${node.data.name} can have ${node.data.arity} child${node.data.arity > 1 ? 'ren' : ''}`
     : `${node.data.type} node can't have children`;
 
-  const nodeType = isFeature(node.data) ? 'Feature' : isOperator(node.data) ? 'Operator' : 'Constant';
-  let nodeName: string;
+  let nodeLabel: string;
   if (isFeature(node.data)) {
-    nodeName = node.data.name;
+    nodeLabel = node.data.name + " [" + node.data.code + "] (Feature)";
   } else if (isOperator(node.data)) {
-    nodeName = node.data.name;
+    nodeLabel = node.data.name + " (Operator)";
   } else if (isConstant(node.data)) {
-    nodeName = node.data.value.toString();
+    nodeLabel = node.data.value.toString() + "(Constant)";
   } else {
     console.log(node.data);
     throw new Error('Invalid node type' + node.data.name);
@@ -45,7 +44,7 @@ export default function TreeNode ({ node, onAdd, onRemove }: { node: PhenotypeNo
   return (
     <div className="ml-4">
       <div className="flex items-center">
-        <span className="mr-2">{nodeName} ({nodeType})</span>
+        <span className="mr-2">{nodeLabel}</span>
         <Tooltip text={tooltipText}>
           <button 
             onClick={() => canAddChild && onAdd(node)} 
