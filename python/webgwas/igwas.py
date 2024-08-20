@@ -1,9 +1,10 @@
 import os
 import tempfile
 
+import numpy as np
 import pandas as pd
 
-from webgwas._lowlevel import igwas_impl
+from webgwas._lowlevel import Projection, igwas_impl, run_igwas
 
 
 def igwas_files(
@@ -127,3 +128,30 @@ def igwas(
             compress=compress,
             quiet=quiet,
         )
+
+
+def igwas_prod(
+    projection_vector: pd.Series,
+    covariance_matrix: pd.DataFrame,
+    gwas_result_path: str,
+    output_file_path: str,
+    num_covar: int = 1,
+):
+    normalized_projection = projection_vector / np.sqrt(
+        projection_vector @ covariance_matrix @ projection_vector
+    )
+    assert (
+        np.abs(1 - normalized_projection @ covariance_matrix @ normalized_projection)
+        < 1e-4
+    ), "Projected phenotype does not have unit variance"
+    projection = Projection(
+        feature_id=normalized_projection.index,
+        feature_coefficient=normalized_projection,
+    )
+    run_igwas(
+        projection=projection,
+        projection_variance=1.0,
+        n_covariates=num_covar,
+        input_path=gwas_result_path,
+        output_path=output_file_path,
+    )
