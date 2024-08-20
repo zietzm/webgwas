@@ -182,7 +182,7 @@ def type_check_nodes(nodes: list[Node]) -> None:
                         raise ValueError(
                             f"Operator {node.name} expects {arity} operands"
                         )
-                    if item.type != input_type:
+                    if item.type != input_type and input_type != NodeType.ANY:
                         raise ValueError(
                             f"Operator {node.name} expects {input_type} operand"
                         )
