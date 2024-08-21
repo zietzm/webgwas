@@ -7,6 +7,15 @@ import pandas as pd
 from webgwas._lowlevel import Projection, igwas_impl, run_igwas
 
 
+def estimate_genotype_variance(
+    phenotype_variance: float,
+    degrees_of_freedom: int,
+    std_error: float,
+    beta: float,
+) -> float:
+    return phenotype_variance / (degrees_of_freedom * std_error**2 + beta**2)
+
+
 def igwas_files(
     projection_matrix_path: str,
     covariance_matrix_path: str,

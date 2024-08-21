@@ -7,16 +7,7 @@ import pandas as pd
 import polars as pl
 import pytest
 
-from webgwas.igwas import igwas, igwas_files, igwas_prod
-
-
-def estimate_genotype_variance(
-    phenotype_variance: float,
-    degrees_of_freedom: int,
-    std_error: float,
-    beta: float,
-) -> float:
-    return phenotype_variance / (degrees_of_freedom * std_error**2 + beta**2)
+from webgwas.igwas import igwas, igwas_files, igwas_prod, estimate_genotype_variance
 
 
 @pytest.fixture
