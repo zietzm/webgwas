@@ -13,7 +13,7 @@ def igwas_files(
     gwas_result_paths: list[str],
     output_file_path: str,
     num_covar: int = 1,
-    chunksize: int = 100000,
+    chunksize: int = 100_000,
     variant_id: str = "ID",
     beta: str = "BETA",
     std_error: str = "SE",
@@ -72,7 +72,7 @@ def igwas(
     gwas_result_paths: list[str],
     output_file_path: str,
     num_covar: int = 1,
-    chunksize: int = 100000,
+    chunksize: int = 100_000,
     variant_id: str = "ID",
     beta: str = "BETA",
     std_error: str = "SE",
@@ -136,6 +136,7 @@ def igwas_prod(
     gwas_result_path: str,
     output_file_path: str,
     num_covar: int = 1,
+    batch_size: int = 100_000,
 ):
     normalized_projection = projection_vector / np.sqrt(
         projection_vector @ covariance_matrix @ projection_vector
@@ -154,4 +155,5 @@ def igwas_prod(
         n_covariates=num_covar,
         input_path=gwas_result_path,
         output_path=output_file_path,
+        batch_size=batch_size,
     )

@@ -299,9 +299,9 @@ pub fn results_to_record_batch(result_stats: ResultStats) -> Result<RecordBatch>
     Ok(record_batch)
 }
 
-pub fn get_reader(path: &str) -> Result<ParquetRecordBatchReader> {
+pub fn get_reader(path: &str, batch_size: usize) -> Result<ParquetRecordBatchReader> {
     let input_file = File::open(path)?;
-    let builder = ParquetRecordBatchReaderBuilder::try_new(input_file)?.with_batch_size(500_000);
+    let builder = ParquetRecordBatchReaderBuilder::try_new(input_file)?.with_batch_size(batch_size);
     Ok(builder.build()?)
 }
 
@@ -328,14 +328,17 @@ pub fn get_writer(path: &str) -> Result<arrow::csv::Writer<AutoFinishEncoder<Buf
 /// * `input_path` - Path to the input file (parquet)
 /// * `output_path` - Path to the output file (tsv.zst)
 #[pyfunction]
+#[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path, batch_size = 100000))]
 pub fn run_igwas(
     projection: PyRef<'_, Projection>,
     projection_variance: f32,
     n_covariates: usize,
     input_path: &str,
     output_path: &str,
+    batch_size: usize,
 ) -> PyResult<()> {
-    let reader = get_reader(input_path).map_err(|e| PyValueError::new_err(format!("{e}")))?;
+    let reader =
+        get_reader(input_path, batch_size).map_err(|e| PyValueError::new_err(format!("{e}")))?;
     let mut writer = get_writer(output_path).map_err(|e| PyValueError::new_err(format!("{e}")))?;
 
     for record_batch in reader {
