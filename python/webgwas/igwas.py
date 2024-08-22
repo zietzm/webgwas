@@ -147,20 +147,14 @@ def igwas_prod(
     num_covar: int = 1,
     batch_size: int = 100_000,
 ):
-    normalized_projection = projection_vector / np.sqrt(
-        projection_vector @ covariance_matrix @ projection_vector
-    )
-    assert (
-        np.abs(1 - normalized_projection @ covariance_matrix @ normalized_projection)
-        < 1e-4
-    ), "Projected phenotype does not have unit variance"
+    projection_variance = projection_vector @ covariance_matrix @ projection_vector
     projection = Projection(
-        feature_id=normalized_projection.index,
-        feature_coefficient=normalized_projection,
+        feature_id=projection_vector.index,
+        feature_coefficient=projection_vector,
     )
     run_igwas(
         projection=projection,
-        projection_variance=1.0,
+        projection_variance=projection_variance,
         n_covariates=num_covar,
         input_path=gwas_result_path,
         output_path=output_file_path,

@@ -7,7 +7,7 @@ import pandas as pd
 import polars as pl
 import pytest
 
-from webgwas.igwas import igwas, igwas_files, igwas_prod, estimate_genotype_variance
+from webgwas.igwas import estimate_genotype_variance, igwas, igwas_files, igwas_prod
 
 
 @pytest.fixture
@@ -225,10 +225,10 @@ def test_igwas_prod(setup_test_data, test_data, temp_dir, compress):
             .with_columns(
                 genotype_variance=estimate_genotype_variance(
                     phenotype_variance=covariance_matrix.loc[gwas_name, gwas_name],
-                    degrees_of_freedom=pl.col("degrees_of_freedom"),  # type: ignore
-                    std_error=pl.col("std_error"),  # type: ignore
-                    beta=pl.col("beta"),  # type: ignore
-                ).cast(pl.Float32),  # type: ignore
+                    degrees_of_freedom=pl.col("degrees_of_freedom"),
+                    std_error=pl.col("std_error"),
+                    beta=pl.col("beta"),
+                ).cast(pl.Float32),
             )
             .select(
                 "variant_id",
