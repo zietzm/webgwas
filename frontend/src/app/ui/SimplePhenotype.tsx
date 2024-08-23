@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Play, CheckCircle, Loader, XCircle, MinusCircle } from "lucide-react";
 import Select from "react-select";
 import { Cohort, Feature } from "../lib/types";
+import Image from "next/image";
 import {
   fetchCohorts,
   convertListToRPN,
@@ -11,6 +12,39 @@ import {
 } from "../lib/api";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
+
+export function simplePhenotypeBuilderUsage() {
+  return (
+    <div className="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+      <p className="mb-2 text-gray-600 dark:text-gray-400">
+        To get started, select a cohort from the buttons below. Then define the
+        phenotype that interests you by searching for fields in the search box
+        below.
+      </p>
+      <p className="mb-2 text-gray-600 dark:text-gray-400">
+        As an example, suppose we are interested hypertensive diabetes (diabetes
+        and hypertension). To build this phenotype, we would add both diabetes
+        (E11) and hypertension (I10) as children.
+      </p>
+      <p className="mb-2 text-gray-600 dark:text-gray-400">
+        The resulting phenotype would look like this:
+      </p>
+      <Image
+        unoptimized
+        src={"/exampleSimplePT.png"}
+        alt={"Example phenotype"}
+        width={450}
+        height={131}
+      />
+      <br />
+      <p className="mb-2 text-gray-600 dark:text-gray-400">
+        Once built, you can validate your phenotype and run the GWAS. Our server
+        will then start the GWAS calculation and display the status of the job.
+        Once complete, a download link to your results will appear.
+      </p>
+    </div>
+  );
+}
 
 export default function SimplePhenotypeBuilder() {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
