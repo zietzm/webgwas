@@ -150,18 +150,20 @@ export default function SimplePhenotypeBuilder() {
         <div className="ml-4 flex-1 flex-row gap-2">
           {index > 0 && <b className="text-blue-600">AND </b>}
           {node.name} [{node.code}]
-          <button
-            onClick={() => {
-              setPhenotype((prevPhenotype) => {
-                const newPhenotype = [...prevPhenotype];
-                newPhenotype.splice(index, 1);
-                return newPhenotype;
-              });
-            }}
-            className="ml-2 p-1 rounded hover:bg-gray-200 active:bg-gray-300"
-          >
-            <MinusCircle size={20} />
-          </button>
+          {jobStatus === null && (
+            <button
+              onClick={() => {
+                setPhenotype((prevPhenotype) => {
+                  const newPhenotype = [...prevPhenotype];
+                  newPhenotype.splice(index, 1);
+                  return newPhenotype;
+                });
+              }}
+              className="ml-2 p-1 rounded hover:bg-gray-200 active:bg-gray-300"
+            >
+              <MinusCircle size={20} />
+            </button>
+          )}
         </div>
       ))}
       <br />
