@@ -1,6 +1,6 @@
 import { PlusCircle, MinusCircle } from 'lucide-react';
 import { useState } from 'react';
-import { Feature, Operator, Constant, PhenotypeNode, isFeature, isOperator, isConstant } from '../lib/types';
+import { Node } from '../lib/Node';
 
 
 const Tooltip = ({ children, text }: { children: React.ReactNode, text: string }) => {
@@ -23,28 +23,16 @@ const Tooltip = ({ children, text }: { children: React.ReactNode, text: string }
 };
 
 
-export default function TreeNode ({ node, onAdd, onRemove }: { node: PhenotypeNode, onAdd: (node: PhenotypeNode) => void, onRemove: (node: PhenotypeNode) => void }) {
-  const canAddChild = isOperator(node.data) && node.children.length < node.data.arity;
-  const tooltipText = isOperator(node.data)
-    ? `${node.data.name} can have ${node.data.arity} child${node.data.arity > 1 ? 'ren' : ''}`
-    : `${node.data.type} node can't have children`;
-
-  let nodeLabel: string;
-  if (isFeature(node.data)) {
-    nodeLabel = node.data.name + " [" + node.data.code + "] (Feature)";
-  } else if (isOperator(node.data)) {
-    nodeLabel = node.data.name + " (Operator)";
-  } else if (isConstant(node.data)) {
-    nodeLabel = node.data.value.toString() + "(Constant)";
-  } else {
-    console.log(node.data);
-    throw new Error('Invalid node type' + node.data.name);
-  }
+export default function TreeNode ({ node, onAdd, onRemove }: { node: Node, onAdd: (node: Node) => void, onRemove: (node: Node) => void }) {
+  const canAddChild = node.type === 'operator' && node.children.length < node.maxArity;
+  const tooltipText = node.type === 'operator' 
+    ? `${node.name} can have ${node.maxArity} child${node.maxArity > 1 ? 'ren' : ''}`
+    : `${node.type} node can't have children`;
 
   return (
     <div className="ml-4">
       <div className="flex items-center">
-        <span className="mr-2">{nodeLabel}</span>
+        <span className="mr-2">{node.name} ({node.type})</span>
         <Tooltip text={tooltipText}>
           <button 
             onClick={() => canAddChild && onAdd(node)} 
