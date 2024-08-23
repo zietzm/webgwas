@@ -92,7 +92,7 @@ export default function SimplePhenotypeBuilder() {
         setJobStatus("error");
         console.error("GWAS job failed. Please try again.", result);
       } else {
-        setTimeout(() => pollJobStatus(requestId), 5000); // Poll every 5 seconds
+        setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
       }
     } catch (err) {
       console.error("Error polling job status:", err);
