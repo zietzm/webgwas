@@ -72,6 +72,8 @@ idna==3.7
     # via httpx
     # via jsonschema
     # via requests
+igwas @ git+https://github.com/tatonetti-lab/indirect-gwas@3b85a937d0b13494378eecab4f25f3ffc1f787fd
+    # via webgwas
 iniconfig==2.0.0
     # via pytest
 ipykernel==6.29.5
@@ -153,7 +155,8 @@ nest-asyncio==1.6.0
     # via ipykernel
 notebook-shim==0.2.4
     # via jupyterlab
-numpy==2.0.0
+numpy==2.1.0
+    # via igwas
     # via pandas
     # via patsy
     # via pyarrow
@@ -172,6 +175,7 @@ packaging==24.1
     # via pytest
     # via statsmodels
 pandas==2.2.2
+    # via igwas
     # via pycanon
     # via statsmodels
     # via webgwas
@@ -298,6 +302,7 @@ typer==0.12.3
 types-python-dateutil==2.9.0.20240316
     # via arrow
 typing-extensions==4.12.2
+    # via ipython
     # via pydantic
     # via pydantic-core
     # via typer
@@ -319,3 +324,4 @@ websocket-client==1.8.0
 widgetsnbextension==4.0.11
     # via ipywidgets
 zstandard==0.23.0
+    # via igwas

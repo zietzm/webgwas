@@ -6,8 +6,9 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
+from igwas.igwas import igwas
 
-from webgwas.igwas import estimate_genotype_variance, igwas, igwas_files, igwas_prod
+from webgwas.igwas import estimate_genotype_variance, igwas_prod
 
 
 @pytest.fixture
@@ -108,85 +109,6 @@ def perform_direct_gwas(genotype, phenotype, covariates):
     var_beta = sigma2 * np.linalg.inv(X.T @ X)[-1, -1]
     std_error = np.sqrt(var_beta)
     return beta[-1], std_error
-
-
-@pytest.mark.parametrize("compress", [False, True])
-def test_igwas_files(setup_test_data, test_data, temp_dir, compress):
-    gwas_results = setup_test_data(compress)
-
-    suffix = ".csv.zst" if compress else ".csv"
-    output_file = os.path.join(temp_dir, f"igwas_results{suffix}")
-
-    assert os.path.exists(os.path.join(temp_dir, "projection_matrix.csv"))
-    assert os.path.exists(os.path.join(temp_dir, "covariance_matrix.csv"))
-
-    for result in gwas_results:
-        assert os.path.exists(result)
-
-    igwas_files(
-        projection_matrix_path=os.path.join(temp_dir, "projection_matrix.csv"),
-        covariance_matrix_path=os.path.join(temp_dir, "covariance_matrix.csv"),
-        gwas_result_paths=gwas_results,
-        output_file_path=output_file,
-        num_covar=test_data["n_covariates"],
-        chunksize=test_data["n_variants"],
-        variant_id="variant_id",
-        beta="beta",
-        std_error="std_error",
-        sample_size="sample_size",
-        num_threads=2,
-        capacity=10,
-        compress=compress,
-        quiet=True,
-    )
-
-    results = pd.read_csv(output_file, sep="\t")
-    assert results.shape[0] == test_data["n_variants"] * test_data["n_projections"]
-    assert set(results.columns) == {
-        "variant_id",
-        "beta",
-        "std_error",
-        "t_stat",
-        "neg_log_p_value",
-        "sample_size",
-    }
-
-
-@pytest.mark.parametrize("compress", [False, True])
-def test_igwas(setup_test_data, test_data, temp_dir, compress):
-    gwas_results = setup_test_data(compress)
-
-    suffix = ".csv.zst" if compress else ".csv"
-    output_file = os.path.join(temp_dir, f"igwas_results{suffix}")
-
-    assert os.path.exists(os.path.join(temp_dir, "projection_matrix.csv"))
-    assert os.path.exists(os.path.join(temp_dir, "covariance_matrix.csv"))
-
-    for result in gwas_results:
-        assert os.path.exists(result)
-
-    projection_matrix = pd.read_csv(
-        os.path.join(temp_dir, "projection_matrix.csv"), index_col=0
-    )
-    covariance_matrix = pd.read_csv(
-        os.path.join(temp_dir, "covariance_matrix.csv"), index_col=0
-    )
-    igwas(
-        projection_matrix=projection_matrix,
-        covariance_matrix=covariance_matrix,
-        gwas_result_paths=gwas_results,
-        output_file_path=output_file,
-        num_covar=test_data["n_covariates"],
-        chunksize=test_data["n_variants"],
-        variant_id="variant_id",
-        beta="beta",
-        std_error="std_error",
-        sample_size="sample_size",
-        num_threads=2,
-        capacity=10,
-        compress=compress,
-        quiet=True,
-    )
 
 
 @pytest.mark.parametrize("compress", [False, True])

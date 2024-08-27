@@ -12,10 +12,14 @@
 -e file:.
 annotated-types==0.7.0
     # via pydantic
-numpy==2.0.0
+igwas @ git+https://github.com/tatonetti-lab/indirect-gwas@3b85a937d0b13494378eecab4f25f3ffc1f787fd
+    # via webgwas
+numpy==2.1.0
+    # via igwas
     # via pandas
     # via webgwas
 pandas==2.2.2
+    # via igwas
     # via webgwas
 pydantic==2.8.2
     # via webgwas
@@ -32,3 +36,5 @@ typing-extensions==4.12.2
     # via pydantic-core
 tzdata==2024.1
     # via pandas
+zstandard==0.23.0
+    # via igwas
