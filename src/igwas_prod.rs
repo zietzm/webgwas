@@ -363,29 +363,3 @@ pub fn run_igwas(
     }
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn test_igwas() {
-        let projection = Projection {
-            feature_id: vec!["A01".to_string(), "A02".to_string()],
-            feature_coefficient: vec![1.0, 1.0],
-            n_features: 2,
-        };
-        let projection_variance = 1.0;
-        let n_covariates = 12;
-        let input_path = "~/projects/webgwas-backend/prod_data/ukb_icd10_100k_wb_full/gwas.parquet";
-        let output_path = "~/projects/webgwas-backend/temp_data/BENCH.tsv.zst";
-        let result = run_igwas(
-            &projection,
-            projection_variance,
-            n_covariates,
-            input_path,
-            output_path,
-            500_000,
-        )
-        .unwrap();
-    }
-}
