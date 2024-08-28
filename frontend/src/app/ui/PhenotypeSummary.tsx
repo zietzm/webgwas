@@ -113,7 +113,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 dataKey="t"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "True phenotype",
+                  value: "Phenotype fit (R<sup>2</sup>)",
                   position: "bottom",
                   offset: 0,
                 }}
@@ -123,7 +123,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 dataKey="a"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "Approximate phenotype",
+                  value: "GWAS log p-value fit (R^2)",
                   angle: -90,
                   position: "left",
                   offset: 12,
