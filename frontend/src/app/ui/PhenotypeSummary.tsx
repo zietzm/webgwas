@@ -79,7 +79,12 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 cursor={{ strokeDasharray: "3 3" }}
                 content={<CustomTooltip />}
               />
-              <Scatter name="Phenotypes" data={phenotypes} fill="#8884d8" />
+              <Scatter
+                name="Phenotypes"
+                data={phenotypes}
+                fill="#8884d8"
+                fillOpacity={0.5}
+              />
               <ReferenceLine
                 stroke="grey"
                 strokeDasharray="3 3"
@@ -132,7 +137,12 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 ]}
                 ifOverflow="hidden"
               />
-              <Scatter name="Phenotypes" data={phenotypes} fill="#82ca9d" />
+              <Scatter
+                name="Phenotypes"
+                data={phenotypes}
+                fill="#82ca9d"
+                fillOpacity={0.5}
+              />
             </ScatterChart>
           </ResponsiveContainer>
         </div>
