@@ -16,18 +16,6 @@ interface PhenotypeScatterPlotsProps {
   data: PhenotypeSummary;
 }
 
-function formatValue(value: any, name: any) {
-  let formattedName = name;
-  if (name === "t") {
-    formattedName = "True";
-  } else if (name === "a") {
-    formattedName = "Approx";
-  } else if (name === "n") {
-    formattedName = "N";
-  }
-  return [value, formattedName];
-}
-
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -133,7 +121,6 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <ZAxis type="number" dataKey="n" />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
-                formatter={formatValue}
                 content={<CustomTooltip />}
               />
               <ReferenceLine
