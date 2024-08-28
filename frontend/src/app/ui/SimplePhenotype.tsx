@@ -165,8 +165,8 @@ export default function SimplePhenotypeBuilder() {
     return <div className="text-red-600 text-center">{error}</div>;
   }
 
-  return (
-    <div className="bg-white shadow-md rounded-lg p-6 items-center">
+  function CohortSelector() {
+    return (
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Select Cohort</h2>
         <div className="flex flex-wrap gap-2">
@@ -190,58 +190,122 @@ export default function SimplePhenotypeBuilder() {
           ))}
         </div>
       </div>
-      {phenotype.map((node, index) => (
-        <div className="ml-4 flex-1 flex-row gap-2">
-          {index > 0 && <b className="text-blue-600">AND </b>}
-          {node.negated && jobStatus === null && (
-            <button
-              onClick={() => {
-                setPhenotype((prevPhenotype) => {
-                  const newPhenotype = [...prevPhenotype];
-                  newPhenotype[index].negated = false;
-                  return newPhenotype;
-                });
-              }}
-            >
-              <b className="mr-1 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
-                NOT
-              </b>
-            </button>
-          )}
-          {node.negated && jobStatus !== null && (
-            <b className="mr-1 p-1 text-red-600 bg-red-100 rounded">NOT</b>
-          )}
-          {node.feature.name} [{node.feature.code}]
-          {jobStatus === null && !node.negated && (
-            <button
-              onClick={() => {
-                setPhenotype((prevPhenotype) => {
-                  const newPhenotype = [...prevPhenotype];
-                  newPhenotype[index].negated = true;
-                  return newPhenotype;
-                });
-              }}
-              className="ml-6 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded"
-            >
-              Negate{" "}
-            </button>
-          )}
-          {jobStatus === null && (
-            <button
-              onClick={() => {
-                setPhenotype((prevPhenotype) => {
-                  const newPhenotype = [...prevPhenotype];
-                  newPhenotype.splice(index, 1);
-                  return newPhenotype;
-                });
-              }}
-              className="ml-2 p-1 rounded hover:bg-gray-200 active:bg-gray-300"
-            >
-              <MinusCircle size={20} />
-            </button>
-          )}
-        </div>
-      ))}
+    );
+  }
+
+  function PhenotypeBuilderDisplay() {
+    return (
+      <div>
+        {phenotype.map((node, index) => (
+          <div className="ml-4 flex-1 flex-row gap-2">
+            {index > 0 && <b className="text-blue-600">AND </b>}
+            {node.negated && jobStatus === null && (
+              <button
+                onClick={() => {
+                  setPhenotype((prevPhenotype) => {
+                    const newPhenotype = [...prevPhenotype];
+                    newPhenotype[index].negated = false;
+                    return newPhenotype;
+                  });
+                }}
+              >
+                <b className="mr-1 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
+                  NOT
+                </b>
+              </button>
+            )}
+            {node.negated && jobStatus !== null && (
+              <b className="mr-1 p-1 text-red-600 bg-red-100 rounded">NOT</b>
+            )}
+            {node.feature.name} [{node.feature.code}]
+            {jobStatus === null && !node.negated && (
+              <button
+                onClick={() => {
+                  setPhenotype((prevPhenotype) => {
+                    const newPhenotype = [...prevPhenotype];
+                    newPhenotype[index].negated = true;
+                    return newPhenotype;
+                  });
+                }}
+                className="ml-6 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded"
+              >
+                Negate{" "}
+              </button>
+            )}
+            {jobStatus === null && (
+              <button
+                onClick={() => {
+                  setPhenotype((prevPhenotype) => {
+                    const newPhenotype = [...prevPhenotype];
+                    newPhenotype.splice(index, 1);
+                    return newPhenotype;
+                  });
+                }}
+                className="ml-2 p-1 rounded hover:bg-gray-200 active:bg-gray-300"
+              >
+                <MinusCircle size={20} />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function JobStatusBoxes() {
+    return (
+      <div className="flex items-center bg-gray-100 p-2 rounded-lg">
+        {(jobStatus === "submitting" || jobStatus === "queued") && (
+          <Loader className="animate-spin mr-2" size={20} />
+        )}
+        {jobStatus === "done" && (
+          <CheckCircle className="mr-2 text-green-600" size={20} />
+        )}
+        {jobStatus === "error" && (
+          <XCircle className="mr-2 text-red-600" size={20} />
+        )}
+        <span className="text-gray-700">
+          {jobStatus === "queued" && "GWAS job queued..."}
+          {jobStatus === "done" && "GWAS job completed."}
+          {jobStatus === "error" && "GWAS job failed. Please try again."}
+        </span>
+      </div>
+    );
+  }
+
+  function GWASButtons() {
+    return (
+      <div className="flex flex-wrap gap-4 mb-6">
+        {phenotype.length > 0 && (
+          <button
+            onClick={() => {
+              handleRunGWAS();
+            }}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
+          >
+            <Play className="mr-2" size={20} />
+            Run GWAS
+          </button>
+        )}
+        {jobStatus && <JobStatusBoxes />}
+        {jobStatus && jobStatus === "done" && (
+          <div>
+            <a href={downloadUrl!} download>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
+                <CheckCircle className="mr-2" size={20} />
+                Download Results
+              </button>
+            </a>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white shadow-md rounded-lg p-6 items-center">
+      <CohortSelector />
+      <PhenotypeBuilderDisplay />
       <br />
       {selectedCohort && jobStatus === null && (
         <Select
@@ -261,47 +325,7 @@ export default function SimplePhenotypeBuilder() {
           className="mb-2"
         />
       )}
-      <div className="flex flex-wrap gap-4 mb-6">
-        {phenotype.length > 0 && (
-          <button
-            onClick={() => {
-              handleRunGWAS();
-            }}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
-          >
-            <Play className="mr-2" size={20} />
-            Run GWAS
-          </button>
-        )}
-        {jobStatus && (
-          <div className="flex items-center bg-gray-100 p-2 rounded-lg">
-            {(jobStatus === "submitting" || jobStatus === "queued") && (
-              <Loader className="animate-spin mr-2" size={20} />
-            )}
-            {jobStatus === "done" && (
-              <CheckCircle className="mr-2 text-green-600" size={20} />
-            )}
-            {jobStatus === "error" && (
-              <XCircle className="mr-2 text-red-600" size={20} />
-            )}
-            <span className="text-gray-700">
-              {jobStatus === "queued" && "GWAS job queued..."}
-              {jobStatus === "done" && "GWAS job completed."}
-              {jobStatus === "error" && "GWAS job failed. Please try again."}
-            </span>
-          </div>
-        )}
-        {jobStatus && jobStatus === "done" && (
-          <div>
-            <a href={downloadUrl!} download>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
-                <CheckCircle className="mr-2" size={20} />
-                Download Results
-              </button>
-            </a>
-          </div>
-        )}
-      </div>
+      <GWASButtons />
       {summary && (
         <div className="mb-6">
           <PhenotypeScatterPlots data={summary} />
