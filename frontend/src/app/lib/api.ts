@@ -61,9 +61,11 @@ export async function fetchFeatures(
 export async function validatePhenotype(
   url: string,
   phenotypeDefinition: string,
+  cohort: Cohort,
 ): Promise<ValidationResponse> {
   const myUrl = new URL(`${url}/api/phenotype`);
   myUrl.searchParams.set("phenotype_definition", phenotypeDefinition);
+  myUrl.searchParams.set("cohort_id", cohort.id.toString());
   const response = await fetch(myUrl.href, {
     method: "PUT",
     headers: {
