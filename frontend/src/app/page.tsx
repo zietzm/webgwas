@@ -7,23 +7,20 @@ import SimplePhenotypeBuilder, {
 function headerInformation() {
   return (
     <div className="mb-6 text-gray-600 dark:text-gray-400">
-      <p>
-        A tool for running Genome-Wide Association Studies (GWAS) on arbitrary
-        phenotypes.
+      <p className="text-xl font-bold text-center mb-8 text-indigo-800">
+        Online Genome-Wide Association Studies (GWAS) on arbitrary phenotypes
       </p>
       <p>
-        Use the{" "}
         <a
           href="https://pan.ukbb.broadinstitute.org/"
           className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
         >
           Pan-UK Biobank
         </a>{" "}
-        to download GWAS summary statistics for a simple phenotype (e.g.
-        hypertension defined as ICD-10: I10). If you want GWAS summary
-        statistics for a more complicated phenotype definition (e.g.
-        hypertension defined as either ICD-10 I10 or Phecode 401), then WebGWAS
-        is the appropriate tool!
+        provides GWAS summary statistics for simple phenotypes (e.g.
+        hypertension defined as ICD-10: I10).{" "}
+        <b className="text-indigo-600">WebGWAS</b> provides summary statistics
+        for arbitrary phenotypes, including complex definitions.
       </p>
     </div>
   );
@@ -73,9 +70,6 @@ function accordionUsage() {
 export default function Home() {
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-8 text-indigo-800">
-        WebGWAS Phenotype Builder
-      </h1>
       {headerInformation()}
       {accordionUsage()}
       <br />
