@@ -6,6 +6,7 @@ import {
   isConstant,
   Feature,
   PhenotypeSummary,
+  ListNode,
 } from "./types";
 
 export interface PostGWASResponse {
@@ -176,15 +177,22 @@ export function convertTreeToRPN(node: PhenotypeNode): string {
   }
 }
 
-export function convertListToRPN(list: Feature[]): string {
+export function convertListToRPN(list: ListNode[]): string {
   let startState = true;
   let result = "";
   for (const node of list) {
     if (startState) {
-      result += convertFeaturetoRPN(node);
+      result += convertFeaturetoRPN(node.feature);
+      if (node.negated) {
+        result += " `NOT`";
+      }
       startState = false;
     } else {
-      result += " " + convertFeaturetoRPN(node) + " `AND`";
+      result += " " + convertFeaturetoRPN(node.feature);
+      if (node.negated) {
+        result += " `NOT`";
+      }
+      result += " `AND`";
     }
   }
   return result;

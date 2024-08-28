@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Play, CheckCircle, Loader, XCircle, MinusCircle } from "lucide-react";
 import Select from "react-select";
-import { Cohort, Feature, PhenotypeSummary } from "../lib/types";
+import { Cohort, Feature, ListNode, PhenotypeSummary } from "../lib/types";
 import Image from "next/image";
 import {
   fetchCohorts,
@@ -52,7 +52,7 @@ export default function SimplePhenotypeBuilder() {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [selectedCohort, setSelectedCohort] = useState<Cohort | null>(null);
   const [features, setFeatures] = useState<Feature[]>([]);
-  const [phenotype, setPhenotype] = useState<Feature[]>([]);
+  const [phenotype, setPhenotype] = useState<ListNode[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState("");
   const [summary, setSummary] = useState<PhenotypeSummary | null>(null);
@@ -193,7 +193,39 @@ export default function SimplePhenotypeBuilder() {
       {phenotype.map((node, index) => (
         <div className="ml-4 flex-1 flex-row gap-2">
           {index > 0 && <b className="text-blue-600">AND </b>}
-          {node.name} [{node.code}]
+          {node.negated && jobStatus === null && (
+            <button
+              onClick={() => {
+                setPhenotype((prevPhenotype) => {
+                  const newPhenotype = [...prevPhenotype];
+                  newPhenotype[index].negated = false;
+                  return newPhenotype;
+                });
+              }}
+            >
+              <b className="mr-1 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
+                NOT
+              </b>
+            </button>
+          )}
+          {node.negated && jobStatus !== null && (
+            <b className="mr-1 p-1 text-red-600 bg-red-100 rounded">NOT</b>
+          )}
+          {node.feature.name} [{node.feature.code}]
+          {jobStatus === null && !node.negated && (
+            <button
+              onClick={() => {
+                setPhenotype((prevPhenotype) => {
+                  const newPhenotype = [...prevPhenotype];
+                  newPhenotype[index].negated = true;
+                  return newPhenotype;
+                });
+              }}
+              className="ml-6 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded"
+            >
+              Negate{" "}
+            </button>
+          )}
           {jobStatus === null && (
             <button
               onClick={() => {
@@ -216,7 +248,11 @@ export default function SimplePhenotypeBuilder() {
           options={features}
           closeMenuOnSelect={false}
           onChange={(selectedOption) => {
-            setPhenotype([...phenotype, selectedOption as Feature]);
+            const node: ListNode = {
+              feature: selectedOption as Feature,
+              negated: false,
+            };
+            setPhenotype([...phenotype, node]);
           }}
           value={null}
           getOptionLabel={(option) => `${option!.name} [${option!.code}]`}

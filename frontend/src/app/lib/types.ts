@@ -29,6 +29,11 @@ export interface PhenotypeNode {
   children: PhenotypeNode[];
 }
 
+export interface ListNode {
+  feature: Feature;
+  negated: boolean;
+}
+
 export interface ApproximatePhenotypeValues {
   t: number;
   a: number;
