@@ -113,7 +113,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 dataKey="t"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "Phenotype fit (R<sup>2</sup>)",
+                  value: "Phenotype fit (R^2)",
                   position: "bottom",
                   offset: 0,
                 }}
