@@ -29,6 +29,18 @@ export interface PhenotypeNode {
   children: PhenotypeNode[];
 }
 
+export interface ApproximatePhenotypeValues {
+  t: number;
+  a: number;
+}
+
+export interface PhenotypeSummary {
+  phenotype_definition: string;
+  cohort_name: string;
+  phenotypes: ApproximatePhenotypeValues[];
+  rsquared: number;
+}
+
 export function isFeature(p: any): p is Feature {
   return (
     p &&

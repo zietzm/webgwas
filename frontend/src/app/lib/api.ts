@@ -5,6 +5,7 @@ import {
   isOperator,
   isConstant,
   Feature,
+  PhenotypeSummary,
 } from "./types";
 
 export interface PostGWASResponse {
@@ -77,6 +78,27 @@ export async function validatePhenotype(
   }
   const result = await response.json();
   return result as ValidationResponse;
+}
+
+export async function getPhenotypeSummary(
+  url: string,
+  phenotypeDefinition: string,
+  selectedCohort: Cohort,
+): Promise<PhenotypeSummary> {
+  const myUrl = new URL(`${url}/api/phenotype`);
+  myUrl.searchParams.set("phenotype_definition", phenotypeDefinition);
+  myUrl.searchParams.set("cohort_name", selectedCohort!.name);
+  const response = await fetch(myUrl.href, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Failed to get phenotype summary");
+  }
+  const result = await response.json();
+  return result as PhenotypeSummary;
 }
 
 export async function runGWAS(
