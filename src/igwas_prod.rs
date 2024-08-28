@@ -338,18 +338,24 @@ pub fn run_igwas(
     output_path: &str,
     batch_size: usize,
 ) -> Result<()> {
+    debug!("Reading input file");
     let reader = get_reader(input_path, batch_size)?;
+    debug!("Opening output file");
     let mut writer = get_writer(output_path)?;
 
-    debug!("Starting IGWAS");
+    debug!("Reading the record batch");
     for record_batch in reader {
-        debug!("Processing record batch");
+        debug!("Finished reading the first record batch");
         match record_batch {
             Ok(record_batch) => {
+                debug!("Computing batch stats");
                 let running_stats = compute_batch_stats_running(&record_batch, projection)?;
+                debug!("Computing batch results");
                 let result_stats =
                     compute_batch_results(running_stats, projection_variance, n_covariates)?;
+                debug!("Converting results to record batch");
                 let result_batch = results_to_record_batch(result_stats)?;
+                debug!("Writing record batch");
                 writer.write(&result_batch)?;
             }
             Err(e) => return Err(e.into()),
