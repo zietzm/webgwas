@@ -337,28 +337,22 @@ pub fn run_igwas(
     input_path: &str,
     output_path: &str,
     batch_size: usize,
-) -> PyResult<()> {
-    let reader =
-        get_reader(input_path, batch_size).map_err(|e| PyValueError::new_err(format!("{e}")))?;
-    let mut writer = get_writer(output_path).map_err(|e| PyValueError::new_err(format!("{e}")))?;
+) -> Result<()> {
+    let reader = get_reader(input_path, batch_size)?;
+    let mut writer = get_writer(output_path)?;
 
     debug!("Starting IGWAS");
     for record_batch in reader {
         debug!("Processing record batch");
         match record_batch {
             Ok(record_batch) => {
-                let running_stats = compute_batch_stats_running(&record_batch, &projection)
-                    .map_err(|e| PyValueError::new_err(format!("{e}")))?;
+                let running_stats = compute_batch_stats_running(&record_batch, projection)?;
                 let result_stats =
-                    compute_batch_results(running_stats, projection_variance, n_covariates)
-                        .map_err(|e| PyValueError::new_err(format!("{e}")))?;
-                let result_batch = results_to_record_batch(result_stats)
-                    .map_err(|e| PyValueError::new_err(format!("{e}")))?;
-                writer
-                    .write(&result_batch)
-                    .map_err(|e| PyValueError::new_err(format!("{e}")))?;
+                    compute_batch_results(running_stats, projection_variance, n_covariates)?;
+                let result_batch = results_to_record_batch(result_stats)?;
+                writer.write(&result_batch)?;
             }
-            Err(e) => return Err(PyValueError::new_err(format!("{e}"))),
+            Err(e) => return Err(e.into()),
         }
     }
     Ok(())

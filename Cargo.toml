@@ -17,7 +17,7 @@ log = "0.4.22"
 mdav = { git = "https://github.com/zietzm/mdav", version = "0.2.1" }
 numpy = "0.21.0"
 parquet = "52.2.0"
-pyo3 = "0.21.0"
+pyo3 = { version = "0.21.0", features = ["anyhow"] }
 pyo3-log = "0.11.0"
 serde = { version = "1.0.208", features = ["derive"] }
 zstd = "0.13.2"
