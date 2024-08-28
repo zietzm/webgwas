@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Play, CheckCircle, Loader, XCircle, MinusCircle } from "lucide-react";
 import Select from "react-select";
-import { Cohort, Feature } from "../lib/types";
+import { Cohort, Feature, PhenotypeSummary } from "../lib/types";
 import Image from "next/image";
 import {
   fetchCohorts,
@@ -9,7 +9,9 @@ import {
   runGWAS,
   getResults,
   fetchFeatures,
+  getPhenotypeSummary,
 } from "../lib/api";
+import PhenotypeScatterPlots from "./PhenotypeSummary";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -53,6 +55,7 @@ export default function SimplePhenotypeBuilder() {
   const [phenotype, setPhenotype] = useState<Feature[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState("");
+  const [summary, setSummary] = useState<PhenotypeSummary | null>(null);
   const [jobStatus, setJobStatus] = useState<
     "submitting" | "queued" | "done" | "error" | null
   >(null);
@@ -99,6 +102,12 @@ export default function SimplePhenotypeBuilder() {
     try {
       setJobStatus("submitting");
       const phenotypeDefinition = convertListToRPN(phenotype);
+      const phenotypeSummary = await getPhenotypeSummary(
+        API_URL,
+        phenotypeDefinition,
+        selectedCohort,
+      );
+      setSummary(phenotypeSummary);
       const result = await runGWAS(
         API_URL,
         phenotypeDefinition,
@@ -157,7 +166,7 @@ export default function SimplePhenotypeBuilder() {
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
+    <div className="bg-white shadow-md rounded-lg p-6 items-center">
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-4">Select Cohort</h2>
         <div className="flex flex-wrap gap-2">
@@ -168,6 +177,7 @@ export default function SimplePhenotypeBuilder() {
                 setSelectedCohort(cohort);
                 setPhenotype([]);
                 setJobStatus(null);
+                setSummary(null);
               }}
               className={`py-2 px-4 rounded-full transition-colors ${
                 selectedCohort === cohort
@@ -256,6 +266,11 @@ export default function SimplePhenotypeBuilder() {
           </div>
         )}
       </div>
+      {summary && (
+        <div className="mb-6">
+          <PhenotypeScatterPlots data={summary} />
+        </div>
+      )}
     </div>
   );
 }
