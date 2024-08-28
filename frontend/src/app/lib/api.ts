@@ -85,9 +85,9 @@ export async function getPhenotypeSummary(
   phenotypeDefinition: string,
   selectedCohort: Cohort,
 ): Promise<PhenotypeSummary> {
-  const myUrl = new URL(`${url}/api/phenotype`);
+  const myUrl = new URL(`${url}/api/phenotype_summary`);
   myUrl.searchParams.set("phenotype_definition", phenotypeDefinition);
-  myUrl.searchParams.set("cohort_name", selectedCohort!.name);
+  myUrl.searchParams.set("cohort_id", selectedCohort!.id.toString());
   const response = await fetch(myUrl.href, {
     method: "GET",
     headers: {
