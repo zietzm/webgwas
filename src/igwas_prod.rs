@@ -331,7 +331,7 @@ pub fn get_writer(path: &str) -> Result<arrow::csv::Writer<AutoFinishEncoder<Buf
 #[pyfunction]
 #[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path, batch_size = 100000))]
 pub fn run_igwas(
-    projection: PyRef<'_, Projection>,
+    projection: &Projection,
     projection_variance: f32,
     n_covariates: usize,
     input_path: &str,
