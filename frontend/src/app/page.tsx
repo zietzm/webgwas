@@ -13,7 +13,7 @@ function headerInformation() {
       <p>
         <a
           href="https://pan.ukbb.broadinstitute.org/"
-          className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
+          className="underline text-indigo-600 hover:text-blue-800 visited:text-purple-600"
         >
           Pan-UK Biobank
         </a>{" "}
