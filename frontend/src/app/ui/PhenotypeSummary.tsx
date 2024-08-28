@@ -67,6 +67,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <XAxis
                 type="number"
                 dataKey="t"
+                tick={{ fontSize: 12 }}
                 label={{
                   value: "True phenotype",
                   position: "bottom",
@@ -76,6 +77,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <YAxis
                 type="number"
                 dataKey="a"
+                tick={{ fontSize: 12 }}
                 label={{
                   value: "Approximate phenotype",
                   angle: -90,
@@ -109,6 +111,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <XAxis
                 type="number"
                 dataKey="t"
+                tick={{ fontSize: 12 }}
                 label={{
                   value: "True phenotype",
                   position: "bottom",
@@ -118,6 +121,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <YAxis
                 type="number"
                 dataKey="a"
+                tick={{ fontSize: 12 }}
                 label={{
                   value: "Approximate phenotype",
                   angle: -90,
