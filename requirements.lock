@@ -12,7 +12,7 @@
 -e file:.
 annotated-types==0.7.0
     # via pydantic
-igwas @ git+https://github.com/tatonetti-lab/indirect-gwas@3b85a937d0b13494378eecab4f25f3ffc1f787fd
+igwas @ git+https://github.com/tatonetti-lab/indirect-gwas@e0546ff0fe39624cfab9bd02cec80dcdd14e5af7
     # via webgwas
 numpy==2.1.0
     # via igwas

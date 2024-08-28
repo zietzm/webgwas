@@ -72,7 +72,7 @@ idna==3.7
     # via httpx
     # via jsonschema
     # via requests
-igwas @ git+https://github.com/tatonetti-lab/indirect-gwas@3b85a937d0b13494378eecab4f25f3ffc1f787fd
+igwas @ git+https://github.com/tatonetti-lab/indirect-gwas@e0546ff0fe39624cfab9bd02cec80dcdd14e5af7
     # via webgwas
 iniconfig==2.0.0
     # via pytest
@@ -302,7 +302,6 @@ typer==0.12.3
 types-python-dateutil==2.9.0.20240316
     # via arrow
 typing-extensions==4.12.2
-    # via ipython
     # via pydantic
     # via pydantic-core
     # via typer

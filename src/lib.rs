@@ -10,6 +10,8 @@ use igwas_prod::{run_igwas, Projection};
 /// Module for low-level functionality in Rust.
 #[pymodule]
 fn _lowlevel(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    pyo3_log::init();
+
     m.add_function(wrap_pyfunction!(mdav_impl, m)?)?;
     m.add_function(wrap_pyfunction!(igwas_impl, m)?)?;
     m.add_class::<Projection>()?;

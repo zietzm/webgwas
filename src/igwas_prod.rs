@@ -1,3 +1,4 @@
+use log::debug;
 use std::{fs::File, io::BufWriter, sync::Arc};
 
 use anyhow::{anyhow, Result};
@@ -341,7 +342,9 @@ pub fn run_igwas(
         get_reader(input_path, batch_size).map_err(|e| PyValueError::new_err(format!("{e}")))?;
     let mut writer = get_writer(output_path).map_err(|e| PyValueError::new_err(format!("{e}")))?;
 
+    debug!("Starting IGWAS");
     for record_batch in reader {
+        debug!("Processing record batch");
         match record_batch {
             Ok(record_batch) => {
                 let running_stats = compute_batch_stats_running(&record_batch, &projection)
