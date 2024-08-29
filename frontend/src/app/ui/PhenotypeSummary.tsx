@@ -35,12 +35,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
 }) => {
   const { phenotypes, rsquared } = data;
 
-  const minX = Math.min(...phenotypes.map((p) => p.t));
-  const maxX = Math.max(...phenotypes.map((p) => p.t));
-  const minY = Math.min(...phenotypes.map((p) => p.a));
-  const maxY = Math.max(...phenotypes.map((p) => p.a));
-  const minValue = Math.min(minX, minY);
-  const maxValue = Math.max(maxX, maxY);
+  const minValue = Math.min(...phenotypes.map((p) => Math.min(p.t, p.a)));
+  const maxValue = Math.max(...phenotypes.map((p) => Math.max(p.t, p.a)));
 
   return (
     <div className="flex flex-col space-y-4">
