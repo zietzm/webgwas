@@ -39,6 +39,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   const maxX = Math.max(...phenotypes.map((p) => p.t));
   const minY = Math.min(...phenotypes.map((p) => p.a));
   const maxY = Math.max(...phenotypes.map((p) => p.a));
+  const minValue = Math.min(minX, minY);
+  const maxValue = Math.max(maxX, maxY);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -89,8 +91,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 stroke="grey"
                 strokeDasharray="3 3"
                 segment={[
-                  { x: minX, y: minY },
-                  { x: maxX, y: maxY },
+                  { x: minValue, y: minValue },
+                  { x: maxValue, y: maxValue },
                 ]}
                 ifOverflow="hidden"
               />
@@ -132,8 +134,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 stroke="grey"
                 strokeDasharray="3 3"
                 segment={[
-                  { x: minX, y: minY },
-                  { x: maxX, y: maxY },
+                  { x: minValue, y: minValue },
+                  { x: maxValue, y: maxValue },
                 ]}
                 ifOverflow="hidden"
               />

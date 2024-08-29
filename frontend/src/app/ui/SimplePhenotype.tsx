@@ -197,7 +197,7 @@ export default function SimplePhenotypeBuilder() {
     return (
       <div>
         {phenotype.map((node, index) => (
-          <div className="ml-4 flex-1 flex-row gap-2">
+          <div key={index} className="ml-4 flex-1 flex-row gap-2">
             {index > 0 && <b className="text-blue-600">AND </b>}
             {node.negated && jobStatus === null && (
               <button
