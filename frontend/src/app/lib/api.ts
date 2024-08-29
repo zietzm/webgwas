@@ -37,7 +37,6 @@ export async function fetchCohorts(url: string): Promise<Cohort[]> {
     throw new Error("Failed to fetch cohorts");
   }
   const data = await response.json();
-  console.log(data);
   return data as Cohort[];
 }
 
