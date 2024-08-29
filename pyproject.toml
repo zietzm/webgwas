@@ -1,6 +1,6 @@
 [project]
 name = "webgwas"
-version = "0.1.15"
+version = "0.2.0"
 description = "Add your description here"
 authors = [
     { name = "zietzm", email = "michael.zietz@gmail.com" }
