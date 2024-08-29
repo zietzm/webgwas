@@ -46,6 +46,32 @@ fn mdav_impl<'py>(
     Ok(PyArray2::from_vec2_bound(py, &result)?)
 }
 
+#[pyclass]
+pub struct ColumnSpec {
+    #[pyo3(get, set)]
+    variant_id: String,
+    #[pyo3(get, set)]
+    beta: String,
+    #[pyo3(get, set)]
+    std_error: String,
+    #[pyo3(get, set)]
+    sample_size: String,
+}
+
+#[pyclass]
+pub struct IGWASOptions {
+    #[pyo3(get, set)]
+    chunksize: usize,
+    #[pyo3(get, set)]
+    num_threads: usize,
+    #[pyo3(get, set)]
+    capacity: usize,
+    #[pyo3(get, set)]
+    compress: bool,
+    #[pyo3(get, set)]
+    quiet: bool,
+}
+
 #[pyfunction]
 fn igwas_impl(
     projection_matrix: String,
@@ -53,15 +79,8 @@ fn igwas_impl(
     gwas_results: Vec<String>,
     output_file: String,
     num_covar: usize,
-    chunksize: usize,
-    variant_id: String,
-    beta: String,
-    std_error: String,
-    sample_size: String,
-    num_threads: usize,
-    capacity: usize,
-    compress: bool,
-    quiet: bool,
+    column_names: &ColumnSpec,
+    options: &IGWASOptions,
 ) -> PyResult<()> {
     let args = InputArguments {
         projection_matrix,
@@ -69,15 +88,15 @@ fn igwas_impl(
         gwas_results,
         output_file,
         num_covar,
-        chunksize,
-        variant_id,
-        beta,
-        std_error,
-        sample_size,
-        num_threads,
-        capacity,
-        compress,
-        quiet,
+        chunksize: options.chunksize,
+        variant_id: column_names.variant_id.clone(),
+        beta: column_names.beta.clone(),
+        std_error: column_names.std_error.clone(),
+        sample_size: column_names.sample_size.clone(),
+        num_threads: options.num_threads,
+        capacity: options.capacity,
+        compress: options.compress,
+        quiet: options.quiet,
         write_phenotype_id: false,
     };
     match run_cli(args) {
