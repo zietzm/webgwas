@@ -1,14 +1,9 @@
 use log::debug;
-use std::{fs::File, io::BufWriter, sync::Arc};
+use std::{fs::File, io::BufWriter};
 
-use anyhow::{anyhow, Result};
-use arrow::{
-    array::{Float32Array, Int32Array, LargeStringArray, StructArray},
-    datatypes::{DataType, Field, Schema},
-    record_batch::RecordBatch,
-};
+use anyhow::{anyhow, Context, Result};
 use itertools::izip;
-use parquet::arrow::arrow_reader::{ParquetRecordBatchReader, ParquetRecordBatchReaderBuilder};
+use polars::prelude::*;
 use pyo3::{exceptions::PyValueError, prelude::*};
 use zstd::stream::AutoFinishEncoder;
 
@@ -126,81 +121,82 @@ impl ResultStats {
 }
 
 pub struct FeatureStats {
-    pub variant_id: LargeStringArray,
-    pub beta: Float32Array,
-    pub genotype_variance: Float32Array,
-    pub degrees_of_freedom: Int32Array,
+    pub variant_id: Option<Vec<String>>,
+    pub beta: Float32Chunked,
+    pub genotype_variance: Float32Chunked,
+    pub degrees_of_freedom: Int32Chunked,
 }
 
-fn get_columns(record_batch: &RecordBatch, feature_id: &str) -> Result<FeatureStats> {
-    let feature_column = record_batch
-        .column_by_name(feature_id)
-        .ok_or_else(|| anyhow!("Feature column not found in record batch."))?
-        .as_any()
-        .downcast_ref::<StructArray>()
-        .ok_or_else(|| anyhow!("Feature column {} is not a StructArray.", feature_id))?;
-
-    let variant_ids = record_batch
-        .column_by_name("variant_id")
-        .ok_or_else(|| anyhow!("Record batch does not have a variant_id column.",))?
-        .as_any()
-        .downcast_ref::<LargeStringArray>()
-        .ok_or_else(|| anyhow!("Couldn't cast variant_id column to StringArray.",))?;
-    let betas = feature_column
-        .column_by_name("beta")
-        .ok_or_else(|| anyhow!("Feature column does not have a beta column."))?
-        .as_any()
-        .downcast_ref::<Float32Array>()
-        .ok_or_else(|| anyhow!("Couldn't cast feature column - beta column to Float32Array."))?;
-    let genotype_variances = feature_column
-        .column_by_name("genotype_variance")
-        .ok_or_else(|| anyhow!("Feature column does not have a genotype_variance column.",))?
-        .as_any()
-        .downcast_ref::<Float32Array>()
-        .ok_or_else(|| {
-            anyhow!("Couldn't cast feature column - genotype_variance column to Float32Array.",)
+fn get_columns(df: &DataFrame, feature_id: &str, needs_variant_id: bool) -> Result<FeatureStats> {
+    let feature_column_df = df
+        .column(feature_id)
+        .with_context(|| anyhow!("Feature column not found."))?
+        .struct_()
+        .with_context(|| anyhow!("Feature column {} is not a struct", feature_id))?
+        .clone()
+        .unnest();
+    let betas = feature_column_df
+        .column("beta")
+        .with_context(|| anyhow!("Feature column does not have a beta column."))?
+        .f32()
+        .with_context(|| anyhow!("Couldn't cast feature column - beta column to Float32Array."))?;
+    let genotype_variances = feature_column_df
+        .column("genotype_variance")
+        .with_context(|| anyhow!("Feature column does not have a genotype_variance column."))?
+        .f32()
+        .with_context(|| {
+            anyhow!("Couldn't cast feature column - genotype_variance column to Float32Array.")
         })?;
-    let degrees_of_freedom = feature_column
-        .column_by_name("degrees_of_freedom")
-        .ok_or_else(|| anyhow!("Feature column does not have a degrees_of_freedom column.",))?
-        .as_any()
-        .downcast_ref::<Int32Array>()
-        .ok_or_else(|| {
-            anyhow!("Couldn't cast feature column - degrees_of_freedom column to Int32Array.",)
+    let degrees_of_freedom = feature_column_df
+        .column("degrees_of_freedom")
+        .with_context(|| anyhow!("Feature column does not have a degrees_of_freedom column."))?
+        .i32()
+        .with_context(|| {
+            anyhow!("Couldn't cast feature column - degrees_of_freedom column to Int32Array.")
         })?;
-
+    let variant_ids = if needs_variant_id {
+        let variant_ids = df
+            .column("variant_id")
+            .with_context(|| anyhow!("Feature column does not have a variant_id column."))?
+            .str()
+            .with_context(|| anyhow!("Couldn't cast variant_id column to StringArray."))?
+            .iter()
+            .map(|s| s.unwrap().to_string())
+            .collect::<Vec<String>>();
+        Some(variant_ids)
+    } else {
+        None
+    };
     Ok(FeatureStats {
-        variant_id: variant_ids.clone(),
+        variant_id: variant_ids,
         beta: betas.clone(),
         genotype_variance: genotype_variances.clone(),
         degrees_of_freedom: degrees_of_freedom.clone(),
     })
 }
 
-pub fn compute_batch_stats_running(
-    record_batch: &RecordBatch,
-    projection: &Projection,
-) -> Result<RunningStats> {
-    let n_variants = record_batch.num_rows();
+pub fn compute_batch_stats_running(df: DataFrame, projection: &Projection) -> Result<RunningStats> {
+    let n_variants = df.height();
     let mut running_stats = RunningStats::new(n_variants);
 
-    for (feature_id, projection_coefficient) in projection
+    for (feature_idx, (feature_id, projection_coefficient)) in projection
         .feature_id
         .iter()
         .zip(projection.feature_coefficient.iter())
         .filter(|(_, &c)| c != 0.0)
+        .enumerate()
     {
-        let feature_stats = get_columns(record_batch, feature_id)?;
-
-        for (i, (variant_id, beta, genotype_variance, degrees_of_freedom)) in izip!(
-            feature_stats.variant_id.iter(),
+        let feature_stats = get_columns(&df, feature_id, feature_idx == 0)?;
+        if let Some(variant_id) = feature_stats.variant_id {
+            running_stats.variant_id = variant_id
+        }
+        for (i, (beta, genotype_variance, degrees_of_freedom)) in izip!(
             feature_stats.beta.iter(),
             feature_stats.genotype_variance.iter(),
             feature_stats.degrees_of_freedom.iter(),
         )
         .enumerate()
         {
-            running_stats.variant_id[i] = variant_id.unwrap().to_string();
             running_stats.beta[i] += projection_coefficient * beta.unwrap();
             running_stats.genotype_variance[i] +=
                 genotype_variance.unwrap() / projection.n_features as f32;
@@ -274,36 +270,23 @@ pub fn compute_batch_results(
     })
 }
 
-pub fn results_to_record_batch(result_stats: ResultStats) -> Result<RecordBatch> {
-    let schema = Schema::new(vec![
-        Field::new("variant_id", DataType::LargeUtf8, false),
-        Field::new("beta", DataType::Float32, false),
-        Field::new("std_error", DataType::Float32, false),
-        Field::new("t_stat", DataType::Float32, false),
-        Field::new("neg_log_p_value", DataType::Float32, false),
-        Field::new("sample_size", DataType::Int32, false),
-        Field::new("allele_frequency", DataType::Float32, false),
-    ]);
-
-    let record_batch = RecordBatch::try_new(
-        Arc::new(schema),
-        vec![
-            Arc::new(LargeStringArray::from(result_stats.variant_id)),
-            Arc::new(Float32Array::from(result_stats.beta)),
-            Arc::new(Float32Array::from(result_stats.std_error)),
-            Arc::new(Float32Array::from(result_stats.t_stat)),
-            Arc::new(Float32Array::from(result_stats.neg_log_p_value)),
-            Arc::new(Int32Array::from(result_stats.sample_size)),
-            Arc::new(Float32Array::from(result_stats.allele_frequency)),
-        ],
-    )?;
-    Ok(record_batch)
+pub fn results_to_dataframe(result_stats: ResultStats) -> Result<DataFrame> {
+    let df = DataFrame::new(vec![
+        Series::new("variant_id", result_stats.variant_id),
+        Series::new("beta", result_stats.beta),
+        Series::new("std_error", result_stats.std_error),
+        Series::new("t_stat", result_stats.t_stat),
+        Series::new("neg_log_p_value", result_stats.neg_log_p_value),
+        Series::new("sample_size", result_stats.sample_size),
+        Series::new("allele_frequency", result_stats.allele_frequency),
+    ])?;
+    Ok(df)
 }
 
-pub fn get_reader(path: &str, batch_size: usize) -> Result<ParquetRecordBatchReader> {
+pub fn read_dataframe(path: &str) -> Result<DataFrame> {
     let input_file = File::open(path)?;
-    let builder = ParquetRecordBatchReaderBuilder::try_new(input_file)?.with_batch_size(batch_size);
-    Ok(builder.build()?)
+    let df = ParquetReader::new(input_file).finish()?;
+    Ok(df)
 }
 
 pub fn get_writer(path: &str) -> Result<arrow::csv::Writer<AutoFinishEncoder<BufWriter<File>>>> {
@@ -313,6 +296,16 @@ pub fn get_writer(path: &str) -> Result<arrow::csv::Writer<AutoFinishEncoder<Buf
     Ok(arrow::csv::WriterBuilder::new()
         .with_delimiter(b'\t')
         .build(compressed_writer))
+}
+
+pub fn write_dataframe(df: &mut DataFrame, path: &str) -> Result<()> {
+    let file = File::create(path)?;
+    let compressed_writer = zstd::Encoder::new(file, 3)?.auto_finish();
+    CsvWriter::new(compressed_writer)
+        .with_separator(b'\t')
+        .n_threads(16)
+        .finish(df)?;
+    Ok(())
 }
 
 /// Run Indirect GWAS
@@ -329,37 +322,23 @@ pub fn get_writer(path: &str) -> Result<arrow::csv::Writer<AutoFinishEncoder<Buf
 /// * `input_path` - Path to the input file (parquet)
 /// * `output_path` - Path to the output file (tsv.zst)
 #[pyfunction]
-#[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path, batch_size = 100000))]
+#[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path))]
 pub fn run_igwas(
     projection: &Projection,
     projection_variance: f32,
     n_covariates: usize,
     input_path: &str,
     output_path: &str,
-    batch_size: usize,
 ) -> Result<()> {
     debug!("Reading input file");
-    let reader = get_reader(input_path, batch_size)?;
-    debug!("Opening output file");
-    let mut writer = get_writer(output_path)?;
-
-    debug!("Reading the record batch");
-    for record_batch in reader {
-        debug!("Finished reading the first record batch");
-        match record_batch {
-            Ok(record_batch) => {
-                debug!("Computing batch stats");
-                let running_stats = compute_batch_stats_running(&record_batch, projection)?;
-                debug!("Computing batch results");
-                let result_stats =
-                    compute_batch_results(running_stats, projection_variance, n_covariates)?;
-                debug!("Converting results to record batch");
-                let result_batch = results_to_record_batch(result_stats)?;
-                debug!("Writing record batch");
-                writer.write(&result_batch)?;
-            }
-            Err(e) => return Err(e.into()),
-        }
-    }
+    let df = read_dataframe(input_path)?;
+    debug!("Computing batch stats");
+    let running_stats = compute_batch_stats_running(df, projection)?;
+    debug!("Computing batch results");
+    let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
+    debug!("Converting results to dataframe");
+    let mut results_df = results_to_dataframe(result_stats)?;
+    debug!("Writing results");
+    write_dataframe(&mut results_df, output_path)?;
     Ok(())
 }
