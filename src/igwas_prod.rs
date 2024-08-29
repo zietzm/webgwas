@@ -26,7 +26,10 @@ impl Projection {
                 "feature_id and feature_coefficient must have the same length.",
             ));
         }
-        let n_features = feature_coefficient.iter().filter(|&c| c != &0.0).count();
+        let n_features = feature_coefficient
+            .iter()
+            .filter(|&&c| c != 0.0_f32)
+            .count();
         let result = Projection {
             feature_id,
             feature_coefficient,
