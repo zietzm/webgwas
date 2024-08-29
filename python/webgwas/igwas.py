@@ -18,7 +18,6 @@ def igwas_prod(
     gwas_result_path: str,
     output_file_path: str,
     num_covar: int = 1,
-    batch_size: int = 100_000,
 ):
     projection_variance = projection_vector @ covariance_matrix @ projection_vector
     projection = Projection(
@@ -31,5 +30,4 @@ def igwas_prod(
         n_covariates=num_covar,
         input_path=gwas_result_path,
         output_path=output_file_path,
-        batch_size=batch_size,
     )
