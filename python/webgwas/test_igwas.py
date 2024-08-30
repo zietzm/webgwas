@@ -8,7 +8,6 @@ import polars as pl
 import pytest
 from igwas.igwas import igwas
 
-from webgwas.igwas import estimate_genotype_variance, igwas_prod
 
 
 @pytest.fixture
@@ -101,18 +100,8 @@ def setup_test_data(test_data, temp_dir):
     return _setup
 
 
-def perform_direct_gwas(genotype, phenotype, covariates):
-    X = np.column_stack((np.ones(len(genotype)), covariates, genotype))
-    beta = np.linalg.lstsq(X, phenotype, rcond=None)[0]
-    residuals = phenotype - X @ beta
-    sigma2 = np.sum(residuals**2) / (len(phenotype) - X.shape[1])
-    var_beta = sigma2 * np.linalg.inv(X.T @ X)[-1, -1]
-    std_error = np.sqrt(var_beta)
-    return beta[-1], std_error
-
-
-@pytest.mark.parametrize("compress", [False, True])
-def test_igwas_prod(setup_test_data, test_data, temp_dir, compress):
+@pytest.fixture
+def setup_test_data_igwas(setup_test_data, test_data, temp_dir, compress):
     gwas_results = setup_test_data(compress)
     suffix = ".csv.zst" if compress else ".csv"
     covariance_matrix = pd.read_csv(
@@ -165,17 +154,6 @@ def test_igwas_prod(setup_test_data, test_data, temp_dir, compress):
             full_gwas_df = full_gwas_df.join(gwas_df, on=["variant_id"])
 
     assert isinstance(full_gwas_df, pl.DataFrame)
-    full_gwas_df.write_parquet(os.path.join(temp_dir, "full_gwas.parquet"))
-
-    # Run using the production API
-    prod_output_file = os.path.join(temp_dir, f"igwas_prod_results{suffix}")
-    igwas_prod(
-        projection_vector=projection_matrix.iloc[:, 0],
-        covariance_matrix=covariance_matrix,
-        gwas_result_path=os.path.join(temp_dir, "full_gwas.parquet"),
-        output_file_path=prod_output_file,
-        num_covar=test_data["n_covariates"],
-    )
 
     # Run using the file API
     files_output_file = os.path.join(temp_dir, f"igwas_files_results{suffix}")
@@ -195,8 +173,57 @@ def test_igwas_prod(setup_test_data, test_data, temp_dir, compress):
         compress=compress,
         quiet=True,
     )
+    files_result_df = pl.read_csv(files_output_file, separator="\t")
+    return {
+        "files_result_df": files_result_df,
+        "full_gwas_df": full_gwas_df,
+        "covariance_matrix": covariance_matrix,
+        "projection_matrix": projection_matrix,
+        "suffix": suffix,
+    }
+
+
+def perform_direct_gwas(genotype, phenotype, covariates):
+    X = np.column_stack((np.ones(len(genotype)), covariates, genotype))
+    beta = np.linalg.lstsq(X, phenotype, rcond=None)[0]
+    residuals = phenotype - X @ beta
+    sigma2 = np.sum(residuals**2) / (len(phenotype) - X.shape[1])
+    var_beta = sigma2 * np.linalg.inv(X.T @ X)[-1, -1]
+    std_error = np.sqrt(var_beta)
+    return beta[-1], std_error
+
+
+@pytest.mark.parametrize("compress", [False, True])
+def test_igwas_prod(setup_test_data_igwas, test_data, temp_dir):
+    full_gwas_df = setup_test_data_igwas["full_gwas_df"]
+    full_gwas_df.write_parquet(os.path.join(temp_dir, "full_gwas.parquet"))
+
+    # Run using the production API
+    projection_matrix = setup_test_data_igwas["projection_matrix"]
+    covariance_matrix = setup_test_data_igwas["covariance_matrix"]
+    suffix = setup_test_data_igwas["suffix"]
+    prod_output_file = os.path.join(temp_dir, f"igwas_prod_results{suffix}")
+    igwas_prod(
+        projection_vector=projection_matrix.iloc[:, 0],
+        covariance_matrix=covariance_matrix,
+        gwas_result_path=os.path.join(temp_dir, "full_gwas.parquet"),
+        output_file_path=prod_output_file,
+        num_covar=test_data["n_covariates"],
+    )
 
     # Check that the results are the same
+    files_result_df = setup_test_data_igwas["files_result_df"]
+    prod_result_df = pl.read_csv(prod_output_file, separator="\t")
+    merged_result_df = prod_result_df.join(
+        files_result_df, on=["variant_id"], suffix="_files"
+    )
+    for col in ["beta", "std_error", "t_stat", "neg_log_p_value", "sample_size"]:
+        max_diff = (
+            (merged_result_df[col] - merged_result_df[col + "_files"]).abs().max()
+        )
+        assert max_diff == pytest.approx(
+            0.0, abs=1e-6
+        ), f"Max diff for {col}: {max_diff}"
     prod_result_df = pl.read_csv(prod_output_file, separator="\t")
     files_result_df = pl.read_csv(files_output_file, separator="\t")
     merged_result_df = prod_result_df.join(
