@@ -177,7 +177,7 @@ def type_check_nodes(nodes: list[Node]) -> None:
                     except IndexError:
                         raise ValueError(
                             f"Operator {node.name} expects {arity} operands"
-                        )
+                        ) from None
                     if not (isinstance(item, Constant) or isinstance(item, Field)):
                         raise ValueError(
                             f"Operator {node.name} expects {arity} operands"
