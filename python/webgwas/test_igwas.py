@@ -8,6 +8,7 @@ import polars as pl
 import pytest
 from igwas.igwas import igwas
 
+from webgwas.igwas import estimate_genotype_variance, igwas_prod, igwas_prod_df
 
 
 @pytest.fixture
@@ -224,8 +225,27 @@ def test_igwas_prod(setup_test_data_igwas, test_data, temp_dir):
         assert max_diff == pytest.approx(
             0.0, abs=1e-6
         ), f"Max diff for {col}: {max_diff}"
+
+
+@pytest.mark.parametrize("compress", [False, True])
+def test_igwas_prod_df(setup_test_data_igwas, test_data, temp_dir):
+    # Run using the production API
+    projection_matrix = setup_test_data_igwas["projection_matrix"]
+    covariance_matrix = setup_test_data_igwas["covariance_matrix"]
+    full_gwas_df = setup_test_data_igwas["full_gwas_df"]
+    suffix = setup_test_data_igwas["suffix"]
+    prod_output_file = os.path.join(temp_dir, f"igwas_prod_results{suffix}")
+    igwas_prod_df(
+        projection_vector=projection_matrix.iloc[:, 0],
+        covariance_matrix=covariance_matrix,
+        gwas_result_df=full_gwas_df,
+        output_file_path=prod_output_file,
+        num_covar=test_data["n_covariates"],
+    )
+
+    # Check that the results are the same
+    files_result_df = setup_test_data_igwas["files_result_df"]
     prod_result_df = pl.read_csv(prod_output_file, separator="\t")
-    files_result_df = pl.read_csv(files_output_file, separator="\t")
     merged_result_df = prod_result_df.join(
         files_result_df, on=["variant_id"], suffix="_files"
     )
