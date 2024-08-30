@@ -4,7 +4,7 @@ use igwas::{run_cli, InputArguments};
 use mdav::mdav;
 use pyo3::{exceptions::PyRuntimeError, prelude::*};
 
-use igwas_prod::{run_igwas, Projection};
+use igwas_prod::{run_igwas, run_igwas_df, Projection};
 
 /// Module for low-level functionality in Rust.
 #[pymodule]
@@ -15,6 +15,7 @@ fn _lowlevel(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(igwas_impl, m)?)?;
     m.add_class::<Projection>()?;
     m.add_function(wrap_pyfunction!(run_igwas, m)?)?;
+    m.add_function(wrap_pyfunction!(run_igwas_df, m)?)?;
     Ok(())
 }
 

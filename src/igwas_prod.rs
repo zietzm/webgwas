@@ -1,4 +1,5 @@
 use log::debug;
+use pyo3_polars::PyDataFrame;
 use std::{fs::File, io::BufWriter};
 
 use anyhow::{anyhow, Context, Result};
@@ -178,7 +179,10 @@ fn get_columns(df: &DataFrame, feature_id: &str, needs_variant_id: bool) -> Resu
     })
 }
 
-pub fn compute_batch_stats_running(df: DataFrame, projection: &Projection) -> Result<RunningStats> {
+pub fn compute_batch_stats_running(
+    df: &DataFrame,
+    projection: &Projection,
+) -> Result<RunningStats> {
     let n_variants = df.height();
     let mut running_stats = RunningStats::new(n_variants);
 
@@ -336,12 +340,32 @@ pub fn run_igwas(
     debug!("Reading input file");
     let df = read_dataframe(input_path)?;
     debug!("Computing batch stats");
-    let running_stats = compute_batch_stats_running(df, projection)?;
+    let running_stats = compute_batch_stats_running(&df, projection)?;
     debug!("Computing batch results");
     let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
     debug!("Converting results to dataframe");
     let mut results_df = results_to_dataframe(result_stats)?;
     debug!("Writing results");
     write_dataframe(&mut results_df, output_path)?;
+    Ok(())
+}
+
+#[pyfunction]
+#[pyo3(signature = (gwas_df, projection, projection_variance, n_covariates,  output_path))]
+pub fn run_igwas_df(
+    gwas_df: PyDataFrame,
+    projection: &Projection,
+    projection_variance: f32,
+    n_covariates: usize,
+    output_path: String,
+) -> Result<()> {
+    debug!("Computing batch stats");
+    let running_stats = compute_batch_stats_running(&(gwas_df.into()), projection)?;
+    debug!("Computing batch results");
+    let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
+    debug!("Converting results to dataframe");
+    let mut results_df = results_to_dataframe(result_stats)?;
+    debug!("Writing results");
+    write_dataframe(&mut results_df, &output_path)?;
     Ok(())
 }
