@@ -16,7 +16,6 @@ igwas = { git = "https://github.com/tatonetti-lab/indirect-gwas", rev = "4f46fa1
 itertools = "0.13.0"
 log = "0.4.22"
 mdav = { git = "https://github.com/zietzm/mdav", version = "0.2.1" }
-numpy = "0.21.0"
 parquet = "52.2.0"
 polars = { version = "0.42.0", features = ["dtype-struct", "parquet", "polars-io"] }
 pyo3 = { version = "0.21.0", features = ["anyhow"] }

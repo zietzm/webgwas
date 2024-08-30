@@ -1,10 +1,10 @@
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike
 
 from webgwas._lowlevel import mdav_impl
 
 
-def mdav(records: NDArray[np.float64], k: int) -> NDArray[np.float64]:
+def mdav(records: ArrayLike, k: int) -> ArrayLike:
     """Anonymize a set of records using the MDAV algorithm.
 
     MDAV ensures that every record is at least k-anonymous, meaning that

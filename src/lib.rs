@@ -2,7 +2,6 @@ pub mod igwas_prod;
 
 use igwas::{run_cli, InputArguments};
 use mdav::mdav;
-use numpy::{PyArray2, PyReadonlyArray2};
 use pyo3::{exceptions::PyRuntimeError, prelude::*};
 
 use igwas_prod::{run_igwas, Projection};
@@ -30,20 +29,8 @@ fn _lowlevel(m: &Bound<'_, PyModule>) -> PyResult<()> {
 ///
 /// A 2D array of records, where each row is a record and each column is a feature.
 #[pyfunction]
-fn mdav_impl<'py>(
-    py: Python<'py>,
-    records: PyReadonlyArray2<'py, f64>,
-    k: usize,
-) -> PyResult<Bound<'py, PyArray2<f64>>> {
-    let records_vec: Vec<Vec<f64>> = records
-        .as_array()
-        .outer_iter()
-        .map(|row| row.to_vec())
-        .collect();
-
-    let result = mdav::mdav(records_vec, k);
-
-    Ok(PyArray2::from_vec2_bound(py, &result)?)
+fn mdav_impl(records: Vec<Vec<f64>>, k: usize) -> Vec<Vec<f64>> {
+    mdav::mdav(records, k)
 }
 
 #[pyclass]
