@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ZAxis,
+  ReferenceDot,
 } from "recharts";
 import { PhenotypeSummary } from "../lib/types";
 
@@ -33,7 +34,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   data,
 }) => {
-  const { phenotypes, rsquared } = data;
+  const { phenotypes, rsquared, fit_quality } = data;
 
   const minValue = Math.min(...phenotypes.map((p) => Math.min(p.t, p.a)));
   const maxValue = Math.max(...phenotypes.map((p) => Math.max(p.t, p.a)));
@@ -41,10 +42,6 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   return (
     <div className="flex flex-col space-y-4">
       <h2 className="text-xl font-bold">Summary of the phenotype</h2>
-      <p>
-        Goodness of fit of the phenotype definition (R<sup>2</sup>):{" "}
-        {rsquared.toFixed(2)}
-      </p>
       <div className="flex flex-row space-x-2">
         <div className="w-1/2">
           <ResponsiveContainer width="100%" height={400}>
@@ -101,7 +98,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <CartesianGrid />
               <XAxis
                 type="number"
-                dataKey="t"
+                dataKey="p"
                 tick={{ fontSize: 12 }}
                 label={{
                   value: "Phenotype fit (R^2)",
@@ -111,7 +108,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               />
               <YAxis
                 type="number"
-                dataKey="a"
+                dataKey="g"
                 tick={{ fontSize: 12 }}
                 label={{
                   value: "GWAS log p-value fit (R^2)",
@@ -122,6 +119,12 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 }}
               />
               <ZAxis type="number" dataKey="n" />
+              <ReferenceLine
+                x={rsquared}
+                stroke="red"
+                r={10}
+                label={`R^2 = ${rsquared.toFixed(2)}`}
+              />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
                 content={<CustomTooltip />}
@@ -136,8 +139,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 ifOverflow="hidden"
               />
               <Scatter
-                name="Phenotypes"
-                data={phenotypes}
+                name="Fit Quality"
+                data={fit_quality}
                 fill="#82ca9d"
                 fillOpacity={0.5}
               />

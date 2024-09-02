@@ -39,11 +39,17 @@ export interface ApproximatePhenotypeValues {
   a: number;
 }
 
+export interface PhenotypeFitQuality {
+  p: number;
+  g: number;
+}
+
 export interface PhenotypeSummary {
   phenotype_definition: string;
   cohort_name: string;
   phenotypes: ApproximatePhenotypeValues[];
   rsquared: number;
+  fit_quality: PhenotypeFitQuality[];
 }
 
 export function isFeature(p: any): p is Feature {
