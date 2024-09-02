@@ -227,9 +227,10 @@ export default function SimplePhenotypeBuilder() {
                     return newPhenotype;
                   });
                 }}
-                className="ml-6 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded"
               >
-                Negate{" "}
+                <a className="ml-5 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
+                  Negate
+                </a>
               </button>
             )}
             {jobStatus === null && (
