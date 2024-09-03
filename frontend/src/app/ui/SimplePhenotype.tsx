@@ -38,8 +38,7 @@ export function simplePhenotypeBuilderUsage() {
         width={450}
         height={131}
       />
-      <br />
-      <p className="mb-2 text-gray-600 dark:text-gray-400">
+      <p className="my-2 text-gray-600 dark:text-gray-400">
         Once built, you can validate your phenotype and run the GWAS. Our server
         will then start the GWAS calculation and display the status of the job.
         Once complete, a download link to your results will appear.
@@ -195,7 +194,7 @@ export default function SimplePhenotypeBuilder() {
 
   function PhenotypeBuilderDisplay() {
     return (
-      <div>
+      <div className="my-6">
         {phenotype.map((node, index) => (
           <div key={index} className="ml-4 flex-1 flex-row gap-2">
             {index > 0 && <b className="text-blue-600">AND </b>}
@@ -307,24 +306,25 @@ export default function SimplePhenotypeBuilder() {
     <div className="bg-white shadow-md rounded-lg p-6 items-center">
       <CohortSelector />
       <PhenotypeBuilderDisplay />
-      <br />
       {selectedCohort && jobStatus === null && (
-        <Select
-          options={features}
-          closeMenuOnSelect={false}
-          onChange={(selectedOption) => {
-            const node: ListNode = {
-              feature: selectedOption as Feature,
-              negated: false,
-            };
-            setPhenotype([...phenotype, node]);
-          }}
-          value={null}
-          getOptionLabel={(option) => `${option!.name} [${option!.code}]`}
-          getOptionValue={(option) => `${option!.id}`}
-          placeholder="Search for a field..."
-          className="mb-2"
-        />
+        <div className="my-6">
+          <Select
+            options={features}
+            closeMenuOnSelect={false}
+            onChange={(selectedOption) => {
+              const node: ListNode = {
+                feature: selectedOption as Feature,
+                negated: false,
+              };
+              setPhenotype([...phenotype, node]);
+            }}
+            value={null}
+            getOptionLabel={(option) => `${option!.name} [${option!.code}]`}
+            getOptionValue={(option) => `${option!.id}`}
+            placeholder="Search for a field..."
+            className="mb-2"
+          />
+        </div>
       )}
       <GWASButtons />
       {summary && (
