@@ -133,8 +133,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 stroke="grey"
                 strokeDasharray="3 3"
                 segment={[
-                  { x: minValue, y: minValue },
-                  { x: maxValue, y: maxValue },
+                  { x: 0, y: 0 },
+                  { x: 1, y: 1 },
                 ]}
                 ifOverflow="hidden"
               />
