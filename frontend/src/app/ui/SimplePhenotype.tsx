@@ -175,10 +175,14 @@ export default function SimplePhenotypeBuilder() {
             <button
               key={cohort.id}
               onClick={() => {
-                setSelectedCohort(cohort);
-                setPhenotype([]);
-                setJobStatus(null);
-                setSummary(null);
+                if (jobStatus === null || jobStatus === "done") {
+                  setSelectedCohort(cohort);
+                  setPhenotype([]);
+                  setJobStatus(null);
+                  setSummary(null);
+                } else {
+                  alert("Please wait for the current job to finish.");
+                }
               }}
               className={`py-2 px-4 rounded-full transition-colors ${
                 selectedCohort === cohort
