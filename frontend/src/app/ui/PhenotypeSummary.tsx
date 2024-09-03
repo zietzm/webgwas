@@ -10,13 +10,26 @@ import {
   ReferenceLine,
   ZAxis,
   ReferenceDot,
-  Label,
-  Text,
 } from "recharts";
 import { PhenotypeSummary } from "../lib/types";
 
 interface PhenotypeScatterPlotsProps {
   data: PhenotypeSummary;
+}
+
+export function SummaryDocumentation() {
+  return (
+    <div className="p-5">
+      <p className="mb-2 text-gray-600 dark:text-gray-400">
+        WebGWAS approximates the phenotype you built using a linear regression
+        against all other phenotypes. The left figure compares the true and
+        approximated phenotype values. The quality of this approximation
+        determines the fidelity of the GWAS. The right plot shows the
+        relationship between phenotype fits and GWAS summary statistics. The red
+        line shows the fit quality of the phenotype you defined.
+      </p>
+    </div>
+  );
 }
 
 const PhenotypeTooltip = ({ active, payload }: any) => {
@@ -206,6 +219,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
           </ResponsiveContainer>
         </div>
       </div>
+      <SummaryDocumentation />
     </div>
   );
 };
