@@ -10,6 +10,8 @@ import {
   ReferenceLine,
   ZAxis,
   ReferenceDot,
+  Label,
+  Text,
 } from "recharts";
 import { PhenotypeSummary } from "../lib/types";
 
@@ -42,13 +44,39 @@ const FitQualityTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+const CustomLabel = ({ viewBox, value, dx, dy, fill }: any) => {
+  return (
+    <g>
+      <text
+        x={viewBox.x}
+        y={viewBox.y}
+        fill={fill}
+        fontSize="14"
+        textAnchor="middle"
+        dx={dx}
+        dy={dy}
+      >
+        R
+        <tspan fontSize="10" baselineShift="super">
+          2
+        </tspan>
+        = {value}
+      </text>
+    </g>
+  );
+};
+
 const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   data,
 }) => {
   const { phenotypes, rsquared, fit_quality } = data;
 
-  const minValue = Math.min(...phenotypes.map((p) => Math.min(p.t, p.a)));
-  const maxValue = Math.max(...phenotypes.map((p) => Math.max(p.t, p.a)));
+  const minX = Math.min(...phenotypes.map((p) => p.t));
+  const minY = Math.min(...phenotypes.map((p) => p.a));
+  const maxX = Math.max(...phenotypes.map((p) => p.t));
+  const maxY = Math.max(...phenotypes.map((p) => p.a));
+  const xMin = Math.max(minX, minY);
+  const xMax = Math.min(maxX, maxY);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -81,24 +109,36 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 }}
               />
               <ZAxis type="number" dataKey="n" />
-              <Tooltip
-                cursor={{ strokeDasharray: "3 3" }}
-                content={<PhenotypeTooltip />}
-              />
               <Scatter
                 name="Phenotypes"
                 data={phenotypes}
                 fill="#8884d8"
                 fillOpacity={0.5}
               />
+              <Tooltip
+                cursor={{ strokeDasharray: "3 3" }}
+                content={<PhenotypeTooltip />}
+              />
               <ReferenceLine
                 stroke="grey"
                 strokeDasharray="3 3"
                 segment={[
-                  { x: minValue, y: minValue },
-                  { x: maxValue, y: maxValue },
+                  { x: xMin, y: xMin },
+                  { x: xMax, y: xMax },
                 ]}
                 ifOverflow="hidden"
+              />
+              <ReferenceDot
+                x={minX}
+                y={maxY}
+                r={0}
+                label={
+                  <CustomLabel
+                    dy={30}
+                    value={rsquared.toFixed(2)}
+                    fill="#666"
+                  />
+                }
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -112,7 +152,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 dataKey="p"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "Phenotype fit (R^2)",
+                  value: "Phenotype fit",
                   position: "bottom",
                   offset: 0,
                 }}
@@ -122,7 +162,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 dataKey="g"
                 tick={{ fontSize: 12 }}
                 label={{
-                  value: "GWAS log p-value fit (R^2)",
+                  value: "GWAS statistics fit",
                   angle: -90,
                   position: "left",
                   offset: 12,
@@ -130,12 +170,6 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 }}
               />
               <ZAxis type="number" dataKey="n" />
-              <ReferenceLine
-                x={rsquared}
-                stroke="red"
-                r={10}
-                label={`R^2 = ${rsquared.toFixed(2)}`}
-              />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
                 content={<FitQualityTooltip />}
@@ -154,6 +188,19 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 data={fit_quality}
                 fill="#82ca9d"
                 fillOpacity={0.5}
+              />
+              <ReferenceLine
+                x={rsquared}
+                stroke="red"
+                r={10}
+                label={
+                  <CustomLabel
+                    value={rsquared.toFixed(2)}
+                    dy={100}
+                    dx={-15}
+                    fill="red"
+                  />
+                }
               />
             </ScatterChart>
           </ResponsiveContainer>
