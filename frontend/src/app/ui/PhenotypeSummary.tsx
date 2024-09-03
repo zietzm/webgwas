@@ -210,7 +210,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                   <CustomLabel
                     value={rsquared.toFixed(2)}
                     dy={100}
-                    dx={-15}
+                    dx={rsquared > 0.5 ? -35 : 35}
                     fill="red"
                   />
                 }
