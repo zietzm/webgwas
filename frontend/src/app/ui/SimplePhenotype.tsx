@@ -35,8 +35,10 @@ export function simplePhenotypeBuilderUsage() {
         unoptimized
         src={"/exampleSimplePT.png"}
         alt={"Example phenotype"}
-        width={450}
-        height={131}
+        width="0"
+        height="0"
+        sizes="100vw"
+        className="w-1/2 h-auto"
       />
       <p className="my-2 text-gray-600 dark:text-gray-400">
         Once built, you can validate your phenotype and run the GWAS. Our server
