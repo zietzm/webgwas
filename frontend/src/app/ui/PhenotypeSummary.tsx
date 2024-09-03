@@ -75,8 +75,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   const minY = Math.min(...phenotypes.map((p) => p.a));
   const maxX = Math.max(...phenotypes.map((p) => p.t));
   const maxY = Math.max(...phenotypes.map((p) => p.a));
-  const xMin = Math.max(minX, minY);
-  const xMax = Math.min(maxX, maxY);
+  const xMin = Math.min(minX, minY);
+  const xMax = Math.max(maxX, maxY);
 
   return (
     <div className="flex flex-col space-y-4">
