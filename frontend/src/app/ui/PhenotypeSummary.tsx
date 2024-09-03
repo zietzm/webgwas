@@ -17,7 +17,7 @@ interface PhenotypeScatterPlotsProps {
   data: PhenotypeSummary;
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+const PhenotypeTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white opacity-75 rounded-lg shadow-lg p-4 border border-gray-200">
@@ -27,7 +27,18 @@ const CustomTooltip = ({ active, payload }: any) => {
       </div>
     );
   }
+  return null;
+};
 
+const FitQualityTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white opacity-75 rounded-lg shadow-lg p-4 border border-gray-200">
+        <p className="">{`Phenotype fit (R^2) : ${payload[0].value}`}</p>
+        <p className="">{`GWAS log p-value fit (R^2) : ${payload[1].value}`}</p>
+      </div>
+    );
+  }
   return null;
 };
 
@@ -72,7 +83,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <ZAxis type="number" dataKey="n" />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
-                content={<CustomTooltip />}
+                content={<PhenotypeTooltip />}
               />
               <Scatter
                 name="Phenotypes"
@@ -127,7 +138,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
-                content={<CustomTooltip />}
+                content={<FitQualityTooltip />}
               />
               <ReferenceLine
                 stroke="grey"
