@@ -19,6 +19,7 @@ def igwas_prod(
     gwas_result_path: str,
     output_file_path: str,
     num_covar: int = 1,
+    num_threads: int = 1,
 ):
     projection_variance = projection_vector @ covariance_matrix @ projection_vector
     projection = Projection(
@@ -31,6 +32,7 @@ def igwas_prod(
         n_covariates=num_covar,
         input_path=gwas_result_path,
         output_path=output_file_path,
+        n_threads=num_threads,
     )
 
 
@@ -40,6 +42,7 @@ def igwas_prod_df(
     gwas_result_df: pl.DataFrame,
     output_file_path: str,
     num_covar: int = 1,
+    num_threads: int = 1,
 ):
     projection_variance = projection_vector @ covariance_matrix @ projection_vector
     projection = Projection(
@@ -52,4 +55,5 @@ def igwas_prod_df(
         projection_variance=projection_variance,
         n_covariates=num_covar,
         output_path=output_file_path,
+        n_threads=num_threads,
     )

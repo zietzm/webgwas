@@ -305,12 +305,12 @@ pub fn get_writer(path: &str) -> Result<arrow::csv::Writer<AutoFinishEncoder<Buf
         .build(compressed_writer))
 }
 
-pub fn write_dataframe(df: &mut DataFrame, path: &str) -> Result<()> {
+pub fn write_dataframe(df: &mut DataFrame, path: &str, n_threads: usize) -> Result<()> {
     let file = File::create(path)?;
     let compressed_writer = zstd::Encoder::new(file, 3)?.auto_finish();
     CsvWriter::new(compressed_writer)
         .with_separator(b'\t')
-        .n_threads(16)
+        .n_threads(n_threads)
         .finish(df)?;
     Ok(())
 }
@@ -328,14 +328,16 @@ pub fn write_dataframe(df: &mut DataFrame, path: &str) -> Result<()> {
 /// * `n_covariates` - The number of covariates used in the GWAS
 /// * `input_path` - Path to the input file (parquet)
 /// * `output_path` - Path to the output file (tsv.zst)
+/// * `n_threads` - The number of threads to use
 #[pyfunction]
-#[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path))]
+#[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path, n_threads = 1))]
 pub fn run_igwas(
     projection: &Projection,
     projection_variance: f32,
     n_covariates: usize,
     input_path: &str,
     output_path: &str,
+    n_threads: usize,
 ) -> Result<()> {
     debug!("Reading input file");
     let df = read_dataframe(input_path)?;
@@ -346,18 +348,19 @@ pub fn run_igwas(
     debug!("Converting results to dataframe");
     let mut results_df = results_to_dataframe(result_stats)?;
     debug!("Writing results");
-    write_dataframe(&mut results_df, output_path)?;
+    write_dataframe(&mut results_df, output_path, n_threads)?;
     Ok(())
 }
 
 #[pyfunction]
-#[pyo3(signature = (gwas_df, projection, projection_variance, n_covariates,  output_path))]
+#[pyo3(signature = (gwas_df, projection, projection_variance, n_covariates,  output_path, n_threads = 1))]
 pub fn run_igwas_df(
     gwas_df: PyDataFrame,
     projection: &Projection,
     projection_variance: f32,
     n_covariates: usize,
     output_path: String,
+    n_threads: usize,
 ) -> Result<()> {
     debug!("Computing batch stats");
     let running_stats = compute_batch_stats_running(&(gwas_df.into()), projection)?;
@@ -366,6 +369,6 @@ pub fn run_igwas_df(
     debug!("Converting results to dataframe");
     let mut results_df = results_to_dataframe(result_stats)?;
     debug!("Writing results");
-    write_dataframe(&mut results_df, &output_path)?;
+    write_dataframe(&mut results_df, &output_path, n_threads)?;
     Ok(())
 }
