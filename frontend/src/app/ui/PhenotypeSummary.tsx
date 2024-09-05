@@ -150,6 +150,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 r={0}
                 label={
                   <CustomLabel
+                    dx={30}
                     dy={30}
                     value={rsquared.toFixed(2)}
                     fill="#666"
