@@ -1,6 +1,30 @@
 ---
+- name: Compile wheels locally and deploy
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    dependencies:
+      - webgwas
+    local_wheel_dir: "/Users/zietzm/projects/webgwas/target/wheels"
+
+  tasks:
+    - name: Ensure wheel directory exists locally
+      file:
+        path: "{{ local_wheel_dir }}"
+        state: directory
+      delegate_to: localhost
+
+    - name: Build wheels locally
+      command: maturin build --release --target aarch64-unknown-linux-gnu --zig -i 3.12
+      loop: "{{ dependencies }}"
+      delegate_to: localhost
+      args:
+        chdir: "/Users/zietzm/projects/webgwas"
+        creates: "{{ local_wheel_dir }}/webgwas-0.2.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
+
 - name: Deploy WebGWAS from GitHub
-  hosts: ec2_instance
+  hosts: webgwas
   become: yes
   vars:
     backend_port: 8000
@@ -9,50 +33,126 @@
     backend_branch: main
     frontend_repo: https://github.com/zietzm/webgwas-frontend.git
     frontend_branch: main
+    nginx_conf_path: "/etc/nginx/conf.d/webgwas.conf"
+    nginx_basic_conf_file: "nginx-basic.conf"
+    nginx_conf_file: "nginx.conf"
     email: michael.zietz@gmail.com
     api_url: "https://webgwas.org"
+    remote_wheel_dir: "/home/ec2-user/backend/wheels"
+    local_wheel_dir: "/Users/zietzm/projects/webgwas/target/wheels"
   
   tasks:
-    - name: Update and upgrade apt packages
-      apt:
-        upgrade: yes
+    - name: Update and upgrade yum packages
+      yum:
         update_cache: yes
+        name: '*'
+        state: latest
     
     - name: Install required packages
-      apt:
+      yum:
         name:
           - nginx
-          - curl
-          - unzip
           - git
-          - build-essential
-          - certbot
-          - python3-certbot-nginx
+          - gcc 
+          - gcc-c++ 
+          - make
+          - perl-FindBin
+          - perl-core
+          - tmux
+          - htop
+          - sqlite.aarch64
         state: present
 
-    - name: Obtain SSL certificate
-      command: certbot --nginx -d webgwas.org -d www.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+    - name: Install Cargo
+      shell: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
       args:
+        creates: /home/ec2-user/.cargo/bin/cargo
+
+    - name: Install UV
+      shell: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+      args:
+        creates: 
+          - /root/.cargo/bin/uv
+          - /root/.cargo/bin/uvx
+      register: uv_install
+
+    - name: Ensure Nginx is installed
+      yum:
+        name: nginx
+        state: present
+
+    - name: Copy Nginx config file
+      template:
+        src: "{{ nginx_basic_conf_file }}.j2"
+        dest: "{{ nginx_conf_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload Nginx
+
+    - name: Ensure default Nginx config is removed
+      file:
+        path: /etc/nginx/conf.d/default.conf
+        state: absent
+      notify: Reload Nginx
+
+    - name: Ensure Nginx is started and enabled
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Obtain and install SSL certificate
+      shell: 
+        uvx --with certbot --with certbot-nginx certbot --nginx -d webgwas.org -d www.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+      args:
+        executable: /bin/bash
         creates: /etc/letsencrypt/live/webgwas.org/fullchain.pem
 
     - name: Ensure Certbot renew timer is enabled
-      systemd:
-        name: certbot.timer
-        enabled: yes
-        state: started
-
-    - name: Install Rye
       shell: |
-        wget https://github.com/astral-sh/rye/releases/latest/download/rye-x86_64-linux.gz
-        gunzip -f rye-x86_64-linux.gz
-        chmod +x rye-x86_64-linux
-        ./rye-x86_64-linux self install --yes
-        echo 'source "$HOME/.rye/env"' >> ~/.bashrc
-        mkdir -p ~/.rye/bin
-        mv -f rye-x86_64-linux ~/.rye/bin/rye
-      args:
-        creates: ~/.rye/bin/rye
-      register: rye_install
+        echo "0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
+
+    - name: Copy full Nginx config file
+      template:
+        src: "{{ nginx_conf_file }}.j2"
+        dest: "{{ nginx_conf_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload Nginx
+
+    - name: Clone backend repository
+      git:
+        repo: "{{ backend_repo }}"
+        version: "{{ backend_branch }}"
+        dest: /home/ec2-user/backend
+        force: yes
+
+    - name: Ensure remote wheel directory exists
+      file:
+        path: "{{ remote_wheel_dir }}"
+        state: directory
+
+    - name: Copy wheels to remote server
+      copy:
+        src: "{{ local_wheel_dir }}/"
+        dest: "{{ remote_wheel_dir }}"
+
+    - name: Set up backend with UV
+      shell: |
+        cd /home/ec2-user/backend
+        aws s3 cp s3://webgwas/connectorx-0.3.4a2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl /home/ec2-user/backend/wheels/
+        sed -i 's#"connectorx>=0.3.3"#"connectorx @ file:///home/ec2-user/backend/wheels/connectorx-0.3.4a2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"#g' pyproject.toml
+        sed -i 's#"webgwas @ git+https://github.com/zietzm/webgwas.git"#"webgwas @ file:///home/ec2-user/backend/wheels/webgwas-0.2.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"#g' pyproject.toml
+        uv sync
+
+    - name: Sync data from S3 to EC2
+      shell: |
+        aws s3 sync s3://webgwas/prod_data /home/ec2-user/backend/prod_data --delete
+        aws s3 cp s3://webgwas/backend.db /home/ec2-user/backend/backend.db
 
     - name: Install Bun
       shell: |
@@ -60,39 +160,16 @@
       args:
         creates: ~/.bun/bin/bun
 
-    - name: Install Cargo
-      shell: |
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-        echo '. "$HOME/.cargo/env"' >> ~/.bashrc
-      args:
-        creates: ~/.cargo/bin/cargo
-
-    - name: Clone backend repository
-      git:
-        repo: "{{ backend_repo }}"
-        version: "{{ backend_branch }}"
-        dest: /home/ubuntu/backend
-        force: yes
-
-    - name: Set up backend with Rye
-      shell: |
-        source "$HOME/.rye/env"
-        cd /home/ubuntu/backend
-        . "$HOME/.cargo/env"
-        rye sync
-      args:
-        executable: /bin/bash
-
     - name: Clone frontend repository
       git:
         repo: "{{ frontend_repo }}"
         version: "{{ frontend_branch }}"
-        dest: /home/ubuntu/frontend
+        dest: /home/ec2-user/frontend
         force: yes
 
     - name: Write the .env file for Next.js frontend
       copy:
-        dest: /home/ubuntu/frontend/.env
+        dest: /home/ec2-user/frontend/.env
         content: |
           NEXT_PUBLIC_API_URL={{ api_url }}
 
@@ -100,19 +177,15 @@
       shell: |
         export BUN_INSTALL="$HOME/.bun"
         export PATH="$BUN_INSTALL/bin:$PATH"
-        cd /home/ubuntu/frontend
+        cd /home/ec2-user/frontend
         bun install
-      args:
-        executable: /bin/bash
 
     - name: Build Next.js frontend with Bun
       shell: |
         export BUN_INSTALL="$HOME/.bun"
         export PATH="$BUN_INSTALL/bin:$PATH"
-        cd /home/ubuntu/frontend
+        cd /home/ec2-user/frontend
         bun run build
-      args:
-        executable: /bin/bash
 
     - name: Copy backend systemd service file
       copy:
@@ -134,24 +207,9 @@
         name: backend
         state: restarted
 
-    - name: Configure Nginx
-      template:
-        src: nginx.conf.j2
-        dest: /etc/nginx/sites-available/default
-      notify: Reload Nginx
-
-    - name: Enable Nginx site
-      file:
-        src: /etc/nginx/sites-available/default
-        dest: /etc/nginx/sites-enabled/default
-        state: link
-      notify: Reload Nginx
-
-    - name: Ensure Nginx is started and enabled
+    - name: Systemd reload
       systemd:
-        name: nginx
-        state: started
-        enabled: yes
+        daemon_reload: yes
 
   handlers:
     - name: Reload Nginx

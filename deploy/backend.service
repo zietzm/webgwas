@@ -4,11 +4,12 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/home/ubuntu/backend
-ExecStart=/home/ubuntu/.rye/shims/rye run uvicorn src.webgwas_backend.main:app  --host localhost --port 8000
+WorkingDirectory=/home/ec2-user/backend
+Environment=PATH=/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment="DYNACONF_DRY_RUN=false"
+ExecStart=/root/.cargo/bin/uv run fastapi run src/webgwas_backend/main.py  --host localhost --port 8000
 Restart=always
 RestartSec=1
-Environment=PATH=/home/ubuntu/.rye/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 [Install]
 WantedBy=multi-user.target
