@@ -52,8 +52,12 @@ const FitQualityTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white opacity-75 rounded-lg shadow-lg p-4 border border-gray-200">
-        <p className="">{`Phenotype fit (R^2) : ${payload[0].value}`}</p>
-        <p className="">{`GWAS log p-value fit (R^2) : ${payload[1].value}`}</p>
+        <p>
+          Phenotype fit (R<sup>2</sup>): {payload[0].value}
+        </p>
+        <p>
+          GWAS log p-value fit (R<sup>2</sup>): {payload[1].value}
+        </p>
       </div>
     );
   }
