@@ -282,7 +282,7 @@ export default function SimplePhenotypeBuilder() {
   function GWASButtons() {
     return (
       <div className="flex flex-wrap gap-4 mb-6">
-        {phenotype.length > 0 && (
+        {jobStatus === null && (
           <button
             onClick={() => {
               handleRunGWAS();
@@ -311,7 +311,7 @@ export default function SimplePhenotypeBuilder() {
   return (
     <div className="bg-white shadow-md rounded-lg p-6 items-center">
       <CohortSelector />
-      <PhenotypeBuilderDisplay />
+      {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
       {selectedCohort && jobStatus === null && (
         <div className="my-6">
           <Select
@@ -332,7 +332,7 @@ export default function SimplePhenotypeBuilder() {
           />
         </div>
       )}
-      <GWASButtons />
+      {phenotype.length > 0 && <GWASButtons />}
       {summary && (
         <div className="mb-6">
           <PhenotypeScatterPlots data={summary} />
