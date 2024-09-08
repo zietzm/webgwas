@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Play, CheckCircle, Loader, XCircle, MinusCircle } from "lucide-react";
+import {
+  Play,
+  CheckCircle,
+  Loader,
+  XCircle,
+  MinusCircle,
+  Download,
+} from "lucide-react";
 import Select from "react-select";
 import { Cohort, Feature, ListNode, PhenotypeSummary } from "../lib/types";
 import Image from "next/image";
@@ -298,7 +305,7 @@ export default function SimplePhenotypeBuilder() {
           <div>
             <a href={downloadUrl!} download>
               <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
-                <CheckCircle className="mr-2" size={20} />
+                <Download className="mr-2" size={20} />
                 Download Results
               </button>
             </a>
