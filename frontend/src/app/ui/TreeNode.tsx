@@ -1,9 +1,14 @@
-import { PlusCircle, MinusCircle } from 'lucide-react';
-import { useState } from 'react';
-import { Node } from '../lib/Node';
+import { PlusCircle, MinusCircle } from "lucide-react";
+import { useState } from "react";
+import { isFeature, isOperator, PhenotypeNode } from "../lib/types";
 
-
-const Tooltip = ({ children, text }: { children: React.ReactNode, text: string }) => {
+const Tooltip = ({
+  children,
+  text,
+}: {
+  children: React.ReactNode;
+  text: string;
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   return (
     <div className="relative inline-block">
@@ -22,31 +27,58 @@ const Tooltip = ({ children, text }: { children: React.ReactNode, text: string }
   );
 };
 
-
-export default function TreeNode ({ node, onAdd, onRemove }: { node: Node, onAdd: (node: Node) => void, onRemove: (node: Node) => void }) {
-  const canAddChild = node.type === 'operator' && node.children.length < node.maxArity;
-  const tooltipText = node.type === 'operator' 
-    ? `${node.name} can have ${node.maxArity} child${node.maxArity > 1 ? 'ren' : ''}`
-    : `${node.type} node can't have children`;
+export default function TreeNode({
+  node,
+  onAdd,
+  onRemove,
+  editable,
+}: {
+  node: PhenotypeNode;
+  onAdd: (node: PhenotypeNode) => void;
+  onRemove: (id: number) => void;
+  editable: boolean;
+}) {
+  const canAddChild =
+    isOperator(node.data) && node.children.length < node.data.arity;
+  let tooltipText: string;
+  if (isOperator(node.data)) {
+    tooltipText = `${node.data.name} can have ${node.data.arity} child${node.data.arity > 1 ? "ren" : ""}`;
+  } else if (isFeature(node.data)) {
+    tooltipText = "Feature cannot have children";
+  } else {
+    tooltipText = "Constant cannot have children";
+  }
+  let name = null;
+  if (isOperator(node.data)) {
+    name = node.data.name;
+  } else if (isFeature(node.data)) {
+    name = `${node.data.name} [${node.data.code}]`;
+  } else {
+    name = `Constant: ${node.data.value}`;
+  }
 
   return (
     <div className="ml-4">
       <div className="flex items-center">
-        <span className="mr-2">{node.name} ({node.type})</span>
-        <Tooltip text={tooltipText}>
-          <button 
-            onClick={() => canAddChild && onAdd(node)} 
-            className={`p-1 rounded ${canAddChild 
-              ? 'hover:bg-gray-200 active:bg-gray-300' 
-              : 'opacity-50 cursor-not-allowed'}`}
-            disabled={!canAddChild}
-          >
-            <PlusCircle size={20} />
-          </button>
-        </Tooltip>
-        {node.id !== 0 && (
-          <button 
-            onClick={() => onRemove(node)} 
+        <span className="mr-2">{name}</span>
+        {editable && (
+          <Tooltip text={tooltipText}>
+            <button
+              onClick={() => canAddChild && onAdd(node)}
+              className={`p-1 rounded ${
+                canAddChild
+                  ? "hover:bg-gray-200 active:bg-gray-300"
+                  : "opacity-50 cursor-not-allowed"
+              }`}
+              disabled={!canAddChild}
+            >
+              <PlusCircle size={20} />
+            </button>
+          </Tooltip>
+        )}
+        {editable && !(isOperator(node.data) && node.data.name == "Root") && (
+          <button
+            onClick={() => onRemove(node.id)}
             className="ml-2 p-1 rounded hover:bg-gray-200 active:bg-gray-300"
           >
             <MinusCircle size={20} />
@@ -61,10 +93,11 @@ export default function TreeNode ({ node, onAdd, onRemove }: { node: Node, onAdd
               node={child}
               onAdd={onAdd}
               onRemove={onRemove}
+              editable={editable}
             />
           ))}
         </div>
       )}
     </div>
   );
-};
+}

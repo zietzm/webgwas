@@ -1,43 +1,56 @@
-'use client'
+import React, { useState, useEffect } from "react";
+import Select from "react-select";
+import { Feature, Operator, PhenotypeNode } from "../lib/types";
 
-import React, { useState, useEffect } from 'react';
-import Select from 'react-select';
-import { Node } from '../lib/Node';
-
-export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node[], onSelect: (node: Node | null) => void, onClose: () => void }) {
+export default function NodeSelector({
+  features,
+  operators,
+  onSelect,
+  onClose,
+}: {
+  features: Feature[];
+  operators: Operator[];
+  onSelect: (node: PhenotypeNode | null) => void;
+  onClose: () => void;
+}) {
   const [showConstantInput, setShowConstantInput] = useState(false);
-  const [constantValue, setConstantValue] = useState('');
-  const [constantError, setConstantError] = useState('');
+  const [constantValue, setConstantValue] = useState("");
+  const [constantError, setConstantError] = useState("");
   const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
-    const header = document.querySelector('header');
+    const header = document.querySelector("header");
     if (header) {
       setHeaderHeight(header.offsetHeight + 1);
     }
   }, []);
 
-  const operators = nodes.filter(node => node.type === 'operator' && node.id !== 0);
-  const fields = nodes.filter(node => node.type === 'field');
-
   const handleConstantSubmit = () => {
     const num = parseFloat(constantValue);
     if (isNaN(num)) {
-      setConstantError('Please enter a valid number');
+      setConstantError("Please enter a valid number");
     } else {
-      onSelect({ id: Date.now(), type: 'constant', name: num.toString(), children: [], minArity: 0, maxArity: 0 });
-      setConstantValue('');
-      setConstantError('');
+      onSelect({
+        id: Date.now(),
+        data: {
+          value: num,
+          type: "real",
+        },
+        children: [],
+      });
+      setConstantValue("");
+      setConstantError("");
       setShowConstantInput(false);
     }
   };
 
-  const fieldOptions = fields.map(field => ({ value: field.id, label: field.name }));
-
   return (
     <div className="fixed right-0 top-0 w-full h-full bg-black bg-opacity-50 flex justify-end z-50">
       <div
-        style={{ top: `${headerHeight}px`, height: `calc(100% - ${headerHeight}px)` }}
+        style={{
+          top: `${headerHeight}px`,
+          height: `calc(100% - ${headerHeight}px)`,
+        }}
         className="w-80 bg-white shadow-lg p-6 overflow-y-auto absolute right-0"
       >
         <h2 className="text-2xl font-bold mb-6">Add Node</h2>
@@ -47,7 +60,14 @@ export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node
             {operators.map((op) => (
               <button
                 key={op.id}
-                onClick={() => onSelect(op)}
+                onClick={() => {
+                  const phenotypeNode: PhenotypeNode = {
+                    id: Date.now(),
+                    data: op,
+                    children: [],
+                  };
+                  onSelect(phenotypeNode);
+                }}
                 className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold py-2 px-4 rounded"
               >
                 {op.name}
@@ -73,7 +93,9 @@ export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node
                 className="w-full p-2 border rounded mb-2"
                 placeholder="Enter a number"
               />
-              {constantError && <p className="text-red-500 text-sm mb-2">{constantError}</p>}
+              {constantError && (
+                <p className="text-red-500 text-sm mb-2">{constantError}</p>
+              )}
               <button
                 onClick={handleConstantSubmit}
                 className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded w-full"
@@ -86,8 +108,21 @@ export default function NodeSelector({ nodes, onSelect, onClose }: { nodes: Node
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Fields</h3>
           <Select
-            options={fieldOptions}
-            onChange={(selectedOption) => onSelect(fields.find(f => f.id === selectedOption!.value) || null)}
+            options={features}
+            onChange={(selectedOption) => {
+              if (selectedOption === null) {
+                return;
+              }
+              const phenotypeNode: PhenotypeNode = {
+                id: Date.now(),
+                data: selectedOption,
+                children: [],
+              };
+              onSelect(phenotypeNode);
+            }}
+            value={null}
+            getOptionLabel={(option) => `${option!.name} [${option!.code}]`}
+            getOptionValue={(option) => `${option!.id}`}
             placeholder="Search for a field..."
             className="mb-2"
           />
