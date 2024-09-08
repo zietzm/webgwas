@@ -148,13 +148,12 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                 ]}
                 ifOverflow="hidden"
               />
-              <ReferenceDot
+              <ReferenceLine
                 x={minX}
-                y={maxY}
                 r={0}
                 label={
                   <CustomLabel
-                    dx={30}
+                    dx={40}
                     dy={30}
                     value={rsquared.toFixed(2)}
                     fill="#666"
