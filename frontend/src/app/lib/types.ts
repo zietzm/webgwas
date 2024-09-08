@@ -101,3 +101,39 @@ export const operators: Operator[] = [
   { id: 11, name: "LE", arity: 2, input_type: "real", output_type: "bool" },
   { id: 12, name: "EQ", arity: 2, input_type: "real", output_type: "bool" },
 ];
+
+/** Breadth first seach the tree to find the node of interest, then pop it */
+export function popFromTree(
+  phenotype: PhenotypeNode,
+  idToPop: number,
+): PhenotypeNode {
+  let nodesToVisit: PhenotypeNode[] = [phenotype];
+  while (nodesToVisit.length > 0) {
+    const node = nodesToVisit[0];
+    nodesToVisit = nodesToVisit.slice(1);
+    node.children = node.children.filter((child) => child.id !== idToPop);
+    nodesToVisit = nodesToVisit.concat(node.children);
+  }
+  return phenotype;
+}
+
+/** Breadth first search the tree and add a child to the given parent */
+export function addChild(
+  phenotype: PhenotypeNode,
+  parentId: number,
+  childNode: PhenotypeNode,
+): PhenotypeNode {
+  let nodesToVisit: PhenotypeNode[] = [phenotype];
+  while (nodesToVisit.length > 0) {
+    const node = nodesToVisit[0];
+    nodesToVisit = nodesToVisit.slice(1);
+    if (node.id === parentId) {
+      node.children.push(childNode);
+      return phenotype;
+    } else {
+      nodesToVisit = nodesToVisit.concat(node.children);
+    }
+  }
+  alert(`Failed to find node ${parentId}`);
+  return phenotype;
+}

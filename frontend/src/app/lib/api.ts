@@ -73,6 +73,10 @@ export async function validatePhenotype(
       "Content-Type": "application/json",
     },
   });
+  if (response.status === 400) {
+    const text = await response.text();
+    console.log(text);
+  }
   if (!response.ok) {
     throw new Error("Failed to validate phenotype");
   }
@@ -195,4 +199,22 @@ export function convertListToRPN(list: ListNode[]): string {
     }
   }
   return result;
+}
+
+export function convertTreeToDisplayString(phenotype: PhenotypeNode): string {
+  const nodeString = convertNodeToRPN(phenotype);
+  if (isFeature(phenotype.data) || isConstant(phenotype.data)) {
+    return nodeString;
+  } else if (isOperator(phenotype.data)) {
+    const childrenDisplay = phenotype.children
+      .map(convertTreeToDisplayString)
+      .join(", ");
+    if (phenotype.data.name === "Root") {
+      return childrenDisplay;
+    } else {
+      return `${nodeString}(${childrenDisplay})`;
+    }
+  } else {
+    throw new Error("Invalid node type" + phenotype.data);
+  }
 }
