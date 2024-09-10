@@ -193,7 +193,7 @@ pub fn compute_batch_stats_running(
         .filter(|(_, &c)| c != 0.0)
         .enumerate()
     {
-        let feature_stats = get_columns(&df, feature_id, feature_idx == 0)?;
+        let feature_stats = get_columns(df, feature_id, feature_idx == 0)?;
         if let Some(variant_id) = feature_stats.variant_id {
             running_stats.variant_id = variant_id
         }
@@ -362,8 +362,26 @@ pub fn run_igwas_df(
     output_path: String,
     n_threads: usize,
 ) -> Result<()> {
+    run_igwas_df_impl(
+        &(gwas_df.into()),
+        projection,
+        projection_variance,
+        n_covariates,
+        output_path,
+        n_threads,
+    )
+}
+
+pub fn run_igwas_df_impl(
+    gwas_df: &DataFrame,
+    projection: &Projection,
+    projection_variance: f32,
+    n_covariates: usize,
+    output_path: String,
+    n_threads: usize,
+) -> Result<()> {
     debug!("Computing batch stats");
-    let running_stats = compute_batch_stats_running(&(gwas_df.into()), projection)?;
+    let running_stats = compute_batch_stats_running(gwas_df, projection)?;
     debug!("Computing batch results");
     let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
     debug!("Converting results to dataframe");
