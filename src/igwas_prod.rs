@@ -1,29 +1,21 @@
 use log::debug;
-use pyo3_polars::PyDataFrame;
 use std::{fs::File, io::BufWriter};
 
 use anyhow::{anyhow, Context, Result};
 use itertools::izip;
 use polars::prelude::*;
-use pyo3::{exceptions::PyValueError, prelude::*};
 use zstd::stream::AutoFinishEncoder;
 
-#[pyclass]
 pub struct Projection {
-    #[pyo3(get, set)]
     pub feature_id: Vec<String>,
-    #[pyo3(get, set)]
     pub feature_coefficient: Vec<f32>,
-    #[pyo3(get, set)]
     pub n_features: usize,
 }
 
-#[pymethods]
 impl Projection {
-    #[new]
-    pub fn new(feature_id: Vec<String>, feature_coefficient: Vec<f32>) -> PyResult<Self> {
+    pub fn new(feature_id: Vec<String>, feature_coefficient: Vec<f32>) -> Result<Self> {
         if feature_id.len() != feature_coefficient.len() {
-            return Err(PyValueError::new_err(
+            return Err(anyhow!(
                 "feature_id and feature_coefficient must have the same length.",
             ));
         }
@@ -313,63 +305,6 @@ pub fn write_dataframe(df: &mut DataFrame, path: &str, n_threads: usize) -> Resu
         .n_threads(n_threads)
         .finish(df)?;
     Ok(())
-}
-
-/// Run Indirect GWAS
-///
-/// Indirect GWAS is a method for computing summary statistics for a GWAS on
-/// a linear combination of phenotypes. For more information, see
-/// https://github.com/tatonetti-lab/indirect-gwas.
-///
-/// # Arguments
-///
-/// * `projection` - Labeled projection vector
-/// * `projection_variance` - The variance of the projected phenotype
-/// * `n_covariates` - The number of covariates used in the GWAS
-/// * `input_path` - Path to the input file (parquet)
-/// * `output_path` - Path to the output file (tsv.zst)
-/// * `n_threads` - The number of threads to use
-#[pyfunction]
-#[pyo3(signature = (projection, projection_variance, n_covariates, input_path, output_path, n_threads = 1))]
-pub fn run_igwas(
-    projection: &Projection,
-    projection_variance: f32,
-    n_covariates: usize,
-    input_path: &str,
-    output_path: &str,
-    n_threads: usize,
-) -> Result<()> {
-    debug!("Reading input file");
-    let df = read_dataframe(input_path)?;
-    debug!("Computing batch stats");
-    let running_stats = compute_batch_stats_running(&df, projection)?;
-    debug!("Computing batch results");
-    let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
-    debug!("Converting results to dataframe");
-    let mut results_df = results_to_dataframe(result_stats)?;
-    debug!("Writing results");
-    write_dataframe(&mut results_df, output_path, n_threads)?;
-    Ok(())
-}
-
-#[pyfunction]
-#[pyo3(signature = (gwas_df, projection, projection_variance, n_covariates,  output_path, n_threads = 1))]
-pub fn run_igwas_df(
-    gwas_df: PyDataFrame,
-    projection: &Projection,
-    projection_variance: f32,
-    n_covariates: usize,
-    output_path: String,
-    n_threads: usize,
-) -> Result<()> {
-    run_igwas_df_impl(
-        &(gwas_df.into()),
-        projection,
-        projection_variance,
-        n_covariates,
-        output_path,
-        n_threads,
-    )
 }
 
 pub fn run_igwas_df_impl(
