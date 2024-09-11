@@ -37,6 +37,7 @@ export interface ListNode {
 export interface ApproximatePhenotypeValues {
   t: number;
   a: number;
+  n: number;
 }
 
 export interface PhenotypeFitQuality {
@@ -46,10 +47,10 @@ export interface PhenotypeFitQuality {
 
 export interface PhenotypeSummary {
   phenotype_definition: string;
-  cohort_name: string;
-  phenotypes: ApproximatePhenotypeValues[];
+  cohort_id: number;
+  phenotype_values: ApproximatePhenotypeValues[];
+  fit_quality_reference: PhenotypeFitQuality[];
   rsquared: number;
-  fit_quality: PhenotypeFitQuality[];
 }
 
 export function isFeature(p: any): p is Feature {

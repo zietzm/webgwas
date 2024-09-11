@@ -89,12 +89,12 @@ const CustomLabel = ({ viewBox, value, dx, dy, fill }: any) => {
 const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   data,
 }) => {
-  const { phenotypes, rsquared, fit_quality } = data;
+  const { phenotype_values, rsquared, fit_quality_reference } = data;
 
-  const minX = Math.min(...phenotypes.map((p) => p.t));
-  const minY = Math.min(...phenotypes.map((p) => p.a));
-  const maxX = Math.max(...phenotypes.map((p) => p.t));
-  const maxY = Math.max(...phenotypes.map((p) => p.a));
+  const minX = Math.min(...phenotype_values.map((p) => p.t));
+  const minY = Math.min(...phenotype_values.map((p) => p.a));
+  const maxX = Math.max(...phenotype_values.map((p) => p.t));
+  const maxY = Math.max(...phenotype_values.map((p) => p.a));
   const xMin = Math.min(minX, minY);
   const xMax = Math.max(maxX, maxY);
 
@@ -131,7 +131,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               <ZAxis type="number" dataKey="n" />
               <Scatter
                 name="Phenotypes"
-                data={phenotypes}
+                data={phenotype_values}
                 fill="#8884d8"
                 fillOpacity={0.5}
               />
@@ -189,7 +189,6 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
                   style: { textAnchor: "middle" },
                 }}
               />
-              <ZAxis type="number" dataKey="n" />
               <Tooltip
                 cursor={{ strokeDasharray: "3 3" }}
                 content={<FitQualityTooltip />}
@@ -205,7 +204,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
               />
               <Scatter
                 name="Fit Quality"
-                data={fit_quality}
+                data={fit_quality_reference}
                 fill="#82ca9d"
                 fillOpacity={0.5}
               />

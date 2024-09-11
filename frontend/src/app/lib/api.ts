@@ -12,6 +12,7 @@ import {
 export interface PostGWASResponse {
   request_id: string;
   status: "queued" | "done" | "error";
+  message: string | null;
 }
 
 export interface ValidationResponse {
@@ -90,13 +91,16 @@ export async function getPhenotypeSummary(
   selectedCohort: Cohort,
 ): Promise<PhenotypeSummary> {
   const myUrl = new URL(`${url}/api/phenotype_summary`);
-  myUrl.searchParams.set("phenotype_definition", phenotypeDefinition);
-  myUrl.searchParams.set("cohort_id", selectedCohort!.id.toString());
   const response = await fetch(myUrl.href, {
-    method: "GET",
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      phenotype_definition: phenotypeDefinition,
+      cohort_id: selectedCohort!.id,
+      n_samples: 2000,
+    }),
   });
   if (!response.ok) {
     throw new Error("Failed to get phenotype summary");
@@ -111,13 +115,15 @@ export async function runGWAS(
   selectedCohort: Cohort,
 ): Promise<PostGWASResponse> {
   const myUrl = new URL(`${url}/api/igwas`);
-  myUrl.searchParams.set("cohort_id", selectedCohort!.id.toString());
-  myUrl.searchParams.set("phenotype_definition", phenotypeDefinition);
   const response = await fetch(myUrl.href, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      phenotype_definition: phenotypeDefinition,
+      cohort_id: selectedCohort!.id,
+    }),
   });
   if (!response.ok) {
     throw new Error("Failed to run GWAS");
@@ -134,6 +140,7 @@ export async function getResults(
   const response = await fetch(myUrl.href, {
     method: "GET",
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
     },
   });
