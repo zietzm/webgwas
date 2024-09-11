@@ -7,7 +7,7 @@ export interface Feature {
   id: number;
   code: string;
   name: string;
-  type: string;
+  node_type: string;
 }
 
 export interface Operator {
@@ -59,7 +59,7 @@ export function isFeature(p: any): p is Feature {
     typeof p.id === "number" &&
     typeof p.code === "string" &&
     typeof p.name === "string" &&
-    typeof p.type === "string"
+    typeof p.node_type === "string"
   );
 }
 
