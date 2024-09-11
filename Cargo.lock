@@ -2729,7 +2729,7 @@ checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
 
 [[package]]
 name = "webgwas"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "anyhow",
  "arrow",
