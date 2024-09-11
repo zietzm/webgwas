@@ -2740,6 +2740,7 @@ dependencies = [
  "mdav",
  "parquet",
  "polars",
+ "rayon",
  "serde",
  "zstd",
 ]
