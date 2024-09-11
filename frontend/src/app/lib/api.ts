@@ -66,13 +66,15 @@ export async function validatePhenotype(
   cohort: Cohort,
 ): Promise<ValidationResponse> {
   const myUrl = new URL(`${url}/api/phenotype`);
-  myUrl.searchParams.set("phenotype_definition", phenotypeDefinition);
-  myUrl.searchParams.set("cohort_id", cohort.id.toString());
   const response = await fetch(myUrl.href, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      phenotype_definition: phenotypeDefinition,
+      cohort_id: cohort.id,
+    }),
   });
   if (response.status === 400) {
     const text = await response.text();
