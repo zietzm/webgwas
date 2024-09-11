@@ -310,13 +310,13 @@ pub fn compute_batch_results(
 
 pub fn results_to_dataframe(result_stats: ResultStats) -> Result<DataFrame> {
     let df = DataFrame::new(vec![
-        Series::new("variant_id", result_stats.variant_id),
-        Series::new("beta", result_stats.beta),
-        Series::new("std_error", result_stats.std_error),
-        Series::new("t_stat", result_stats.t_stat),
-        Series::new("neg_log_p_value", result_stats.neg_log_p_value),
-        Series::new("sample_size", result_stats.sample_size),
-        Series::new("allele_frequency", result_stats.allele_frequency),
+        Series::new("variant_id".into(), result_stats.variant_id),
+        Series::new("beta".into(), result_stats.beta),
+        Series::new("std_error".into(), result_stats.std_error),
+        Series::new("t_stat".into(), result_stats.t_stat),
+        Series::new("neg_log_p_value".into(), result_stats.neg_log_p_value),
+        Series::new("sample_size".into(), result_stats.sample_size),
+        Series::new("allele_frequency".into(), result_stats.allele_frequency),
     ])?;
     Ok(df)
 }
