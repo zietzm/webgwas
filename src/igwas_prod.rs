@@ -214,21 +214,20 @@ pub fn compute_batch_stats_running(
 ) -> Result<RunningStatsAtomic> {
     let n_variants = df.height();
     let running_stats = Arc::new(RunningStatsAtomic::new(n_variants));
-    let variants_seen = AtomicBool::new(false);
     projection.remove_zeros();
+    let first_feature_id = projection.feature_id[0].clone();
+    let is_first_feature = |feature_id: &String| *feature_id == first_feature_id;
 
     projection
         .par_iter()
         .for_each(|(feature_id, projection_coefficient)| {
-            let feature_stats =
-                get_columns(df, feature_id, variants_seen.load(Ordering::Relaxed)).unwrap();
-            if !variants_seen.load(Ordering::Relaxed) {
+            let feature_stats = get_columns(df, feature_id, is_first_feature(feature_id)).unwrap();
+            if is_first_feature(feature_id) {
                 let mut state = running_stats
                     .variant_id
                     .lock()
                     .expect("Failed to lock variant_id");
                 *state = feature_stats.variant_id.expect("Failed to get variant_id");
-                variants_seen.store(true, Ordering::Relaxed);
             }
             for i in 0..feature_stats.beta.len() {
                 running_stats.beta[i]
