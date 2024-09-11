@@ -5,7 +5,7 @@ use itertools::izip;
 use log::debug;
 use polars::prelude::*;
 use rayon::prelude::*;
-use std::sync::atomic::{AtomicBool, AtomicI32};
+use std::sync::atomic::AtomicI32;
 use std::sync::Mutex;
 use std::{fs::File, io::BufWriter};
 use zstd::stream::AutoFinishEncoder;
