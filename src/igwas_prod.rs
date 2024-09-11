@@ -174,6 +174,7 @@ fn get_columns(df: &DataFrame, feature_id: &str, needs_variant_id: bool) -> Resu
 pub fn compute_batch_stats_running(
     df: &DataFrame,
     projection: &Projection,
+    n_done: &mut usize,
 ) -> Result<RunningStats> {
     let n_variants = df.height();
     let mut running_stats = RunningStats::new(n_variants);
@@ -202,8 +203,9 @@ pub fn compute_batch_stats_running(
             running_stats.degrees_of_freedom[i] =
                 running_stats.degrees_of_freedom[i].min(degrees_of_freedom.unwrap());
         }
+        *n_done += 1;
+        debug!("Done {}/{}", n_done, projection.n_features);
     }
-
     Ok(running_stats)
 }
 
@@ -315,8 +317,9 @@ pub fn run_igwas_df_impl(
     output_path: String,
     n_threads: usize,
 ) -> Result<()> {
+    let mut n_done = 0;
     debug!("Computing batch stats");
-    let running_stats = compute_batch_stats_running(gwas_df, projection)?;
+    let running_stats = compute_batch_stats_running(gwas_df, projection, &mut n_done)?;
     debug!("Computing batch results");
     let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
     debug!("Converting results to dataframe");
