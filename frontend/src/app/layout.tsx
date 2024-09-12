@@ -26,7 +26,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <Header />
         <main className="container mx-auto px-4 py-8">{children}</main>
-        <script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
+        <script
+          async
+          src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"
+        ></script>
       </body>
     </html>
   );
