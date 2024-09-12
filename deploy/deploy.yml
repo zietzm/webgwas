@@ -1,29 +1,28 @@
 ---
-- name: Compile wheels locally and deploy
+- name: Compile backend locally
   hosts: localhost
   connection: local
   gather_facts: false
   vars:
     dependencies:
       - webgwas
-    local_wheel_dir: "/Users/zietzm/projects/webgwas/target/wheels"
+    local_backend_dir: "/Users/zietzm/projects/webgwas-backend/"
 
   tasks:
-    - name: Ensure wheel directory exists locally
-      file:
-        path: "{{ local_wheel_dir }}"
-        state: directory
-      delegate_to: localhost
-
-    - name: Build wheels locally
-      command: maturin build --release --target aarch64-unknown-linux-gnu --zig -i 3.12
-      loop: "{{ dependencies }}"
-      delegate_to: localhost
+    - name: Compile backend locally
+      shell: |
+        export TARGET_CC=aarch64-unknown-linux-gnu-gcc
+        export TARGET_FC=aarch64-unknown-linux-gnu-gfortran
+        export TARGET_AR=aarch64-unknown-linux-gnu-ar
+        export TARGET_RANLIB=aarch64-unknown-linux-gnu-ranlib
+        export BLIS_CONFNAME=cortexa57
+        cargo clean
+        cargo zigbuild --release --target aarch64-unknown-linux-gnu
       args:
-        chdir: "/Users/zietzm/projects/webgwas"
-        creates: "{{ local_wheel_dir }}/webgwas-0.2.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"
+        chdir: "{{ local_backend_dir }}"
+        creates: "{{ local_backend_dir }}/target/aarch64-unknown-linux-gnu/release/webgwas_backend"
 
-- name: Deploy WebGWAS from GitHub
+- name: Deploy WebGWAS
   hosts: webgwas
   become: yes
   vars:
@@ -43,13 +42,13 @@
   
   tasks:
     - name: Update and upgrade yum packages
-      yum:
+      dnf:
         update_cache: yes
         name: '*'
         state: latest
     
     - name: Install required packages
-      yum:
+      dnf:
         name:
           - nginx
           - git
@@ -106,7 +105,7 @@
 
     - name: Obtain and install SSL certificate
       shell: 
-        uvx --with certbot --with certbot-nginx certbot --nginx -d webgwas.org -d www.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+        uvx --with certbot --with certbot-nginx certbot --nginx -d api.webgwas.org -d www.api.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
       args:
         executable: /bin/bash
         creates: /etc/letsencrypt/live/webgwas.org/fullchain.pem
