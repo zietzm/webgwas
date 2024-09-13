@@ -40,51 +40,49 @@
   vars:
     repo_url: https://github.com/zietzm/webgwas-frontend.git
     repo_dest: webgwas-frontend
-    temp_build_dir: webgwas-frontend-build
     build_output_dir: out
     gh_pages_branch: gh-pages
     gh_pages_dest: gh-pages-temp
+    deploy_url: webgwas.org
   tasks:
-    - name: Ensure previous temporary build directory is removed
-      file:
-        path: "{{ temp_build_dir }}"
-        state: absent
-    - name: Create temporary build directory
-      file:
-        path: "{{ temp_build_dir }}"
-        state: directory
-    - name: Clone the webgwas-frontend repository into temporary directory
+    - name: Clone the webgwas-frontend repository
       git:
         repo: "{{ repo_url }}"
-        dest: "{{ temp_build_dir }}/{{ repo_dest }}"
+        dest: "{{ repo_dest }}"
         version: main
         depth: 1
-      register: git_repo
-    - name: Clone the gh-pages branch into temporary directory
+      register: frontend_git_repo
+    - name: Clone the gh-pages branch
       git:
         repo: "{{ repo_url }}"
-        dest: "{{ temp_build_dir }}/{{ gh_pages_dest }}"
+        dest: "{{ gh_pages_dest }}"
         version: "{{ gh_pages_branch }}"
         depth: 1
     - name: Clean the gh-pages branch directory
       shell: |
         rm -rf *
       args:
-        chdir: "{{ temp_build_dir }}/{{ gh_pages_dest }}"
+        chdir: "{{ gh_pages_dest }}"
         executable: /bin/bash
+      when: frontend_git_repo.changed
     - name: Build the frontend
       shell: |
         bun install
         bun run next build
       args:
-        chdir: "{{ temp_build_dir }}/{{ repo_dest }}"
-      when: git_repo.changed
+        chdir: "{{ repo_dest }}"
+      when: frontend_git_repo.changed
     - name: Move build output to gh-pages directory
       shell: |
         mv {{ repo_dest }}/{{ build_output_dir }}/* {{ gh_pages_dest }}/
       args:
-        chdir: "{{ temp_build_dir }}"
         executable: /bin/bash
+      when: frontend_git_repo.changed
+    - name: Create CNAME file
+      copy:
+        content: "{{ deploy_url }}"
+        dest: "{{ gh_pages_dest }}/CNAME"
+      when: frontend_git_repo.changed
     - name: Commit and push changes to gh-pages branch
       shell: |
         git add -A
@@ -94,13 +92,10 @@
         else
           echo "No changes to commit"
         fi
+      when: frontend_git_repo.changed
       args:
-        chdir: "{{ temp_build_dir }}/{{ gh_pages_dest }}"
+        chdir: "{{ gh_pages_dest }}"
         executable: /bin/bash
-    - name: Clean up temporary build directory
-      file:
-        path: "{{ temp_build_dir }}"
-        state: absent
 
 - name: Deploy WebGWAS
   hosts: webgwas
