@@ -1,15 +1,13 @@
-use crate::atomics::AtomicF32;
 use anyhow::{anyhow, Context, Result};
-use core::sync::atomic::Ordering;
 use itertools::izip;
 use log::debug;
+use ndarray::prelude::*;
 use polars::prelude::*;
 use rayon::prelude::*;
-use std::sync::atomic::AtomicI32;
-use std::sync::Mutex;
 use std::{fs::File, io::BufWriter};
 use zstd::stream::AutoFinishEncoder;
 
+#[derive(Debug)]
 pub struct Projection {
     pub feature_id: Vec<String>,
     pub feature_coefficient: Vec<f32>,
@@ -53,6 +51,28 @@ impl Projection {
         self.feature_coefficient = new_feature_coefficient;
     }
 
+    pub fn standardize(&mut self, full_feature_ids: &[String]) {
+        let mut new_feature_coefficient = Vec::new();
+        for feature_id in full_feature_ids {
+            match self.feature_id.contains(feature_id) {
+                true => {
+                    let original_index = self
+                        .feature_id
+                        .iter()
+                        .position(|x| x == feature_id)
+                        .unwrap();
+                    new_feature_coefficient.push(self.feature_coefficient[original_index]);
+                }
+                false => {
+                    new_feature_coefficient.push(0.0);
+                }
+            }
+        }
+        self.feature_coefficient = new_feature_coefficient;
+        self.feature_id = full_feature_ids.to_vec();
+        self.n_features = full_feature_ids.len();
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = (&String, &f32)> {
         self.feature_id.iter().zip(self.feature_coefficient.iter())
     }
@@ -83,52 +103,11 @@ pub struct SingleVariantRunningStats {
     pub degrees_of_freedom: i32,
 }
 
-pub struct RunningStatsAtomic {
-    pub variant_id: Mutex<Vec<String>>,
-    pub n_variants: usize,
-    pub beta: Vec<AtomicF32>,
-    pub genotype_variance: Vec<AtomicF32>,
-    pub degrees_of_freedom: Vec<AtomicI32>,
-}
-
 pub struct RunningStats {
     pub variant_id: Vec<String>,
     pub beta: Vec<f32>,
     pub genotype_variance: Vec<f32>,
     pub degrees_of_freedom: Vec<i32>,
-}
-
-impl RunningStatsAtomic {
-    pub fn new(n_variants: usize) -> Self {
-        RunningStatsAtomic {
-            variant_id: Mutex::new(Vec::new()),
-            n_variants,
-            beta: (0..n_variants).map(|_| AtomicF32::new(0.0)).collect(),
-            genotype_variance: (0..n_variants).map(|_| AtomicF32::new(0.0)).collect(),
-            degrees_of_freedom: (0..n_variants).map(|_| AtomicI32::new(i32::MAX)).collect(),
-        }
-    }
-
-    pub fn de_atomize(self) -> RunningStats {
-        RunningStats {
-            variant_id: self.variant_id.lock().unwrap().to_vec(),
-            beta: self
-                .beta
-                .into_iter()
-                .map(|b| b.load(Ordering::Relaxed))
-                .collect(),
-            genotype_variance: self
-                .genotype_variance
-                .into_iter()
-                .map(|gv| gv.load(Ordering::Relaxed))
-                .collect(),
-            degrees_of_freedom: self
-                .degrees_of_freedom
-                .into_iter()
-                .map(|dof| dof.load(Ordering::Relaxed))
-                .collect(),
-        }
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -160,90 +139,50 @@ pub struct FeatureStats {
     pub degrees_of_freedom: Int32Chunked,
 }
 
-fn get_columns(df: &DataFrame, feature_id: &str, needs_variant_id: bool) -> Result<FeatureStats> {
-    let feature_column_df = df
-        .column(feature_id)
-        .with_context(|| anyhow!("Feature column not found."))?
-        .struct_()
-        .with_context(|| anyhow!("Feature column {} is not a struct", feature_id))?
-        .clone()
-        .unnest();
-    let betas = feature_column_df
-        .column("beta")
-        .with_context(|| anyhow!("Feature column does not have a beta column."))?
-        .f32()
-        .with_context(|| anyhow!("Couldn't cast feature column - beta column to Float32Array."))?;
-    let genotype_variances = feature_column_df
-        .column("genotype_variance")
-        .with_context(|| anyhow!("Feature column does not have a genotype_variance column."))?
-        .f32()
-        .with_context(|| {
-            anyhow!("Couldn't cast feature column - genotype_variance column to Float32Array.")
-        })?;
-    let degrees_of_freedom = feature_column_df
-        .column("degrees_of_freedom")
-        .with_context(|| anyhow!("Feature column does not have a degrees_of_freedom column."))?
-        .i32()
-        .with_context(|| {
-            anyhow!("Couldn't cast feature column - degrees_of_freedom column to Int32Array.")
-        })?;
-    let variant_ids = if needs_variant_id {
-        let variant_ids = df
-            .column("variant_id")
-            .with_context(|| anyhow!("Feature column does not have a variant_id column."))?
-            .str()
-            .with_context(|| anyhow!("Couldn't cast variant_id column to StringArray."))?
+pub fn compute_batch_stats(df: &DataFrame, projection: &mut Projection) -> Result<RunningStats> {
+    let (gwas_beta, feature_ids) = {
+        let gwas_beta_df = df.drop_many(["variant_id", "genotype_variance", "degrees_of_freedom"]);
+        let feature_ids = gwas_beta_df
+            .get_column_names()
             .iter()
-            .map(|s| s.unwrap().to_string())
+            .map(|x| x.to_string())
             .collect::<Vec<String>>();
-        Some(variant_ids)
-    } else {
-        None
+        let gwas_beta = gwas_beta_df.to_ndarray::<Float32Type>(IndexOrder::Fortran)?;
+        (gwas_beta, feature_ids)
     };
-    Ok(FeatureStats {
-        variant_id: variant_ids,
-        beta: betas.clone(),
-        genotype_variance: genotype_variances.clone(),
-        degrees_of_freedom: degrees_of_freedom.clone(),
+    projection.standardize(&feature_ids);
+    let projection_coefs = Array1::from_vec(projection.feature_coefficient.clone());
+    let gwas_beta = gwas_beta.dot(&projection_coefs).to_vec();
+    let variant_id = df
+        .column("variant_id")
+        .context("No variant_id column")?
+        .str()
+        .context("variant_id column is not str")?
+        .iter()
+        .map(|x| x.expect("Failed to get variant_id").to_string())
+        .collect::<Vec<String>>();
+    let genotype_variance = df
+        .column("genotype_variance")
+        .context("No genotype_variance column")?
+        .f32()
+        .context("genotype_variance column is not f32")?
+        .iter()
+        .collect::<Option<Vec<f32>>>()
+        .expect("Failed to collect genotype_variance");
+    let degrees_of_freedom = df
+        .column("degrees_of_freedom")
+        .context("No degrees_of_freedom column")?
+        .i32()
+        .context("Degrees_of_freedom column is not i32")?
+        .iter()
+        .collect::<Option<Vec<i32>>>()
+        .expect("Failed to collect degrees_of_freedom");
+    Ok(RunningStats {
+        variant_id,
+        beta: gwas_beta,
+        genotype_variance,
+        degrees_of_freedom,
     })
-}
-
-pub fn compute_batch_stats_running(
-    df: &DataFrame,
-    projection: &mut Projection,
-) -> Result<RunningStatsAtomic> {
-    let n_variants = df.height();
-    let running_stats = Arc::new(RunningStatsAtomic::new(n_variants));
-    projection.remove_zeros();
-    let first_feature_id = projection.feature_id[0].clone();
-    let is_first_feature = |feature_id: &String| *feature_id == first_feature_id;
-
-    projection
-        .par_iter()
-        .for_each(|(feature_id, projection_coefficient)| {
-            let feature_stats = get_columns(df, feature_id, is_first_feature(feature_id)).unwrap();
-            if is_first_feature(feature_id) {
-                let mut state = running_stats
-                    .variant_id
-                    .lock()
-                    .expect("Failed to lock variant_id");
-                *state = feature_stats.variant_id.expect("Failed to get variant_id");
-            }
-            for i in 0..feature_stats.beta.len() {
-                running_stats.beta[i]
-                    .add(projection_coefficient * feature_stats.beta.get(i).unwrap());
-                running_stats.genotype_variance[i].add(
-                    feature_stats.genotype_variance.get(i).unwrap() / projection.n_features as f32,
-                );
-                running_stats.degrees_of_freedom[i].fetch_min(
-                    feature_stats.degrees_of_freedom.get(i).unwrap(),
-                    Ordering::Relaxed,
-                );
-            }
-        });
-    Arc::try_unwrap(running_stats)
-        .ok()
-        .context("Failed to unwrap running stats")
 }
 
 /// Compute the minor allele frequency from the variance of the additively
@@ -355,9 +294,7 @@ pub fn run_igwas_df_impl(
     n_threads: usize,
 ) -> Result<()> {
     debug!("Computing batch stats");
-    let atomic_running_stats = compute_batch_stats_running(gwas_df, projection)?;
-    debug!("De-atomizing running stats");
-    let running_stats = atomic_running_stats.de_atomize();
+    let running_stats = compute_batch_stats(gwas_df, projection)?;
     debug!("Computing batch results");
     let result_stats = compute_batch_results(running_stats, projection_variance, n_covariates)?;
     debug!("Converting results to dataframe");
