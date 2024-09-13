@@ -39,8 +39,7 @@ export function simplePhenotypeBuilderUsage() {
         The resulting phenotype would look like this:
       </p>
       <Image
-        unoptimized
-        src={"/exampleSimplePT.png"}
+        src={"/exampleSimplePt.png"}
         alt={"Example phenotype"}
         width="0"
         height="0"
