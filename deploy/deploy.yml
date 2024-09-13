@@ -14,10 +14,12 @@
         dest: "{{ repo_dest }}"
         depth: 1
       register: git_repo
+
     - name: Check if the binary exists
       stat:
         path: "{{ binary_dest }}"
       register: binary_stat
+
     - name: Compile the backend if there are changes or binary is missing
       shell: |
         cargo zigbuild --release --target aarch64-unknown-linux-gnu
@@ -32,71 +34,6 @@
         BLIS_CONFNAME: cortexa57
       when: git_repo.before != git_repo.after or not binary_stat.stat.exists
 
-
-- name: Build and deploy frontend
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
-    repo_url: https://github.com/zietzm/webgwas-frontend.git
-    repo_dest: webgwas-frontend
-    build_output_dir: out
-    gh_pages_branch: gh-pages
-    gh_pages_dest: gh-pages-temp
-    deploy_url: webgwas.org
-  tasks:
-    - name: Clone the webgwas-frontend repository
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ repo_dest }}"
-        version: main
-        depth: 1
-      register: frontend_git_repo
-    - name: Clone the gh-pages branch
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ gh_pages_dest }}"
-        version: "{{ gh_pages_branch }}"
-        depth: 1
-    - name: Clean the gh-pages branch directory
-      shell: |
-        rm -rf *
-      args:
-        chdir: "{{ gh_pages_dest }}"
-        executable: /bin/bash
-      when: frontend_git_repo.before != frontend_git_repo.after
-    - name: Build the frontend
-      shell: |
-        bun install --frozen-lockfile
-        bun run next build
-      args:
-        chdir: "{{ repo_dest }}"
-      when: frontend_git_repo.before != frontend_git_repo.after
-    - name: Move build output to gh-pages directory
-      shell: |
-        mv {{ repo_dest }}/{{ build_output_dir }}/* {{ gh_pages_dest }}/
-      args:
-        executable: /bin/bash
-      when: frontend_git_repo.before != frontend_git_repo.after
-    - name: Create CNAME file
-      copy:
-        content: "{{ deploy_url }}"
-        dest: "{{ gh_pages_dest }}/CNAME"
-      when: frontend_git_repo.before != frontend_git_repo.after
-    - name: Commit and push changes to gh-pages branch
-      shell: |
-        git add -A
-        if ! git diff-index --quiet HEAD; then
-          git commit -m "Deploy to gh-pages branch"
-          git push origin "{{ gh_pages_branch }}"
-        else
-          echo "No changes to commit"
-        fi
-      when: frontend_git_repo.before != frontend_git_repo.after
-      args:
-        chdir: "{{ gh_pages_dest }}"
-        executable: /bin/bash
-
 - name: Deploy WebGWAS
   hosts: webgwas
   become: yes
@@ -104,13 +41,16 @@
     nginx_conf_path: "/etc/nginx/conf.d/webgwas.conf"
     nginx_basic_conf_file: "nginx-basic.conf"
     nginx_conf_file: "nginx.conf"
+    frontend_repo_url: https://github.com/zietzm/webgwas-frontend.git
+    frontend_repo_dest: /home/ec2-user/webgwas-frontend
+    backend_binary_dest: /home/ec2-user/webgwas_backend
   tasks:
     - name: Update and upgrade packages
       dnf:
         update_cache: yes
         name: '*'
         state: latest
-    
+
     - name: Install required packages
       dnf:
         name:
@@ -120,6 +60,7 @@
           - tmux
           - htop
           - sqlite.aarch64
+          - curl
         state: present
 
     - name: Copy Nginx config file
@@ -143,16 +84,80 @@
         state: started
         enabled: yes
 
-    - name: Obtain and install SSL certificate
-      shell: 
-        uvx --with certbot --with certbot-nginx certbot --nginx -d api.webgwas.org -d www.api.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+    # Install Bun
+    - name: Install Bun
+      become_user: ec2-user
+      shell: |
+        if [ ! -d "/home/ec2-user/.bun" ]; then
+          curl -fsSL https://bun.sh/install | bash
+        fi
       args:
         executable: /bin/bash
-        creates: /etc/letsencrypt/live/api.webgwas.org/fullchain.pem
+
+    - name: Ensure Bun is in PATH
+      lineinfile:
+        path: /home/ec2-user/.bashrc
+        line: 'export PATH="/home/ec2-user/.bun/bin:$PATH"'
+      become_user: ec2-user
+
+    # Clone or update the frontend repository
+    - name: Clone or update the frontend repository
+      git:
+        repo: "{{ frontend_repo_url }}"
+        dest: "{{ frontend_repo_dest }}"
+        version: main
+        update: yes
+        force: yes
+        accept_hostkey: yes
+      become_user: ec2-user
+
+    # Install frontend dependencies
+    - name: Install frontend dependencies
+      shell: |
+        /home/ec2-user/.bun/bin/bun install --frozen-lockfile
+      args:
+        chdir: "{{ frontend_repo_dest }}"
+      become_user: ec2-user
+
+    # Build the frontend
+    - name: Build the frontend
+      shell: |
+        /home/ec2-user/.bun/bin/bun run next build
+      args:
+        chdir: "{{ frontend_repo_dest }}"
+      become_user: ec2-user
+
+    # Copy frontend systemd service file
+    - name: Copy frontend systemd service file
+      template:
+        src: frontend.service.j2
+        dest: /etc/systemd/system/frontend.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd
+
+    # Enable and restart frontend service
+    - name: Enable and restart frontend service
+      systemd:
+        name: frontend
+        state: restarted
+        enabled: yes
+
+    - name: Obtain and install SSL certificate
+      shell:
+        uvx --with certbot --with certbot-nginx certbot --nginx -d webgwas.org -d www.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+      args:
+        executable: /bin/bash
+        creates: /etc/letsencrypt/live/webgwas.org/fullchain.pem
 
     - name: Ensure Certbot renew timer is enabled
-      shell: |
-        echo "0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
+      cron:
+        name: "Certbot Renew"
+        minute: "0"
+        hour: "0,12"
+        user: root
+        job: '/opt/certbot/bin/python -c "import random; import time; time.sleep(random.random() * 3600)" && sudo certbot renew -q'
 
     - name: Copy full Nginx config file
       template:
@@ -168,37 +173,48 @@
         aws s3 sync s3://webgwas/prod_data /home/ec2-user/prod_data --delete
         aws s3 cp s3://webgwas/backend.db /home/ec2-user/backend.db
 
-    - name: copy backend binary
+    - name: Copy backend binary
       copy:
         src: webgwas_backend
-        dest: /home/ec2-user/webgwas_backend
-
-    - name: make the backend executable
-      file:
-        path: /home/ec2-user/webgwas_backend
+        dest: "{{ backend_binary_dest }}"
+        owner: ec2-user
+        group: ec2-user
         mode: '0755'
 
-    - name: copy settings file
+    - name: Make the backend executable
+      file:
+        path: "{{ backend_binary_dest }}"
+        mode: '0755'
+
+    - name: Copy settings file
       copy:
         src: webgwas-backend/settings.toml
         dest: /home/ec2-user/settings.toml
+        owner: ec2-user
+        group: ec2-user
+        mode: '0644'
 
     - name: Copy backend systemd service file
       copy:
         src: backend.service
         dest: /etc/systemd/system/backend.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd
 
-    - name: Restart the backend systemd service
+    - name: Enable and restart backend service
       systemd:
         name: backend
         state: restarted
-
-    - name: Systemd reload
-      systemd:
-        daemon_reload: yes
+        enabled: yes
 
   handlers:
     - name: Reload Nginx
       systemd:
         name: nginx
         state: reloaded
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
