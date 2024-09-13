@@ -85,7 +85,6 @@
         state: started
         enabled: yes
 
-    # Install Bun
     - name: Install Bun
       become_user: ec2-user
       shell: |
@@ -101,7 +100,6 @@
         line: 'export PATH="/home/ec2-user/.bun/bin:$PATH"'
       become_user: ec2-user
 
-    # Clone or update the frontend repository
     - name: Clone or update the frontend repository
       git:
         repo: "{{ frontend_repo_url }}"
@@ -112,7 +110,6 @@
         accept_hostkey: yes
       become_user: ec2-user
 
-    # Install frontend dependencies
     - name: Install frontend dependencies
       shell: |
         /home/ec2-user/.bun/bin/bun install --frozen-lockfile
@@ -120,7 +117,6 @@
         chdir: "{{ frontend_repo_dest }}"
       become_user: ec2-user
 
-    # Build the frontend
     - name: Build the frontend
       shell: |
         /home/ec2-user/.bun/bin/bun run next build
@@ -128,7 +124,6 @@
         chdir: "{{ frontend_repo_dest }}"
       become_user: ec2-user
 
-    # Copy frontend systemd service file
     - name: Copy frontend systemd service file
       template:
         src: frontend.service
@@ -138,7 +133,6 @@
         mode: '0644'
       notify: Reload systemd
 
-    # Enable and restart frontend service
     - name: Enable and restart frontend service
       systemd:
         name: frontend
