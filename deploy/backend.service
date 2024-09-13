@@ -6,7 +6,7 @@ After=network.target
 User=root
 WorkingDirectory=/home/ec2-user/
 Environment="RUST_LOG=debug"
-ExecStart=webgwas_backend
+ExecStart=/home/ec2-user/webgwas_backend
 Restart=always
 RestartSec=1
 
