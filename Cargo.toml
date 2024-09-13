@@ -11,8 +11,8 @@ crate-type = ["lib"]
 [dependencies]
 anyhow = "1.0.86"
 arrow = "53.0.0"
-blas-src = { version = "0.10.0", features = ["openblas"] }
-openblas-src = { version = "0.10.9", features = ["static"] }
+blas-src = { version = "0.10.0", features = ["blis"] }
+blis-src = { version = "0.2.2", features = ["static"] }
 env_logger = "0.11.5"
 igwas = { git = "https://github.com/tatonetti-lab/indirect-gwas", rev = "4f46fa1e" }
 itertools = "0.13.0"
