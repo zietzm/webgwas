@@ -94,12 +94,6 @@
       args:
         executable: /bin/bash
 
-    - name: Ensure Bun is in PATH
-      lineinfile:
-        path: /home/ec2-user/.bashrc
-        line: 'export PATH="/home/ec2-user/.bun/bin:$PATH"'
-      become_user: ec2-user
-
     - name: Clone or update the frontend repository
       git:
         repo: "{{ frontend_repo_url }}"
