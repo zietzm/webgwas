@@ -67,7 +67,7 @@
       when: frontend_git_repo.changed
     - name: Build the frontend
       shell: |
-        bun install
+        bun install --frozen-lockfile
         bun run next build
       args:
         chdir: "{{ repo_dest }}"
