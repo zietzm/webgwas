@@ -131,7 +131,7 @@
     # Copy frontend systemd service file
     - name: Copy frontend systemd service file
       template:
-        src: frontend.service.j2
+        src: frontend.service
         dest: /etc/systemd/system/frontend.service
         owner: root
         group: root
