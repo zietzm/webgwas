@@ -32,6 +32,76 @@
         BLIS_CONFNAME: cortexa57
       when: git_repo.changed or not binary_stat.stat.exists
 
+
+- name: Build and deploy frontend
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    repo_url: https://github.com/zietzm/webgwas-frontend.git
+    repo_dest: webgwas-frontend
+    temp_build_dir: webgwas-frontend-build
+    build_output_dir: out
+    gh_pages_branch: gh-pages
+    gh_pages_dest: gh-pages-temp
+  tasks:
+    - name: Ensure previous temporary build directory is removed
+      file:
+        path: "{{ temp_build_dir }}"
+        state: absent
+    - name: Create temporary build directory
+      file:
+        path: "{{ temp_build_dir }}"
+        state: directory
+    - name: Clone the webgwas-frontend repository into temporary directory
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ temp_build_dir }}/{{ repo_dest }}"
+        version: main
+        depth: 1
+      register: git_repo
+    - name: Clone the gh-pages branch into temporary directory
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ temp_build_dir }}/{{ gh_pages_dest }}"
+        version: "{{ gh_pages_branch }}"
+        depth: 1
+    - name: Clean the gh-pages branch directory
+      shell: |
+        rm -rf *
+      args:
+        chdir: "{{ temp_build_dir }}/{{ gh_pages_dest }}"
+        executable: /bin/bash
+    - name: Build the frontend
+      shell: |
+        bun install
+        bun run next build
+      args:
+        chdir: "{{ temp_build_dir }}/{{ repo_dest }}"
+      when: git_repo.changed
+    - name: Move build output to gh-pages directory
+      shell: |
+        mv {{ repo_dest }}/{{ build_output_dir }}/* {{ gh_pages_dest }}/
+      args:
+        chdir: "{{ temp_build_dir }}"
+        executable: /bin/bash
+    - name: Commit and push changes to gh-pages branch
+      shell: |
+        git add -A
+        if ! git diff-index --quiet HEAD; then
+          git commit -m "Deploy to gh-pages branch"
+          git push origin "{{ gh_pages_branch }}"
+        else
+          echo "No changes to commit"
+        fi
+      args:
+        chdir: "{{ temp_build_dir }}/{{ gh_pages_dest }}"
+        executable: /bin/bash
+    - name: Clean up temporary build directory
+      file:
+        path: "{{ temp_build_dir }}"
+        state: absent
+
 - name: Deploy WebGWAS
   hosts: webgwas
   become: yes
