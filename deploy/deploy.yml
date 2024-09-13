@@ -61,6 +61,7 @@
           - htop
           - sqlite.aarch64
           - curl
+          - cronie
         state: present
 
     - name: Copy Nginx config file
