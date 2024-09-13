@@ -4,24 +4,33 @@
   connection: local
   gather_facts: false
   vars:
-    dependencies:
-      - webgwas
+    repo_url: https://github.com/zietzm/webgwas-backend.git
+    repo_dest: webgwas-backend
+    binary_dest: webgwas_backend
   tasks:
-    # TODO: This should use git so that ansible checks if the repo has changed
-    - name: Compile backend
+    - name: Clone or update the webgwas-backend repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dest }}"
+        depth: 1
+      register: git_repo
+    - name: Check if the binary exists
+      stat:
+        path: "{{ binary_dest }}"
+      register: binary_stat
+    - name: Compile the backend if there are changes or binary is missing
       shell: |
-        rm -rf webgwas-backend
-        git clone --depth 1 https://github.com/zietzm/webgwas-backend.git
-        cd webgwas-backend
-        export TARGET_CC=aarch64-unknown-linux-gnu-gcc
-        export TARGET_FC=aarch64-unknown-linux-gnu-gfortran
-        export TARGET_AR=aarch64-unknown-linux-gnu-ar
-        export TARGET_RANLIB=aarch64-unknown-linux-gnu-ranlib
-        export BLIS_CONFNAME=cortexa57
         cargo zigbuild --release --target aarch64-unknown-linux-gnu
-        mv target/aarch64-unknown-linux-gnu/release/webgwas-backend ../webgwas_backend
+        mv target/aarch64-unknown-linux-gnu/release/webgwas-backend ../{{ binary_dest }}
       args:
-        creates: "webgwas_backend"
+        chdir: "{{ repo_dest }}"
+      environment:
+        TARGET_CC: aarch64-unknown-linux-gnu-gcc
+        TARGET_FC: aarch64-unknown-linux-gnu-gfortran
+        TARGET_AR: aarch64-unknown-linux-gnu-ar
+        TARGET_RANLIB: aarch64-unknown-linux-gnu-ranlib
+        BLIS_CONFNAME: cortexa57
+      when: git_repo.changed or not binary_stat.stat.exists
 
 - name: Deploy WebGWAS
   hosts: webgwas
