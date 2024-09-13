@@ -6,42 +6,32 @@
   vars:
     dependencies:
       - webgwas
-    local_backend_dir: "/Users/zietzm/projects/webgwas-backend/"
-
   tasks:
-    - name: Compile backend locally
+    # TODO: This should use git so that ansible checks if the repo has changed
+    - name: Compile backend
       shell: |
+        rm -rf webgwas-backend
+        git clone --depth 1 https://github.com/zietzm/webgwas-backend.git
+        cd webgwas-backend
         export TARGET_CC=aarch64-unknown-linux-gnu-gcc
         export TARGET_FC=aarch64-unknown-linux-gnu-gfortran
         export TARGET_AR=aarch64-unknown-linux-gnu-ar
         export TARGET_RANLIB=aarch64-unknown-linux-gnu-ranlib
         export BLIS_CONFNAME=cortexa57
-        cargo clean
         cargo zigbuild --release --target aarch64-unknown-linux-gnu
+        mv target/aarch64-unknown-linux-gnu/release/webgwas-backend ../webgwas_backend
       args:
-        chdir: "{{ local_backend_dir }}"
-        creates: "{{ local_backend_dir }}/target/aarch64-unknown-linux-gnu/release/webgwas_backend"
+        creates: "webgwas_backend"
 
 - name: Deploy WebGWAS
   hosts: webgwas
   become: yes
   vars:
-    backend_port: 8000
-    frontend_port: 3000
-    backend_repo: https://github.com/zietzm/webgwas-backend.git
-    backend_branch: main
-    frontend_repo: https://github.com/zietzm/webgwas-frontend.git
-    frontend_branch: main
     nginx_conf_path: "/etc/nginx/conf.d/webgwas.conf"
     nginx_basic_conf_file: "nginx-basic.conf"
     nginx_conf_file: "nginx.conf"
-    email: michael.zietz@gmail.com
-    api_url: "https://webgwas.org"
-    remote_wheel_dir: "/home/ec2-user/backend/wheels"
-    local_wheel_dir: "/Users/zietzm/projects/webgwas/target/wheels"
-  
   tasks:
-    - name: Update and upgrade yum packages
+    - name: Update and upgrade packages
       dnf:
         update_cache: yes
         name: '*'
@@ -51,35 +41,11 @@
       dnf:
         name:
           - nginx
-          - git
-          - gcc 
-          - gcc-c++ 
-          - make
           - perl-FindBin
           - perl-core
           - tmux
           - htop
           - sqlite.aarch64
-        state: present
-
-    - name: Install Cargo
-      shell: |
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-      args:
-        creates: /home/ec2-user/.cargo/bin/cargo
-
-    - name: Install UV
-      shell: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-      args:
-        creates: 
-          - /root/.cargo/bin/uv
-          - /root/.cargo/bin/uvx
-      register: uv_install
-
-    - name: Ensure Nginx is installed
-      yum:
-        name: nginx
         state: present
 
     - name: Copy Nginx config file
@@ -108,7 +74,7 @@
         uvx --with certbot --with certbot-nginx certbot --nginx -d api.webgwas.org -d www.api.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
       args:
         executable: /bin/bash
-        creates: /etc/letsencrypt/live/webgwas.org/fullchain.pem
+        creates: /etc/letsencrypt/live/api.webgwas.org/fullchain.pem
 
     - name: Ensure Certbot renew timer is enabled
       shell: |
@@ -123,83 +89,30 @@
         mode: '0644'
       notify: Reload Nginx
 
-    - name: Clone backend repository
-      git:
-        repo: "{{ backend_repo }}"
-        version: "{{ backend_branch }}"
-        dest: /home/ec2-user/backend
-        force: yes
-
-    - name: Ensure remote wheel directory exists
-      file:
-        path: "{{ remote_wheel_dir }}"
-        state: directory
-
-    - name: Copy wheels to remote server
-      copy:
-        src: "{{ local_wheel_dir }}/"
-        dest: "{{ remote_wheel_dir }}"
-
-    - name: Set up backend with UV
-      shell: |
-        cd /home/ec2-user/backend
-        aws s3 cp s3://webgwas/connectorx-0.3.4a2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl /home/ec2-user/backend/wheels/
-        sed -i 's#"connectorx>=0.3.3"#"connectorx @ file:///home/ec2-user/backend/wheels/connectorx-0.3.4a2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"#g' pyproject.toml
-        sed -i 's#"webgwas @ git+https://github.com/zietzm/webgwas.git"#"webgwas @ file:///home/ec2-user/backend/wheels/webgwas-0.2.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl"#g' pyproject.toml
-        uv sync
-
     - name: Sync data from S3 to EC2
       shell: |
-        aws s3 sync s3://webgwas/prod_data /home/ec2-user/backend/prod_data --delete
-        aws s3 cp s3://webgwas/backend.db /home/ec2-user/backend/backend.db
+        aws s3 sync s3://webgwas/prod_data /home/ec2-user/prod_data --delete
+        aws s3 cp s3://webgwas/backend.db /home/ec2-user/backend.db
 
-    - name: Install Bun
-      shell: |
-        curl -fsSL https://bun.sh/install | bash
-      args:
-        creates: ~/.bun/bin/bun
-
-    - name: Clone frontend repository
-      git:
-        repo: "{{ frontend_repo }}"
-        version: "{{ frontend_branch }}"
-        dest: /home/ec2-user/frontend
-        force: yes
-
-    - name: Write the .env file for Next.js frontend
+    - name: copy backend binary
       copy:
-        dest: /home/ec2-user/frontend/.env
-        content: |
-          NEXT_PUBLIC_API_URL={{ api_url }}
+        src: webgwas_backend
+        dest: /home/ec2-user/webgwas_backend
 
-    - name: Install frontend dependencies with Bun
-      shell: |
-        export BUN_INSTALL="$HOME/.bun"
-        export PATH="$BUN_INSTALL/bin:$PATH"
-        cd /home/ec2-user/frontend
-        bun install
+    - name: make the backend executable
+      file:
+        path: /home/ec2-user/webgwas_backend
+        mode: '0755'
 
-    - name: Build Next.js frontend with Bun
-      shell: |
-        export BUN_INSTALL="$HOME/.bun"
-        export PATH="$BUN_INSTALL/bin:$PATH"
-        cd /home/ec2-user/frontend
-        bun run build
+    - name: copy settings file
+      copy:
+        src: webgwas-backend/settings.toml
+        dest: /home/ec2-user/settings.toml
 
     - name: Copy backend systemd service file
       copy:
         src: backend.service
         dest: /etc/systemd/system/backend.service
-
-    - name: Copy frontend systemd service file
-      copy:
-        src: frontend.service
-        dest: /etc/systemd/system/frontend.service
-
-    - name: Restart the frontend systemd service
-      systemd:
-        name: frontend
-        state: restarted
 
     - name: Restart the backend systemd service
       systemd:

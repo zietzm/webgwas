@@ -1,13 +1,12 @@
 [Unit]
-Description=FastAPI Backend Service
+Description=WebGWAS Backend Service
 After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/home/ec2-user/backend
-Environment=PATH=/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment="DYNACONF_DRY_RUN=false"
-ExecStart=/root/.cargo/bin/uv run fastapi run src/webgwas_backend/main.py  --host localhost --port 8000
+WorkingDirectory=/home/ec2-user/
+Environment="RUST_LOG=debug"
+ExecStart=webgwas_backend
 Restart=always
 RestartSec=1
 
