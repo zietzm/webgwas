@@ -116,6 +116,8 @@
         /home/ec2-user/.bun/bin/bun run next build
       args:
         chdir: "{{ frontend_repo_dest }}"
+      environment:
+        NEXT_PUBLIC_API_URL: "https://webgwas.org/api"
       become_user: ec2-user
 
     - name: Copy frontend systemd service file
