@@ -321,6 +321,7 @@ export default function SimplePhenotypeBuilder() {
       {selectedCohort && jobStatus === null && (
         <div className="my-6">
           <FuzzySelect
+            fuseThreshold={0.3} // Higher number is more lenient
             options={features}
             closeMenuOnSelect={false}
             onChange={(selectedOption) => {
