@@ -7,7 +7,7 @@ import {
   MinusCircle,
   Download,
 } from "lucide-react";
-import Select from "react-select";
+import FuzzySelect from "./FuzzySelect";
 import { Cohort, Feature, ListNode, PhenotypeSummary } from "../lib/types";
 import Image from "next/image";
 import {
@@ -320,7 +320,7 @@ export default function SimplePhenotypeBuilder() {
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
       {selectedCohort && jobStatus === null && (
         <div className="my-6">
-          <Select
+          <FuzzySelect
             options={features}
             closeMenuOnSelect={false}
             onChange={(selectedOption) => {
