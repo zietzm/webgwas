@@ -20,7 +20,7 @@ log = "0.4.22"
 mdav = { git = "https://github.com/zietzm/mdav", version = "0.2.1" }
 ndarray = { version = "0.15.6", features = ["blas"] }
 parquet = "53.0.0"
-polars = { version = "0.43.0", features = ["dtype-struct", "parquet", "polars-io", "ndarray"] }
+polars = { git = "https://github.com/pola-rs/polars", version = "0.43.1", features = ["lazy", "parquet", "performant", "ndarray", "rows", "zip_with"] }
 rayon = "1.10.0"
 serde = { version = "1.0.208", features = ["derive"] }
 zstd = "0.13.2"
