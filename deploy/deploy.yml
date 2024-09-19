@@ -26,12 +26,6 @@
         mv target/aarch64-unknown-linux-gnu/release/webgwas-backend ../{{ binary_dest }}
       args:
         chdir: "{{ repo_dest }}"
-      environment:
-        TARGET_CC: aarch64-unknown-linux-gnu-gcc
-        TARGET_FC: aarch64-unknown-linux-gnu-gfortran
-        TARGET_AR: aarch64-unknown-linux-gnu-ar
-        TARGET_RANLIB: aarch64-unknown-linux-gnu-ranlib
-        BLIS_CONFNAME: cortexa57
       when: git_repo.before != git_repo.after or not binary_stat.stat.exists
 
 - name: Deploy WebGWAS
