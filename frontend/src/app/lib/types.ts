@@ -8,6 +8,7 @@ export interface Feature {
   code: string;
   name: string;
   node_type: string;
+  sample_size: number;
 }
 
 export interface Operator {

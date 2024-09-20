@@ -70,7 +70,7 @@ export default function SimplePhenotypeBuilder() {
 
   // Fetch cohorts
   useEffect(() => {
-    const doFetch = async () => {
+    async function doFetch() {
       setIsLoading(true);
       try {
         const cohorts = await fetchCohorts(API_URL);
@@ -83,18 +83,18 @@ export default function SimplePhenotypeBuilder() {
         setError(errorMessage);
       }
       setIsLoading(false);
-    };
+    }
     doFetch();
   }, []);
 
   // Fetch features
   useEffect(() => {
-    const handleFetchFeatures = async () => {
+    async function handleFetchFeatures() {
       if (selectedCohort) {
         const cohortFeatures = await fetchFeatures(API_URL, selectedCohort);
         setFeatures(cohortFeatures);
       }
-    };
+    }
     handleFetchFeatures();
   }, [selectedCohort]);
 
@@ -228,7 +228,8 @@ export default function SimplePhenotypeBuilder() {
             {node.negated && jobStatus !== null && (
               <b className="mr-1 p-1 text-red-600 bg-red-100 rounded">NOT</b>
             )}
-            {node.feature.name} [{node.feature.code}]
+            {node.feature.name} [{node.feature.code}] (N=
+            {node.feature.sample_size})
             {jobStatus === null && !node.negated && (
               <button
                 onClick={() => {
@@ -332,7 +333,9 @@ export default function SimplePhenotypeBuilder() {
               setPhenotype([...phenotype, node]);
             }}
             value={null}
-            getOptionLabel={(option) => `${option!.name} [${option!.code}]`}
+            getOptionLabel={(option) =>
+              `${option!.name} [${option!.code}] (N=${option!.sample_size})`
+            }
             getOptionValue={(option) => `${option!.id}`}
             placeholder="Search for a field..."
             className="mb-2"
