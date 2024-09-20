@@ -9,7 +9,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ZAxis,
-  ReferenceDot,
 } from "recharts";
 import { PhenotypeSummary } from "../lib/types";
 

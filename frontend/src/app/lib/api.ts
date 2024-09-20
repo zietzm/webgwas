@@ -22,9 +22,34 @@ export interface ValidationResponse {
 
 export interface ResultsResponse {
   request_id: string;
-  status: "queued" | "done" | "error";
+  status: "queued" | "uploading" | "done" | "error";
   error_msg: string | null;
   url: string | null;
+}
+
+export interface PvaluesResponse {
+  request_id: string;
+  status: "queued" | "uploading" | "done" | "error";
+  error_msg: string | null;
+  variant_ids: string[] | null;
+  pvalues: number[] | null;
+}
+
+export interface Pvalues {
+  variant_id: string[];
+  pvalue: number[];
+}
+
+export interface VariantPvalue {
+  variant_id: string;
+  pvalue: number;
+}
+
+export function pvaluesToVariantPvalues(pvalues: Pvalues): VariantPvalue[] {
+  return pvalues.variant_id.map((vid, i) => ({
+    variant_id: vid,
+    pvalue: pvalues.pvalue[i],
+  }));
 }
 
 export async function fetchCohorts(url: string): Promise<Cohort[]> {
@@ -151,6 +176,32 @@ export async function getResults(
   }
   const result = await response.json();
   return result as ResultsResponse;
+}
+
+export async function getPvalues(
+  url: string,
+  requestId: string,
+): Promise<Pvalues> {
+  const myUrl = new URL(`${url}/igwas/results/pvalues/${requestId}`);
+  const response = await fetch(myUrl.href, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch results: ${response.status}`);
+  }
+  const result = (await response.json()) as PvaluesResponse;
+  if (result.pvalues !== null && result.variant_ids !== null) {
+    return {
+      variant_id: result.variant_ids,
+      pvalue: result.pvalues,
+    };
+  }
+  console.log(result);
+  throw new Error("Failed to get pvalues");
 }
 
 export function convertFeaturetoRPN(node: Feature): string {

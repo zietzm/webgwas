@@ -17,8 +17,12 @@ import {
   getResults,
   fetchFeatures,
   getPhenotypeSummary,
+  getPvalues,
+  VariantPvalue,
+  pvaluesToVariantPvalues,
 } from "../lib/api";
 import PhenotypeScatterPlots from "./PhenotypeSummary";
+import ManhattanPlot from "./ManhattanPlot";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -67,6 +71,7 @@ export default function SimplePhenotypeBuilder() {
     "submitting" | "queued" | "done" | "error" | null
   >(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [pvals, setPvals] = useState<VariantPvalue[] | null>(null);
 
   // Fetch cohorts
   useEffect(() => {
@@ -135,14 +140,25 @@ export default function SimplePhenotypeBuilder() {
   async function pollJobStatus(requestId: string) {
     try {
       const result = await getResults(API_URL, requestId);
-      if (result.status === "done") {
-        setJobStatus("done");
-        downloadResults(requestId);
-      } else if (result.status === "error") {
-        setJobStatus("error");
-        console.error("GWAS job failed. Please try again.", result);
-      } else {
-        setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
+      switch (result.status) {
+        case "done":
+          setJobStatus("done");
+          if (pvals === null) {
+            await downloadPvals(requestId);
+          }
+          downloadResults(requestId);
+          break;
+        case "error":
+          setJobStatus("error");
+          console.error("GWAS job failed. Please try again.", result);
+          break;
+        case "uploading":
+          if (pvals === null) {
+            await downloadPvals(requestId);
+          }
+          break;
+        default:
+          setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
       }
     } catch (err) {
       console.error("Error polling job status:", err);
@@ -157,6 +173,18 @@ export default function SimplePhenotypeBuilder() {
     } catch (err) {
       console.error("Error downloading results:", err);
       alert("Failed to download results. Please try again.");
+      setJobStatus("error");
+    }
+  }
+
+  async function downloadPvals(requestId: string) {
+    try {
+      const result = await getPvalues(API_URL, requestId);
+      const variantPvalues = pvaluesToVariantPvalues(result);
+      setPvals(variantPvalues);
+    } catch (err) {
+      console.error("Error downloading pvalues:", err);
+      alert("Failed to download pvalues. Please try again.");
       setJobStatus("error");
     }
   }
@@ -343,11 +371,8 @@ export default function SimplePhenotypeBuilder() {
         </div>
       )}
       {phenotype.length > 0 && <GWASButtons />}
-      {summary && (
-        <div className="mb-6">
-          <PhenotypeScatterPlots data={summary} />
-        </div>
-      )}
+      {summary && <PhenotypeScatterPlots data={summary} />}
+      {pvals && <ManhattanPlot data={pvals} />}
     </div>
   );
 }
