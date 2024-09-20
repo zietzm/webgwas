@@ -1,4 +1,3 @@
-import React from "react";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import HighchartsBoost from "highcharts/modules/boost";
@@ -97,6 +96,9 @@ export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
   });
 
   const options = {
+    credits: {
+      enabled: false,
+    },
     chart: {
       type: "scatter",
       zoomType: "xy",
