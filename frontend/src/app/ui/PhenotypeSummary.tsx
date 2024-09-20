@@ -10,7 +10,13 @@ import {
   ReferenceLine,
   ZAxis,
 } from "recharts";
+import HighchartsReact from "highcharts-react-official";
+import Highcharts from "highcharts";
+import HighchartsBoost from "highcharts/modules/boost";
 import { PhenotypeSummary } from "../lib/types";
+import PhenotypePlot from "./PhenotypePlot";
+import PhenotypeFitPlot from "./PhenotypeFitPlot";
+HighchartsBoost(Highcharts);
 
 interface PhenotypeScatterPlotsProps {
   data: PhenotypeSummary;
@@ -90,138 +96,29 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
 }) => {
   const { phenotype_values, rsquared, fit_quality_reference } = data;
 
-  const minX = Math.min(...phenotype_values.map((p) => p.t));
-  const minY = Math.min(...phenotype_values.map((p) => p.a));
-  const maxX = Math.max(...phenotype_values.map((p) => p.t));
-  const maxY = Math.max(...phenotype_values.map((p) => p.a));
-  const xMin = Math.min(minX, minY);
-  const xMax = Math.max(maxX, maxY);
+  let phenotypeData: number[][] = phenotype_values.map((p) => [p.t, p.a]);
+  let fitQualityData: number[][] = fit_quality_reference.map((p) => [p.p, p.g]);
 
   return (
     <div className="flex flex-col space-y-4">
       <h2 className="text-xl font-bold">Summary of the phenotype</h2>
       <div className="flex flex-row space-x-2">
         <div className="w-1/2">
-          <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid />
-              <XAxis
-                type="number"
-                dataKey="t"
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: "True phenotype",
-                  position: "bottom",
-                  offset: 0,
-                }}
-              />
-              <YAxis
-                type="number"
-                dataKey="a"
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: "Approximate phenotype",
-                  angle: -90,
-                  position: "left",
-                  offset: 12,
-                  style: { textAnchor: "middle" },
-                }}
-              />
-              <ZAxis type="number" dataKey="n" />
-              <Scatter
-                name="Phenotypes"
-                data={phenotype_values}
-                fill="#8884d8"
-                fillOpacity={0.5}
-              />
-              <Tooltip
-                cursor={{ strokeDasharray: "3 3" }}
-                content={<PhenotypeTooltip />}
-              />
-              <ReferenceLine
-                stroke="grey"
-                strokeDasharray="3 3"
-                segment={[
-                  { x: xMin, y: xMin },
-                  { x: xMax, y: xMax },
-                ]}
-                ifOverflow="hidden"
-              />
-              <ReferenceLine
-                x={minX}
-                r={0}
-                label={
-                  <CustomLabel
-                    dx={40}
-                    dy={30}
-                    value={rsquared.toFixed(2)}
-                    fill="#666"
-                  />
-                }
-              />
-            </ScatterChart>
-          </ResponsiveContainer>
+          <PhenotypePlot
+            data={phenotypeData}
+            xlab="True phenotype"
+            ylab="Approximate phenotype"
+            title="Phenotypes"
+          />
         </div>
         <div className="w-1/2">
-          <ResponsiveContainer width="100%" height={400}>
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <CartesianGrid />
-              <XAxis
-                type="number"
-                dataKey="p"
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: "Phenotype fit",
-                  position: "bottom",
-                  offset: 0,
-                }}
-              />
-              <YAxis
-                type="number"
-                dataKey="g"
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: "GWAS statistics fit",
-                  angle: -90,
-                  position: "left",
-                  offset: 12,
-                  style: { textAnchor: "middle" },
-                }}
-              />
-              <Tooltip
-                cursor={{ strokeDasharray: "3 3" }}
-                content={<FitQualityTooltip />}
-              />
-              <ReferenceLine
-                stroke="grey"
-                strokeDasharray="3 3"
-                segment={[
-                  { x: 0, y: 0 },
-                  { x: 1, y: 1 },
-                ]}
-                ifOverflow="hidden"
-              />
-              <Scatter
-                name="Fit Quality"
-                data={fit_quality_reference}
-                fill="#82ca9d"
-                fillOpacity={0.5}
-              />
-              <ReferenceLine
-                x={rsquared}
-                stroke="red"
-                r={10}
-                label={
-                  <CustomLabel
-                    value={rsquared.toFixed(2)}
-                    dy={100}
-                    dx={rsquared > 0.5 ? -35 : 35}
-                    fill="red"
-                  />
-                }
-              />
-            </ScatterChart>
-          </ResponsiveContainer>
+          <PhenotypeFitPlot
+            data={fitQualityData}
+            rsquared={rsquared}
+            xlab="Phenotype fit"
+            ylab="GWAS statistics fit"
+            title="Fit quality"
+          />
         </div>
       </div>
       <SummaryDocumentation />
