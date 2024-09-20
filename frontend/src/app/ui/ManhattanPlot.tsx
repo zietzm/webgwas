@@ -59,7 +59,6 @@ export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
     x: number;
     y: number;
     color: any;
-    chromosome: string;
     label: string;
   }> = [];
   chromosomes.forEach((chr) => {
@@ -70,7 +69,6 @@ export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
         x: point.bp + offset,
         y: point.p,
         color: color,
-        chromosome: chr,
         label: point.label,
       };
     });
