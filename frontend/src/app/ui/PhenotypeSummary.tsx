@@ -1,22 +1,7 @@
 import React from "react";
-import {
-  ScatterChart,
-  Scatter,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  ZAxis,
-} from "recharts";
-import HighchartsReact from "highcharts-react-official";
-import Highcharts from "highcharts";
-import HighchartsBoost from "highcharts/modules/boost";
 import { PhenotypeSummary } from "../lib/types";
 import PhenotypePlot from "./PhenotypePlot";
 import PhenotypeFitPlot from "./PhenotypeFitPlot";
-HighchartsBoost(Highcharts);
 
 interface PhenotypeScatterPlotsProps {
   data: PhenotypeSummary;
@@ -39,57 +24,6 @@ export function SummaryDocumentation() {
     </div>
   );
 }
-
-const PhenotypeTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white opacity-75 rounded-lg shadow-lg p-4 border border-gray-200">
-        <p className="">{`True : ${payload[0].value}`}</p>
-        <p className="">{`Approx : ${payload[1].value}`}</p>
-        <p className="">{`N : ${payload[2].value}`}</p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const FitQualityTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white opacity-75 rounded-lg shadow-lg p-4 border border-gray-200">
-        <p>
-          Phenotype fit (R<sup>2</sup>): {payload[0].value}
-        </p>
-        <p>
-          GWAS log p-value fit (R<sup>2</sup>): {payload[1].value}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const CustomLabel = ({ viewBox, value, dx, dy, fill }: any) => {
-  return (
-    <g>
-      <text
-        x={viewBox.x}
-        y={viewBox.y}
-        fill={fill}
-        fontSize="14"
-        textAnchor="middle"
-        dx={dx}
-        dy={dy}
-      >
-        R
-        <tspan fontSize="10" baselineShift="super">
-          2
-        </tspan>
-        = {value}
-      </text>
-    </g>
-  );
-};
 
 const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   data,

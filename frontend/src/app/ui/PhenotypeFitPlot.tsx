@@ -1,7 +1,9 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import HighchartsBoost from "highcharts/modules/boost";
-HighchartsBoost(Highcharts);
+if (typeof Highcharts === "object") {
+  HighchartsBoost(Highcharts);
+}
 
 export default function PhenotypeFitPlot({
   data,

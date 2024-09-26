@@ -2,7 +2,9 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import HighchartsBoost from "highcharts/modules/boost";
 import { VariantPvalue } from "../lib/api";
-HighchartsBoost(Highcharts);
+if (typeof Highcharts === "object") {
+  HighchartsBoost(Highcharts);
+}
 
 export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
   const chrData: Map<
@@ -115,7 +117,7 @@ export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
       },
       tickPositions: chrTicks.map((tick) => tick.value),
       labels: {
-        formatter: function (): any {
+        formatter: function (this: any, _ctx: any): any {
           return tickPositionToChr.get(this.value);
         },
       },
