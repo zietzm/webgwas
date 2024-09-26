@@ -36,8 +36,8 @@
     nginx_basic_conf_file: "nginx-basic.conf"
     nginx_conf_file: "nginx.conf"
     frontend_repo_url: https://github.com/zietzm/webgwas-frontend.git
-    frontend_repo_dest: /home/root/webgwas-frontend
-    backend_binary_dest: /home/root/webgwas_backend
+    frontend_repo_dest: /root/webgwas-frontend
+    backend_binary_dest: /root/webgwas_backend
   tasks:
     - name: Update and upgrade packages
       dnf:
@@ -81,7 +81,7 @@
 
     - name: Install Bun
       shell: |
-        if [ ! -d "/home/root/.bun" ]; then
+        if [ ! -d "/root/.bun" ]; then
           curl -fsSL https://bun.sh/install | bash
         fi
       args:
@@ -98,13 +98,13 @@
 
     - name: Install frontend dependencies
       shell: |
-        /home/root/.bun/bin/bun install --frozen-lockfile
+        /root/.bun/bin/bun install --frozen-lockfile
       args:
         chdir: "{{ frontend_repo_dest }}"
 
     - name: Build the frontend
       shell: |
-        /home/root/.bun/bin/bun run next build
+        /root/.bun/bin/bun run next build
       args:
         chdir: "{{ frontend_repo_dest }}"
       environment:
@@ -151,7 +151,7 @@
 
     - name: Sync data from S3 to EC2
       shell: |
-        aws s3 sync s3://webgwas/webgwas/ /home/root/webgwas/ --delete
+        aws s3 sync s3://webgwas/webgwas/ /root/webgwas/ --delete
 
     - name: Copy backend binary
       copy:
@@ -169,7 +169,7 @@
     - name: Copy settings file
       copy:
         src: webgwas-backend/settings.toml
-        dest: /home/root/settings.toml
+        dest: /root/settings.toml
         owner: root
         group: root
         mode: '0644'
