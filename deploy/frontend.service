@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-User=ec2-user
-WorkingDirectory=/home/ec2-user/webgwas-frontend
-ExecStart=/home/ec2-user/.bun/bin/bun run next start
+User=root
+WorkingDirectory=/root/webgwas-frontend
+ExecStart=/root/.bun/bin/bun run next start
 Restart=on-failure
 
 [Install]

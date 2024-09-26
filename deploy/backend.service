@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/home/ec2-user/
+WorkingDirectory=/root/
 Environment="RUST_LOG=info"
-ExecStart=/home/ec2-user/webgwas_backend
+ExecStart=/root/webgwas_backend
 Restart=always
 RestartSec=1
 
