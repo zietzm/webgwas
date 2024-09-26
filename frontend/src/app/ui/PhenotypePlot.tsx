@@ -1,7 +1,9 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
+import highchartsAccessibility from "highcharts/modules/accessibility";
 import HighchartsBoost from "highcharts/modules/boost";
 if (typeof Highcharts === "object") {
+  highchartsAccessibility(Highcharts);
   HighchartsBoost(Highcharts);
 }
 
