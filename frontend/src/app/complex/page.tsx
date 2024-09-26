@@ -1,6 +1,6 @@
 "use client";
 
-import ComplexPhenotypeBuilder from "./ui/ComplexBuilder";
+import ComplexPhenotypeBuilder from "../ui/ComplexBuilder";
 
 export default function Complex() {
   return (
