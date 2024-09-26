@@ -56,6 +56,7 @@
           - sqlite.aarch64
           - curl
           - cronie
+          - nodejs
         state: present
 
     - name: Copy Nginx config file
