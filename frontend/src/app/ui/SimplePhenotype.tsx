@@ -80,6 +80,7 @@ export default function SimplePhenotypeBuilder() {
       try {
         const cohorts = await fetchCohorts(API_URL);
         setCohorts(cohorts);
+        setSelectedCohort(cohorts[0]);
       } catch (error) {
         let errorMessage = "Error fetching cohorts";
         if (error instanceof Error) {
