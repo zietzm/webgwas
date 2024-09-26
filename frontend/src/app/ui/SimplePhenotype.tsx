@@ -98,7 +98,8 @@ export default function SimplePhenotypeBuilder() {
     async function handleFetchFeatures() {
       if (selectedCohort) {
         const cohortFeatures = await fetchFeatures(API_URL, selectedCohort);
-        setFeatures(cohortFeatures);
+        const binaryFeatures = cohortFeatures.filter((f) => f.type === "BOOL");
+        setFeatures(binaryFeatures);
       }
     }
     handleFetchFeatures();
