@@ -22,7 +22,7 @@
 
     - name: Compile the backend if there are changes or binary is missing
       shell: |
-        cargo zigbuild --release --target aarch64-unknown-linux-gnu
+        cargo zigbuild --release --bin webgwas-backend --target aarch64-unknown-linux-gnu
         mv target/aarch64-unknown-linux-gnu/release/webgwas-backend ../{{ binary_dest }}
       args:
         chdir: "{{ repo_dest }}"
@@ -36,8 +36,8 @@
     nginx_basic_conf_file: "nginx-basic.conf"
     nginx_conf_file: "nginx.conf"
     frontend_repo_url: https://github.com/zietzm/webgwas-frontend.git
-    frontend_repo_dest: /home/ec2-user/webgwas-frontend
-    backend_binary_dest: /home/ec2-user/webgwas_backend
+    frontend_repo_dest: /home/root/webgwas-frontend
+    backend_binary_dest: /home/root/webgwas_backend
   tasks:
     - name: Update and upgrade packages
       dnf:
@@ -80,9 +80,8 @@
         enabled: yes
 
     - name: Install Bun
-      become_user: ec2-user
       shell: |
-        if [ ! -d "/home/ec2-user/.bun" ]; then
+        if [ ! -d "/home/root/.bun" ]; then
           curl -fsSL https://bun.sh/install | bash
         fi
       args:
@@ -96,23 +95,20 @@
         update: yes
         force: yes
         accept_hostkey: yes
-      become_user: ec2-user
 
     - name: Install frontend dependencies
       shell: |
-        /home/ec2-user/.bun/bin/bun install --frozen-lockfile
+        /home/root/.bun/bin/bun install --frozen-lockfile
       args:
         chdir: "{{ frontend_repo_dest }}"
-      become_user: ec2-user
 
     - name: Build the frontend
       shell: |
-        /home/ec2-user/.bun/bin/bun run next build
+        /home/root/.bun/bin/bun run next build
       args:
         chdir: "{{ frontend_repo_dest }}"
       environment:
         NEXT_PUBLIC_API_URL: "https://webgwas.org/api"
-      become_user: ec2-user
 
     - name: Copy frontend systemd service file
       template:
@@ -155,15 +151,14 @@
 
     - name: Sync data from S3 to EC2
       shell: |
-        aws s3 sync s3://webgwas/prod_data /home/ec2-user/prod_data --delete
-        aws s3 cp s3://webgwas/backend.db /home/ec2-user/backend.db
+        aws s3 sync s3://webgwas/webgwas/ /home/root/webgwas/ --delete
 
     - name: Copy backend binary
       copy:
         src: webgwas_backend
         dest: "{{ backend_binary_dest }}"
-        owner: ec2-user
-        group: ec2-user
+        owner: root
+        group: root
         mode: '0755'
 
     - name: Make the backend executable
@@ -174,9 +169,9 @@
     - name: Copy settings file
       copy:
         src: webgwas-backend/settings.toml
-        dest: /home/ec2-user/settings.toml
-        owner: ec2-user
-        group: ec2-user
+        dest: /home/root/settings.toml
+        owner: root
+        group: root
         mode: '0644'
 
     - name: Copy backend systemd service file
