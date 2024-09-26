@@ -7,7 +7,7 @@ export interface Feature {
   id: number;
   code: string;
   name: string;
-  node_type: string;
+  type: string;
   sample_size: number;
 }
 
