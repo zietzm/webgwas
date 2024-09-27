@@ -156,6 +156,7 @@ export default function SimplePhenotypeBuilder() {
           console.error("GWAS job failed. Please try again.", result);
           break;
         case "uploading":
+          console.debug("Server is uploading results");
           if (pvals === null) {
             await downloadPvals(requestId);
           }
