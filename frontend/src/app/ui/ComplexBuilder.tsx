@@ -71,7 +71,6 @@ export default function ComplexPhenotypeBuilder() {
         }
         setError(errorMessage);
       }
-      setIsLoading(false);
     };
     doFetch();
   }, []);
@@ -83,6 +82,7 @@ export default function ComplexPhenotypeBuilder() {
         const cohortFeatures = await fetchFeatures(API_URL, selectedCohort);
         setFeatures(cohortFeatures);
       }
+      setIsLoading(false);
     };
     handleFetchFeatures();
   }, [selectedCohort]);
@@ -301,8 +301,8 @@ export default function ComplexPhenotypeBuilder() {
     );
   }
 
-  function handleSelect(newNode: PhenotypeNode | null): void {
-    if (newNode === null || selectedNode === null || phenotype === null) {
+  function handleSelect(newNode: PhenotypeNode): void {
+    if (selectedNode === null || phenotype === null) {
       return;
     }
     setPhenotype(addChild(phenotype, selectedNode.id, newNode));
