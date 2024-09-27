@@ -60,7 +60,8 @@ export function isFeature(p: any): p is Feature {
     typeof p.id === "number" &&
     typeof p.code === "string" &&
     typeof p.name === "string" &&
-    typeof p.node_type === "string"
+    typeof p.type === "string" &&
+    typeof p.sample_size === "number"
   );
 }
 
