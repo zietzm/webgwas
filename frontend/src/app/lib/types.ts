@@ -4,7 +4,6 @@ export interface Cohort {
 }
 
 export interface Feature {
-  id: number;
   code: string;
   name: string;
   type: string;
@@ -57,7 +56,6 @@ export interface PhenotypeSummary {
 export function isFeature(p: any): p is Feature {
   return (
     p &&
-    typeof p.id === "number" &&
     typeof p.code === "string" &&
     typeof p.name === "string" &&
     typeof p.type === "string" &&
