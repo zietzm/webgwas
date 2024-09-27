@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Select from "react-select";
 import { Feature, Operator, PhenotypeNode } from "../lib/types";
 import FuzzySelect from "./FuzzySelect";
 
@@ -122,9 +121,9 @@ export default function NodeSelector({
             }}
             value={null}
             getOptionLabel={(option) =>
-              `${option!.name} [${option!.code}] (N=${option!.sample_size})`
+              `${option!.name} [${option.code}] (N=${option.sample_size})`
             }
-            getOptionValue={(option) => `${option!.id}`}
+            getOptionValue={(option) => option.code}
             placeholder="Search for a field..."
             className="mb-2"
           />
