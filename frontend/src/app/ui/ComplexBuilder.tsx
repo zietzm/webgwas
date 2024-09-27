@@ -99,12 +99,6 @@ export default function ComplexPhenotypeBuilder() {
     try {
       setJobStatus("submitting");
       const phenotypeDefinition = convertTreeToRPN(phenotype);
-      const phenotypeSummary = await getPhenotypeSummary(
-        API_URL,
-        phenotypeDefinition,
-        selectedCohort,
-      );
-      setSummary(phenotypeSummary);
       const result = await runGWAS(
         API_URL,
         phenotypeDefinition,
@@ -138,14 +132,23 @@ export default function ComplexPhenotypeBuilder() {
         phenotypeDefinition,
         selectedCohort,
       );
-      setValidationResult(validationResult);
-      setJobStatus("valid");
       const phenotypeSummary = await getPhenotypeSummary(
         API_URL,
         phenotypeDefinition,
         selectedCohort,
       );
       setSummary(phenotypeSummary);
+      if (phenotypeSummary.rsquared === null) {
+        setValidationResult({
+          is_valid: false,
+          message:
+            "R-squared cannot be calculated for this phenotype (all values are the same). Please try a different definition.",
+        });
+        setJobStatus("error");
+      } else {
+        setValidationResult(validationResult);
+        setJobStatus("valid");
+      }
     } catch (err) {
       let errorMessage = "Error validating the phenotype";
       if (err instanceof Error) {
@@ -256,7 +259,7 @@ export default function ComplexPhenotypeBuilder() {
     const isValid = validationResult.is_valid;
     const message = validationResult.message;
     return (
-      <div className="flex items-center bg-gray-100 p-2 rounded-lg">
+      <div className="flex items-center bg-red-100 p-2 rounded-lg">
         {isValid && <CheckCircle className="mr-2 text-green-600" size={20} />}
         {!isValid && <XCircle className="mr-2 text-red-600" size={20} />}
         <span className="text-gray-700"> {message} </span>
