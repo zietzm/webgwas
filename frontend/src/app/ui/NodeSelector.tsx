@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { Feature, Operator, PhenotypeNode } from "../lib/types";
+import FuzzySelect from "./FuzzySelect";
 
 export default function NodeSelector({
   features,
@@ -10,7 +11,7 @@ export default function NodeSelector({
 }: {
   features: Feature[];
   operators: Operator[];
-  onSelect: (node: PhenotypeNode | null) => void;
+  onSelect: (node: PhenotypeNode) => void;
   onClose: () => void;
 }) {
   const [showConstantInput, setShowConstantInput] = useState(false);
@@ -107,21 +108,22 @@ export default function NodeSelector({
         </div>
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Fields</h3>
-          <Select
+          <FuzzySelect
+            fuseThreshold={0.3} // Higher number is more lenient
             options={features}
+            closeMenuOnSelect={false}
             onChange={(selectedOption) => {
-              if (selectedOption === null) {
-                return;
-              }
-              const phenotypeNode: PhenotypeNode = {
+              const node: PhenotypeNode = {
                 id: Date.now(),
-                data: selectedOption,
+                data: selectedOption as Feature,
                 children: [],
               };
-              onSelect(phenotypeNode);
+              onSelect(node);
             }}
             value={null}
-            getOptionLabel={(option) => `${option!.name} [${option!.code}]`}
+            getOptionLabel={(option) =>
+              `${option!.name} [${option!.code}] (N=${option!.sample_size})`
+            }
             getOptionValue={(option) => `${option!.id}`}
             placeholder="Search for a field..."
             className="mb-2"

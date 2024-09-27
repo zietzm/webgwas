@@ -366,9 +366,9 @@ export default function SimplePhenotypeBuilder() {
             }}
             value={null}
             getOptionLabel={(option) =>
-              `${option!.name} [${option!.code}] (N=${option!.sample_size})`
+              `${option.name} [${option.code}] (N=${option.sample_size})`
             }
-            getOptionValue={(option) => `${option!.id}`}
+            getOptionValue={(option) => `${option.code}`}
             placeholder="Search for a field..."
             className="mb-2"
           />
