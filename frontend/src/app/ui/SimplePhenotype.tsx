@@ -144,7 +144,7 @@ export default function SimplePhenotypeBuilder() {
       const result = await getResults(API_URL, requestId);
       switch (result.status) {
         case "done":
-          console.debug("GWAS job done");
+          // console.debug("GWAS job done");
           setJobStatus("done");
           if (pvals === null) {
             await downloadPvals(requestId);
@@ -153,19 +153,19 @@ export default function SimplePhenotypeBuilder() {
           return;
         case "error":
           setJobStatus("error");
-          console.error("GWAS job failed. Please try again.", result);
+          // console.error("GWAS job failed. Please try again.", result);
           break;
         case "uploading":
-          console.debug("Server is uploading results");
+          // console.debug("Server is uploading results");
           if (pvals === null) {
             await downloadPvals(requestId);
           }
         default:
-          console.debug(`Polled job status and got '${result.status}'`);
+          // console.debug(`Polled job status and got '${result.status}'`);
           setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
       }
     } catch (err) {
-      console.error("Error polling job status:", err);
+      // console.error("Error polling job status:", err);
       setJobStatus("error");
     }
   }
@@ -175,7 +175,7 @@ export default function SimplePhenotypeBuilder() {
       const result = await getResults(API_URL, requestId);
       setDownloadUrl(result.url);
     } catch (err) {
-      console.error("Error downloading results:", err);
+      // console.error("Error downloading results:", err);
       alert("Failed to download results. Please try again.");
       setJobStatus("error");
     }
@@ -187,7 +187,7 @@ export default function SimplePhenotypeBuilder() {
       const variantPvalues = pvaluesToVariantPvalues(result);
       setPvals(variantPvalues);
     } catch (err) {
-      console.error("Error downloading pvalues:", err);
+      // console.error("Error downloading pvalues:", err);
       alert("Failed to download pvalues. Please try again.");
       setJobStatus("error");
     }
