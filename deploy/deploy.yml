@@ -53,7 +53,7 @@
           - perl-core
           - tmux
           - htop
-          - sqlite.aarch64
+          - sqlite
           - curl
           - cronie
           - nodejs
