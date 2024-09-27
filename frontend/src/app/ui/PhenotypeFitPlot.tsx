@@ -15,7 +15,7 @@ export default function PhenotypeFitPlot({
   title,
 }: {
   data: number[][];
-  rsquared: number;
+  rsquared: number | null;
   xlab: string;
   ylab: string;
   title: string;
@@ -55,13 +55,17 @@ export default function PhenotypeFitPlot({
           value: rsquared,
           dashStyle: "dash",
           label: {
-            text: "R<sup>2</sup> = " + rsquared.toFixed(2),
+            text:
+              rsquared === null
+                ? "R<sup>2</sup> = Not Available"
+                : "R<sup>2</sup> = " + rsquared.toFixed(2),
             useHTML: true,
             rotation: 0,
             verticalAlign: "top",
             y: 30,
-            textAlign: rsquared > 0.5 ? "right" : "left",
-            x: rsquared > 0.5 ? -10 : 10,
+            textAlign:
+              rsquared === null ? "center" : rsquared > 0.5 ? "right" : "left",
+            x: rsquared === null ? 0 : rsquared > 0.5 ? -10 : 10,
             style: {
               fontSize: "17px",
             },
@@ -92,7 +96,9 @@ export default function PhenotypeFitPlot({
     annotations: [
       {
         label: {
-          text: "R<sup>2</sup> = " + rsquared.toFixed(2),
+          text:
+            "R<sup>2</sup> = " +
+            (rsquared === null ? "Not Available" : rsquared.toFixed(2)),
           x: 0.5,
           y: 0.5,
         },
