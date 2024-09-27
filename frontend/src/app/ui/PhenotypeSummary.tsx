@@ -28,10 +28,11 @@ export function SummaryDocumentation() {
 const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   data,
 }) => {
-  const { phenotype_values, rsquared, fit_quality_reference } = data;
-
-  let phenotypeData: number[][] = phenotype_values.map((p) => [p.t, p.a]);
-  let fitQualityData: number[][] = fit_quality_reference.map((p) => [p.p, p.g]);
+  let phenotypeData: number[][] = data.phenotype_values.map((p) => [p.t, p.a]);
+  let fitQualityData: number[][] = data.fit_quality_reference.map((p) => [
+    p.p,
+    p.g,
+  ]);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -48,7 +49,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
         <div className="w-1/2">
           <PhenotypeFitPlot
             data={fitQualityData}
-            rsquared={rsquared}
+            rsquared={data.rsquared}
             xlab="Phenotype fit"
             ylab="GWAS statistics fit"
             title="Fit quality"
