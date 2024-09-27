@@ -1,6 +1,6 @@
 import { PlusCircle, MinusCircle } from "lucide-react";
 import { useState } from "react";
-import { isFeature, isOperator, PhenotypeNode } from "../lib/types";
+import { isConstant, isFeature, isOperator, PhenotypeNode } from "../lib/types";
 
 const Tooltip = ({
   children,
@@ -53,8 +53,11 @@ export default function TreeNode({
     name = node.data.name;
   } else if (isFeature(node.data)) {
     name = `${node.data.name} [${node.data.code}]`;
-  } else {
+  } else if (isConstant(node.data)) {
     name = `Constant: ${node.data.value}`;
+  } else {
+    console.error(node.data);
+    throw new Error("Invalid node type");
   }
 
   return (
