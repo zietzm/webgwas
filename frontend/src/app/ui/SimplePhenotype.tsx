@@ -144,6 +144,7 @@ export default function SimplePhenotypeBuilder() {
       const result = await getResults(API_URL, requestId);
       switch (result.status) {
         case "done":
+          console.debug("GWAS job done");
           setJobStatus("done");
           if (pvals === null) {
             await downloadPvals(requestId);
