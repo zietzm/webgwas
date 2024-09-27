@@ -128,7 +128,7 @@ export default function SimplePhenotypeBuilder() {
         selectedCohort,
       );
       setJobStatus(result.status);
-      pollJobStatus(result.request_id);
+      await pollJobStatus(result.request_id);
     } catch (err) {
       let errorMessage = "Error running GWAS";
       if (err instanceof Error) {
@@ -149,7 +149,7 @@ export default function SimplePhenotypeBuilder() {
             await downloadPvals(requestId);
           }
           downloadResults(requestId);
-          break;
+          return;
         case "error":
           setJobStatus("error");
           console.error("GWAS job failed. Please try again.", result);
@@ -160,6 +160,7 @@ export default function SimplePhenotypeBuilder() {
           }
           break;
         default:
+          console.debug(`Polled job status and got '${result.status}'`);
           setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
       }
     } catch (err) {
