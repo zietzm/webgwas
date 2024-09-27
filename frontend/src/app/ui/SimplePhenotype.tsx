@@ -160,7 +160,6 @@ export default function SimplePhenotypeBuilder() {
           if (pvals === null) {
             await downloadPvals(requestId);
           }
-          break;
         default:
           console.debug(`Polled job status and got '${result.status}'`);
           setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
