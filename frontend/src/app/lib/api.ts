@@ -188,6 +188,7 @@ export async function getPvalues(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      "Content-Encoding": "zstd",
     },
   });
   if (!response.ok) {
