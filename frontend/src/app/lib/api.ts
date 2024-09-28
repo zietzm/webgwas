@@ -183,6 +183,7 @@ export async function getPvalues(
   requestId: string,
 ): Promise<PvaluesResult> {
   const myUrl = new URL(`${url}/igwas/results/pvalues/${requestId}`);
+  myUrl.searchParams.set("minp", "1.3"); // Hard coded to -log10(0.05) for faster rendering
   const response = await fetch(myUrl.href, {
     method: "GET",
     headers: {
