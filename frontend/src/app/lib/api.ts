@@ -76,7 +76,7 @@ export async function fetchFeatures(
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Content-Encoding": "zstd",
+      "Accept-Encoding": "zstd",
     },
   });
   if (!response.ok) {
@@ -123,7 +123,7 @@ export async function getPhenotypeSummary(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Content-Encoding": "zstd",
+      "Accept-Encoding": "zstd",
     },
     body: JSON.stringify({
       phenotype_definition: phenotypeDefinition,
@@ -191,7 +191,7 @@ export async function getPvalues(
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      "Content-Encoding": "zstd",
+      "Accept-Encoding": "zstd",
     },
   });
   if (!response.ok) {
