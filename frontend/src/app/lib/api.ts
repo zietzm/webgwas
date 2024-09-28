@@ -83,7 +83,15 @@ export async function fetchFeatures(
     throw new Error("Failed to fetch nodes");
   }
   const data = await response.json();
-  return data as Feature[];
+  const returnData: Feature[] = data.map((d: any) => {
+    return {
+      code: d.c,
+      name: d.n,
+      type: d.t,
+      sample_size: d.s,
+    };
+  });
+  return returnData;
 }
 
 export async function validatePhenotype(
