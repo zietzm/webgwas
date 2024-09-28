@@ -319,7 +319,7 @@ export default function SimplePhenotypeBuilder() {
 
   function GWASButtons() {
     return (
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex flex-wrap gap-4">
         {jobStatus === null && (
           <button
             onClick={() => {
@@ -347,30 +347,31 @@ export default function SimplePhenotypeBuilder() {
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 items-center">
+    <div className="bg-white shadow-md rounded-lg p-6 items-center mb-6">
       <CohortSelector />
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
       {selectedCohort && jobStatus === null && (
-        <div className="my-6">
-          <FuzzySelect
-            fuseThreshold={0.3} // Higher number is more lenient
-            options={features}
-            closeMenuOnSelect={false}
-            onChange={(selectedOption) => {
-              const node: ListNode = {
-                feature: selectedOption as Feature,
-                negated: false,
-              };
-              setPhenotype([...phenotype, node]);
-            }}
-            value={null}
-            getOptionLabel={(option) =>
-              `${option.name} [${option.code}] (N=${option.sample_size})`
-            }
-            getOptionValue={(option) => option.code}
-            placeholder="Search for a field..."
-            className="mb-2"
-          />
+        <div className="my-2 flex justify-between">
+          <div className="grow mr-2">
+            <FuzzySelect
+              fuseThreshold={0.3} // Higher number is more lenient
+              options={features}
+              closeMenuOnSelect={false}
+              onChange={(selectedOption) => {
+                const node: ListNode = {
+                  feature: selectedOption as Feature,
+                  negated: false,
+                };
+                setPhenotype([...phenotype, node]);
+              }}
+              value={null}
+              getOptionLabel={(option) =>
+                `${option.name} [${option.code}] (N=${option.sample_size})`
+              }
+              getOptionValue={(option) => option.code}
+              placeholder="Search for a field..."
+            />
+          </div>
           <ImFeelingLuckyList features={features} setPhenotype={setPhenotype} />
         </div>
       )}
