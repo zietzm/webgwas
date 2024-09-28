@@ -193,14 +193,29 @@ export async function getPvalues(
   if (!response.ok) {
     throw new Error(`Failed to fetch results: ${response.status}`);
   }
-  const result = (await response.json()) as PvaluesResponse;
-  if (result.pvalues !== null && result.chromosome_positions !== null) {
+  const rawResult: any = await response.json();
+  if (rawResult.pvalues !== null && rawResult.chromosome_positions !== null) {
+    const formattedPvalues: Pvalue[] = rawResult.pvalues.map((p: any) => {
+      return {
+        index: p.i,
+        pvalue: p.p,
+        chromosome: p.c,
+        label: p.l,
+      };
+    });
+    const formattedChromosomePositions: ChromosomePosition[] =
+      rawResult.chromosome_positions.map((p: any) => {
+        return {
+          chromosome: p.c,
+          midpoint: p.m,
+        };
+      });
     return {
-      pvalues: result.pvalues!,
-      chromosome_positions: result.chromosome_positions!,
+      pvalues: formattedPvalues,
+      chromosome_positions: formattedChromosomePositions,
     };
   }
-  console.log(result);
+  console.log(rawResult);
   throw new Error("Failed to get pvalues");
 }
 
