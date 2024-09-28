@@ -22,6 +22,7 @@ import {
 } from "../lib/api";
 import PhenotypeScatterPlots from "./PhenotypeSummary";
 import ManhattanPlot from "./ManhattanPlot";
+import { ImFeelingLuckyList } from "./ImFeelingLucky";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -370,6 +371,7 @@ export default function SimplePhenotypeBuilder() {
             placeholder="Search for a field..."
             className="mb-2"
           />
+          <ImFeelingLuckyList features={features} setPhenotype={setPhenotype} />
         </div>
       )}
       {phenotype.length > 0 && <GWASButtons />}
