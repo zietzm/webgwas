@@ -27,29 +27,29 @@ export interface ResultsResponse {
   url: string | null;
 }
 
+export interface Pvalue {
+  index: number;
+  pvalue: number;
+  chromosome: string;
+  label: string;
+}
+
+export interface ChromosomePosition {
+  chromosome: string;
+  midpoint: number;
+}
+
 export interface PvaluesResponse {
   request_id: string;
-  status: "queued" | "uploading" | "done" | "error";
-  error_msg: string | null;
-  variant_ids: string[] | null;
-  pvalues: number[] | null;
+  status: "queued" | "done" | "error" | "uploading";
+  error_msg?: string;
+  pvalues?: Pvalue[];
+  chromosome_positions?: ChromosomePosition[];
 }
 
-export interface Pvalues {
-  variant_id: string[];
-  pvalue: number[];
-}
-
-export interface VariantPvalue {
-  variant_id: string;
-  pvalue: number;
-}
-
-export function pvaluesToVariantPvalues(pvalues: Pvalues): VariantPvalue[] {
-  return pvalues.variant_id.map((vid, i) => ({
-    variant_id: vid,
-    pvalue: pvalues.pvalue[i],
-  }));
+export interface PvaluesResult {
+  pvalues: Pvalue[];
+  chromosome_positions: ChromosomePosition[];
 }
 
 export async function fetchCohorts(url: string): Promise<Cohort[]> {
@@ -181,7 +181,7 @@ export async function getResults(
 export async function getPvalues(
   url: string,
   requestId: string,
-): Promise<Pvalues> {
+): Promise<PvaluesResult> {
   const myUrl = new URL(`${url}/igwas/results/pvalues/${requestId}`);
   const response = await fetch(myUrl.href, {
     method: "GET",
@@ -194,10 +194,10 @@ export async function getPvalues(
     throw new Error(`Failed to fetch results: ${response.status}`);
   }
   const result = (await response.json()) as PvaluesResponse;
-  if (result.pvalues !== null && result.variant_ids !== null) {
+  if (result.pvalues !== null && result.chromosome_positions !== null) {
     return {
-      variant_id: result.variant_ids,
-      pvalue: result.pvalues,
+      pvalues: result.pvalues!,
+      chromosome_positions: result.chromosome_positions!,
     };
   }
   console.log(result);

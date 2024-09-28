@@ -2,99 +2,34 @@ import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAccessibility from "highcharts/modules/accessibility";
 import HighchartsBoost from "highcharts/modules/boost";
-import { VariantPvalue } from "../lib/api";
+import { PvaluesResult } from "../lib/api";
 if (typeof Highcharts === "object") {
   highchartsAccessibility(Highcharts);
   HighchartsBoost(Highcharts);
 }
 
-export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
-  const chrData: Map<
-    string,
-    Array<{ label: string; bp: number; p: number }>
-  > = new Map();
-  data.forEach((d) => {
-    const [chr, bpStr] = d.variant_id.split(":");
-    const bp = parseInt(bpStr, 10);
-    const y = d.pvalue;
-    if (!chrData.has(chr)) {
-      chrData.set(chr, []);
-    }
-    chrData.get(chr)!.push({ label: d.variant_id, bp: bp, p: y });
+export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
+  const colors = ["#1d2f6f", "#8390fa"];
+
+  const chrPositions = data.chromosome_positions.map((chr) => chr.midpoint);
+
+  const chrIdxToLabel: Map<number, string> = new Map();
+  data.chromosome_positions.forEach((chr) => {
+    chrIdxToLabel.set(chr.midpoint, chr.chromosome);
   });
 
-  // Get unique chromosomes and sort them
-  const chromosomes = Array.from(chrData.keys()).toSorted((a, b) => {
-    const chrA = a === "X" ? 23 : a === "Y" ? 24 : parseInt(a);
-    const chrB = b === "X" ? 23 : b === "Y" ? 24 : parseInt(b);
-    return chrA - chrB;
+  const chrToColor: Map<string, string> = new Map();
+  data.chromosome_positions.forEach((chr, index) => {
+    chrToColor.set(chr.chromosome, colors[index % colors.length]);
   });
 
-  // Calculate maximum position for each chromosome
-  const chrInfo = chromosomes.map((chr) => {
-    const positions = chrData.get(chr)!.map((d) => d.bp);
-    const maxPos = Math.max(...positions);
+  const variants = data.pvalues.map((p) => {
     return {
-      chr: chr,
-      maxPos: maxPos,
+      x: p.index,
+      y: p.pvalue,
+      color: chrToColor.get(p.chromosome)!,
+      label: p.label,
     };
-  });
-
-  // Calculate cumulative offsets for chromosome positions
-  const chrOffsets: Map<string, number> = new Map();
-  let cumulativeOffset = 0;
-  chrInfo.forEach((info) => {
-    chrOffsets.set(info.chr, cumulativeOffset);
-    cumulativeOffset += info.maxPos;
-  });
-
-  // Assign colors to chromosomes
-  const defaultColors = Highcharts.getOptions().colors;
-  if (defaultColors === undefined) {
-    throw new Error("Highcharts colors not defined");
-  }
-  const chrColorMap: Map<string, any> = new Map();
-  chromosomes.forEach((chr, index) => {
-    chrColorMap.set(chr, defaultColors[index % defaultColors.length]);
-  });
-
-  // Adjust positions and prepare data points
-  const finalData: Array<{
-    x: number;
-    y: number;
-    color: any;
-    label: string;
-  }> = [];
-  chromosomes.forEach((chr) => {
-    const offset = chrOffsets.get(chr)!;
-    const color = chrColorMap.get(chr)!;
-    const points = chrData.get(chr)!.map((point) => {
-      return {
-        x: point.bp + offset,
-        y: point.p,
-        color: color,
-        label: point.label,
-      };
-    });
-    finalData.push(...points);
-  });
-
-  // Calculate tick positions for the x-axis
-  const chrTicks = chromosomes.map((chr) => {
-    const offset = chrOffsets.get(chr)!;
-    const positions = chrData.get(chr)!.map((d) => d.bp);
-    const minPos = Math.min(...positions);
-    const maxPos = Math.max(...positions);
-    const midPos = offset + (minPos + maxPos) / 2;
-    return {
-      value: midPos,
-      label: chr,
-    };
-  });
-
-  const tickPositionToChr: Map<number, string> = new Map();
-  chrTicks.forEach((tick) => {
-    tickPositionToChr.set(tick.value, tick.label);
   });
 
   const options = {
@@ -117,10 +52,10 @@ export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
       title: {
         text: "Variant position",
       },
-      tickPositions: chrTicks.map((tick) => tick.value),
+      tickPositions: chrPositions,
       labels: {
         formatter: function (this: any, _ctx: any): any {
-          return tickPositionToChr.get(this.value);
+          return chrIdxToLabel.get(this.value);
         },
       },
       showLastLabel: true,
@@ -150,7 +85,7 @@ export default function ManhattanPlot({ data }: { data: VariantPvalue[] }) {
     },
     series: [
       {
-        data: finalData,
+        data: variants,
         turboThreshold: 0,
         boostThreshold: 1,
         marker: {

@@ -18,8 +18,7 @@ import {
   fetchFeatures,
   getPhenotypeSummary,
   getPvalues,
-  VariantPvalue,
-  pvaluesToVariantPvalues,
+  PvaluesResult,
 } from "../lib/api";
 import PhenotypeScatterPlots from "./PhenotypeSummary";
 import ManhattanPlot from "./ManhattanPlot";
@@ -71,7 +70,7 @@ export default function SimplePhenotypeBuilder() {
     "submitting" | "queued" | "done" | "error" | null
   >(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  const [pvals, setPvals] = useState<VariantPvalue[] | null>(null);
+  const [pvals, setPvals] = useState<PvaluesResult | null>(null);
 
   // Fetch cohorts
   useEffect(() => {
@@ -184,8 +183,7 @@ export default function SimplePhenotypeBuilder() {
   async function downloadPvals(requestId: string) {
     try {
       const result = await getPvalues(API_URL, requestId);
-      const variantPvalues = pvaluesToVariantPvalues(result);
-      setPvals(variantPvalues);
+      setPvals(result);
     } catch (err) {
       // console.error("Error downloading pvalues:", err);
       alert("Failed to download pvalues. Please try again.");
