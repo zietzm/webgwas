@@ -8,6 +8,15 @@ if (typeof Highcharts === "object") {
   HighchartsBoost(Highcharts);
 }
 
+export function Docs() {
+  return (
+    <p className="text-gray-600 dark:text-gray-400 mb-2">
+      For speed, the plot above shows only variants with p &lt; 0.05. Unfiltered
+      results are available in the download.
+    </p>
+  );
+}
+
 export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
   const colors = ["#1d2f6f", "#8390fa"];
 
@@ -64,7 +73,8 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
       minPadding: 0,
       maxPadding: 0,
       title: {
-        text: "Negative log 10 p-value",
+        useHTML: true,
+        text: "Negative log<sub>10</sub> p-value",
       },
       plotLines: [
         {
@@ -97,6 +107,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
   return (
     <div>
       <HighchartsReact highcharts={Highcharts} options={options} />
+      <Docs />
     </div>
   );
 }
