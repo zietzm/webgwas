@@ -2,7 +2,7 @@
 include /etc/nginx/mime.types;
 
 # Rate limiting configuration
-limit_req_zone $binary_remote_addr zone=api_limit:10m rate=1r/s;
+limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
 
 # Redirect all HTTP requests to HTTPS
 server {
@@ -42,7 +42,7 @@ server {
     # Backend API
     location /api/ {
         # Rate limiting
-        limit_req zone=api_limit burst=1;
+        limit_req zone=api_limit burst=20;
 
         proxy_pass http://localhost:8000;
         proxy_http_version 1.1;
