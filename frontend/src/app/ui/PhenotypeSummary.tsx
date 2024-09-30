@@ -35,7 +35,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   ]);
 
   return (
-    <div className="flex flex-col space-y-4 mt-6">
+    <div className="flex flex-col space-y-4">
       <h2 className="text-xl font-bold">Summary of the phenotype</h2>
       <div className="flex flex-row space-x-2">
         <div className="w-1/2">

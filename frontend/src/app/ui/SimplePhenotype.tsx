@@ -6,6 +6,8 @@ import {
   XCircle,
   MinusCircle,
   Download,
+  Info,
+  Lightbulb,
 } from "lucide-react";
 import FuzzySelect from "./FuzzySelect";
 import { Cohort, Feature, ListNode, PhenotypeSummary } from "../lib/types";
@@ -72,6 +74,7 @@ export default function SimplePhenotypeBuilder() {
   >(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [pvals, setPvals] = useState<PvaluesResult | null>(null);
+  const [isSingleField, setIsSingleField] = useState<boolean>(false);
 
   // Fetch cohorts
   useEffect(() => {
@@ -113,6 +116,9 @@ export default function SimplePhenotypeBuilder() {
     if (!phenotype.length) {
       alert("Please add at least one node to your phenotype.");
     }
+    if (phenotype.length === 1) {
+      setIsSingleField(true);
+    }
     try {
       setJobStatus("submitting");
       const phenotypeDefinition = convertListToRPN(phenotype);
@@ -144,7 +150,6 @@ export default function SimplePhenotypeBuilder() {
       const result = await getResults(API_URL, requestId);
       switch (result.status) {
         case "done":
-          // console.debug("GWAS job done");
           setJobStatus("done");
           if (pvals === null) {
             await downloadPvals(requestId);
@@ -153,7 +158,6 @@ export default function SimplePhenotypeBuilder() {
           return;
         case "error":
           setJobStatus("error");
-          // console.error("GWAS job failed. Please try again.", result);
           break;
         case "uploading":
           // console.debug("Server is uploading results");
@@ -217,6 +221,11 @@ export default function SimplePhenotypeBuilder() {
                   setPhenotype([]);
                   setJobStatus(null);
                   setSummary(null);
+                  setPvals(null);
+                  setDownloadUrl(null);
+                  setIsSingleField(false);
+                  setError("");
+                  setIsLoading(false);
                 } else {
                   alert("Please wait for the current job to finish.");
                 }
@@ -309,9 +318,14 @@ export default function SimplePhenotypeBuilder() {
           <XCircle className="mr-2 text-red-600" size={20} />
         )}
         <span className="text-gray-700">
-          {jobStatus === "queued" && "GWAS job queued..."}
-          {jobStatus === "done" && "GWAS job completed."}
-          {jobStatus === "error" && "GWAS job failed. Please try again."}
+          {!isSingleField && jobStatus === "queued" && "GWAS queued..."}
+          {!isSingleField && jobStatus === "done" && "GWAS completed."}
+          {!isSingleField &&
+            jobStatus === "error" &&
+            "GWAS failed. Please try again."}{" "}
+          {isSingleField && jobStatus === "queued" && "Upload queued..."}
+          {isSingleField && jobStatus === "done" && "Upload completed."}
+          {isSingleField && jobStatus === "error" && "Upload failed."}
         </span>
       </div>
     );
@@ -319,7 +333,7 @@ export default function SimplePhenotypeBuilder() {
 
   function GWASButtons() {
     return (
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 mb-6">
         {jobStatus === null && (
           <button
             onClick={() => {
@@ -375,8 +389,14 @@ export default function SimplePhenotypeBuilder() {
           <ImFeelingLuckyList features={features} setPhenotype={setPhenotype} />
         </div>
       )}
+      {isSingleField && jobStatus && (
+        <div className="bg-gray-100 p-2 rounded-lg my-2 flex">
+          <Lightbulb className="mr-2 text-yellow-600" size={20} />
+          GWAS already run, please wait for the results to be uploaded.
+        </div>
+      )}
       {phenotype.length > 0 && <GWASButtons />}
-      {summary && <PhenotypeScatterPlots data={summary} />}
+      {!isSingleField && summary && <PhenotypeScatterPlots data={summary} />}
       {pvals && <ManhattanPlot data={pvals} />}
     </div>
   );
