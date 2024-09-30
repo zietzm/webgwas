@@ -247,6 +247,7 @@ export default function SimplePhenotypeBuilder() {
   function PhenotypeBuilderDisplay() {
     return (
       <div className="my-6">
+        <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
         {phenotype.map((node, index) => (
           <div key={index} className="ml-4 flex-1 flex-row gap-2">
             {index > 0 && <b className="text-blue-600">AND </b>}
@@ -333,7 +334,7 @@ export default function SimplePhenotypeBuilder() {
 
   function GWASButtons() {
     return (
-      <div className="flex flex-wrap gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mt-4">
         {jobStatus === null && (
           <button
             onClick={() => {

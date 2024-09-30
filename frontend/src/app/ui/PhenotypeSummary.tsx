@@ -9,7 +9,7 @@ interface PhenotypeScatterPlotsProps {
 
 export function SummaryDocumentation() {
   return (
-    <div className="p-5">
+    <div className="my-2">
       <p className="mb-2 text-gray-600 dark:text-gray-400">
         The left figure compares the true and approximated phenotype values. The
         quality of this approximation determines the fidelity of the GWAS. The
@@ -17,7 +17,7 @@ export function SummaryDocumentation() {
         summary statistics. The red line shows the fit quality of the phenotype
         you defined.
       </p>
-      <p className="mb-2 text-gray-600 dark:text-gray-400">
+      <p className="text-gray-600 dark:text-gray-400">
         Note: No point in the phenotype plot has fewer than 10 data points. This
         is because we anonymized the data using k-anonymity with k=10.
       </p>
@@ -35,7 +35,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
   ]);
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col space-y-4 mt-4">
       <h2 className="text-xl font-bold">Summary of the phenotype</h2>
       <div className="flex flex-row space-x-2">
         <div className="w-1/2">
