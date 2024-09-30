@@ -1,11 +1,15 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
 import highchartsAccessibility from "highcharts/modules/accessibility";
+import highchartsExporting from "highcharts/modules/exporting";
 import HighchartsBoost from "highcharts/modules/boost";
 import { PvaluesResult } from "../lib/api";
 if (typeof Highcharts === "object") {
   highchartsAccessibility(Highcharts);
   HighchartsBoost(Highcharts);
+  highchartsExporting(Highcharts);
+  Highcharts.AST.allowedTags.push("input");
+  Highcharts.AST.allowedAttributes.push("onmousedown");
 }
 
 export function Docs() {
@@ -89,9 +93,22 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
       enabled: false,
     },
     tooltip: {
-      followPointer: false,
       headerFormat: "",
-      pointFormat: "{point.label}",
+      pointFormat: `
+        <div>
+          <p
+             style="user-select:text; cursor:pointer;"
+             onmousedown="event.stopPropagation();
+          ><b>rsid:</b> {point.label}</p>
+          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}"
+             target="_blank" rel="noopener noreferrer"
+             style="user-select:text; cursor:pointer;"
+             onmousedown="event.stopPropagation();"
+             class="text-blue-600 hover:text-blue-800 visited:text-purple-600"
+          ><p><b>DBSNP link</b></p></a>
+        </div>`,
+      useHTML: true,
+      stickOnContact: true,
     },
     series: [
       {
@@ -101,6 +118,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
         marker: {
           radius: 2,
         },
+        allowPointSelect: true,
       },
     ],
   };
