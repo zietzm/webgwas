@@ -324,8 +324,8 @@ export default function SimplePhenotypeBuilder() {
             jobStatus === "error" &&
             "GWAS failed. Please try again."}{" "}
           {isSingleField && jobStatus === "queued" && "Upload queued..."}
-          {isSingleField && jobStatus === "done" && "Upload completed."}
-          {isSingleField && jobStatus === "error" && "Upload failed."}
+          {isSingleField && jobStatus === "done" && "Upload completed"}
+          {isSingleField && jobStatus === "error" && "Upload failed"}
         </span>
       </div>
     );
