@@ -62,7 +62,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
             rsquared={data.rsquared}
             xlab="Phenotype fit (R<sup>2</sup> true vs predicted)"
             ylab="GWAS statistics fit <b>*</b>"
-            title="Fit quality vs GWAS fidelity"
+            title="Approximation vs GWAS fidelity"
           />
         </div>
       </div>
