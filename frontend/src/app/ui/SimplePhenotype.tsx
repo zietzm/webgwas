@@ -397,7 +397,12 @@ export default function SimplePhenotypeBuilder() {
       )}
       {phenotype.length > 0 && <GWASButtons />}
       {!isSingleField && summary && <PhenotypeScatterPlots data={summary} />}
-      {pvals && <ManhattanPlot data={pvals} />}
+      {pvals && (
+        <div className="mt-4">
+          <h2 className="text-xl font-bold mb-4">Manhattan plot</h2>
+          <ManhattanPlot data={pvals} />
+        </div>
+      )}
     </div>
   );
 }

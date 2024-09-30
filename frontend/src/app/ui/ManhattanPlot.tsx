@@ -55,7 +55,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
       usePreAllocated: true,
     },
     title: {
-      text: "Manhattan Plot",
+      text: null,
     },
     xAxis: {
       gridLineWidth: 1,
