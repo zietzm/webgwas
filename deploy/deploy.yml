@@ -175,6 +175,10 @@
         group: root
         mode: '0644'
 
+    - name: Ensure that dry run is disabled
+      shell: |
+        sed -ie 's/dry_run = true/dry_run = false/g' /root/settings.toml
+
     - name: Copy backend systemd service file
       copy:
         src: backend.service
