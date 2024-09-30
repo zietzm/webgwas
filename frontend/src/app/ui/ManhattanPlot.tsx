@@ -1,11 +1,9 @@
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts";
-import highchartsAccessibility from "highcharts/modules/accessibility";
 import highchartsExporting from "highcharts/modules/exporting";
 import HighchartsBoost from "highcharts/modules/boost";
 import { PvaluesResult } from "../lib/api";
 if (typeof Highcharts === "object") {
-  highchartsAccessibility(Highcharts);
   HighchartsBoost(Highcharts);
   highchartsExporting(Highcharts);
   Highcharts.AST.allowedTags.push("input");
@@ -114,8 +112,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
         },
         allowPointSelect: true,
         accessibility: {
-          enabled: true,
-          description: "RSid of the variant",
+          enabled: false,
         },
       },
     ],
