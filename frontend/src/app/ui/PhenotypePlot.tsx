@@ -43,6 +43,7 @@ export default function PhenotypePlot({
         text: xlab,
         style: {
           fontSize: "17px",
+          color: "rgb(75 85 99)",
         },
       },
       showLastLabel: true,
@@ -57,6 +58,7 @@ export default function PhenotypePlot({
         text: ylab,
         style: {
           fontSize: "17px",
+          color: "rgb(75 85 99)",
         },
       },
       showLastLabel: true,

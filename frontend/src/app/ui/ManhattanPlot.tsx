@@ -12,8 +12,8 @@ if (typeof Highcharts === "object") {
 export function Docs() {
   return (
     <p className="text-gray-600 dark:text-gray-400 mb-2">
-      For speed, the plot above shows only variants with p &lt; 0.05. Unfiltered
-      results are available in the download.
+      To load quickly, the plot above shows only variants with p &lt; 0.05.
+      Download unfiltered results above.
     </p>
   );
 }
@@ -97,7 +97,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
           <p style="user-select: text; cursor: text;" onmousedown="event.stopPropagation();">
             <b>rsid:</b> {point.label}
           </p>
-          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}" target="_blank" rel="noopener noreferrer" style="user-select:text;" onmousedown="event.stopPropagation();" class="text-blue-600 hover:text-blue-800 visited:text-purple-600">
+          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}" target="_blank" rel="noopener noreferrer" style="user-select:text;" onmousedown="event.stopPropagation();" class="text-blue-600 hover:text-blue-800">
             <p><b>DBSNP link</b></p></a>
         </div>`,
       useHTML: true,

@@ -8,19 +8,28 @@ function headerInformation() {
   return (
     <div className="mb-6 text-gray-600 dark:text-gray-400">
       <p className="text-xl font-bold text-center mb-8 text-indigo-800">
-        Online Genome-Wide Association Studies (GWAS) on arbitrary phenotypes
+        Instant, free genome-wide association studies (GWAS) on arbitrary
+        phenotypes
       </p>
       <p>
+        Using{" "}
+        <a
+          href="/about"
+          className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
+        >
+          a new approximation method
+        </a>
+        , WebGWAS provides GWAS summary statistics for arbitrary phenotype
+        definitions. Whereas the{" "}
         <a
           href="https://pan.ukbb.broadinstitute.org/"
-          className="underline text-indigo-600 hover:text-blue-800 visited:text-purple-600"
+          className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
         >
           Pan-UK Biobank
         </a>{" "}
-        provides GWAS summary statistics for simple phenotypes (e.g.
-        hypertension defined as ICD-10: I10).{" "}
-        <b className="text-indigo-600">WebGWAS</b> provides summary statistics
-        for arbitrary phenotypes, including complex definitions.
+        provides pre-computed results for individual phenotypes (e.g.
+        hypertension defined as ICD-10: I10), WebGWAS lets you study any
+        phenotypes that interest you.
       </p>
     </div>
   );

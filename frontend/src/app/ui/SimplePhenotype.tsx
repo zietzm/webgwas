@@ -247,7 +247,6 @@ export default function SimplePhenotypeBuilder() {
   function PhenotypeBuilderDisplay() {
     return (
       <div className="my-6">
-        <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
         {phenotype.map((node, index) => (
           <div key={index} className="ml-4 flex-1 flex-row gap-2">
             {index > 0 && <b className="text-blue-600">AND </b>}
@@ -364,6 +363,7 @@ export default function SimplePhenotypeBuilder() {
   return (
     <div className="bg-white shadow-md rounded-lg p-6 items-center mb-6">
       <CohortSelector />
+      <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
       {selectedCohort && jobStatus === null && (
         <div className="my-2 flex justify-between">
@@ -400,7 +400,9 @@ export default function SimplePhenotypeBuilder() {
       {!isSingleField && summary && <PhenotypeScatterPlots data={summary} />}
       {pvals && (
         <div className="mt-4">
-          <h2 className="text-xl font-bold mb-4">Manhattan plot</h2>
+          <h2 className="text-xl font-bold mb-4">
+            Summary of results: Manhattan plot
+          </h2>
           <ManhattanPlot data={pvals} />
         </div>
       )}

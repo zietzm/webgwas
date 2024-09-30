@@ -43,6 +43,7 @@ export default function PhenotypeFitPlot({
       maxPadding: 0,
       title: {
         text: xlab,
+        useHTML: true,
         style: {
           fontSize: "17px",
         },
@@ -81,6 +82,7 @@ export default function PhenotypeFitPlot({
       maxPadding: 0,
       title: {
         text: ylab,
+        useHTML: true,
         style: {
           fontSize: "17px",
         },
