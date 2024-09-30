@@ -259,7 +259,7 @@ export default function ComplexPhenotypeBuilder() {
     const isValid = validationResult.is_valid;
     const message = validationResult.message;
     return (
-      <div className="flex items-center bg-red-100 p-2 rounded-lg">
+      <div className="flex items-center bg-gray-100 p-2 rounded-lg">
         {isValid && <CheckCircle className="mr-2 text-green-600" size={20} />}
         {!isValid && <XCircle className="mr-2 text-red-600" size={20} />}
         <span className="text-gray-700"> {message} </span>
