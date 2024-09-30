@@ -9,6 +9,7 @@ if (typeof Highcharts === "object") {
   HighchartsBoost(Highcharts);
   highchartsExporting(Highcharts);
   Highcharts.AST.allowedTags.push("input");
+  Highcharts.AST.allowedAttributes.push("rel");
   Highcharts.AST.allowedAttributes.push("onmousedown");
 }
 
@@ -93,19 +94,12 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
       enabled: false,
     },
     tooltip: {
+      followPointer: false,
       headerFormat: "",
       pointFormat: `
         <div>
-          <p
-             style="user-select:text; cursor:pointer;"
-             onmousedown="event.stopPropagation();
-          ><b>rsid:</b> {point.label}</p>
-          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}"
-             target="_blank" rel="noopener noreferrer"
-             style="user-select:text; cursor:pointer;"
-             onmousedown="event.stopPropagation();"
-             class="text-blue-600 hover:text-blue-800 visited:text-purple-600"
-          ><p><b>DBSNP link</b></p></a>
+          <p style="user-select:text; cursor:text;" onmousedown="event.stopPropagation();"><b>rsid:</b> {point.label}</p>
+          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}" target="_blank" rel="noopener noreferrer" style="user-select:text; cursor:pointer;" onmousedown="event.stopPropagation();" class="text-blue-600 hover:text-blue-800 visited:text-purple-600"><p><b>DBSNP link</b></p></a>
         </div>`,
       useHTML: true,
       stickOnContact: true,
@@ -119,6 +113,10 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
           radius: 2,
         },
         allowPointSelect: true,
+        accessibility: {
+          enabled: true,
+          description: "RSid of the variant",
+        },
       },
     ],
   };
