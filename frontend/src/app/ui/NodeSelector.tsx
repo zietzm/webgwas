@@ -68,7 +68,7 @@ export default function NodeSelector({
                   };
                   onSelect(phenotypeNode);
                 }}
-                className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold py-2 px-4 rounded"
+                className="bg-blue-light hover:bg-blue-mid text-blue-dark font-semibold py-2 px-4 rounded"
               >
                 {op.name}
               </button>
@@ -80,7 +80,7 @@ export default function NodeSelector({
           {!showConstantInput ? (
             <button
               onClick={() => setShowConstantInput(true)}
-              className="bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-2 px-4 rounded w-full"
+              className="bg-green-light hover:bg-green-mid text-green-dark font-semibold py-2 px-4 rounded w-full"
             >
               Add Constant
             </button>
@@ -98,7 +98,7 @@ export default function NodeSelector({
               )}
               <button
                 onClick={handleConstantSubmit}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded w-full"
+                className="bg-green-main hover:bg-green-dark text-white font-semibold py-2 px-4 rounded w-full"
               >
                 Add
               </button>

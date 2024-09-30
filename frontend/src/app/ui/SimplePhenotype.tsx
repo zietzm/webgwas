@@ -226,7 +226,7 @@ export default function SimplePhenotypeBuilder() {
               }}
               className={`py-2 px-4 rounded-full transition-colors ${
                 selectedCohort === cohort
-                  ? "bg-blue-600 text-white"
+                  ? "bg-blue-main text-white"
                   : "bg-gray-200 text-gray-800 hover:bg-gray-300"
               }`}
             >
@@ -243,7 +243,7 @@ export default function SimplePhenotypeBuilder() {
       <div className="my-6">
         {phenotype.map((node, index) => (
           <div key={index} className="ml-4 flex-1 flex-row gap-2">
-            {index > 0 && <b className="text-blue-600">AND </b>}
+            {index > 0 && <b className="text-blue-dark">AND </b>}
             {node.negated && jobStatus === null && (
               <button
                 onClick={() => {
@@ -306,7 +306,7 @@ export default function SimplePhenotypeBuilder() {
           <Loader className="animate-spin mr-2" size={20} />
         )}
         {jobStatus === "done" && (
-          <CheckCircle className="mr-2 text-green-600" size={20} />
+          <CheckCircle className="mr-2 text-green-main" size={20} />
         )}
         {jobStatus === "error" && (
           <XCircle className="mr-2 text-red-600" size={20} />
@@ -333,7 +333,7 @@ export default function SimplePhenotypeBuilder() {
             onClick={() => {
               handleRunGWAS();
             }}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
+            className="bg-green-main hover:bg-green-dark text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
           >
             <Play className="mr-2" size={20} />
             Run GWAS
@@ -343,7 +343,7 @@ export default function SimplePhenotypeBuilder() {
         {jobStatus && jobStatus === "done" && (
           <div>
             <a href={downloadUrl!} download>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
+              <button className="bg-blue-main hover:bg-blue-dark text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
                 <Download className="mr-2" size={20} />
                 Download Results
               </button>

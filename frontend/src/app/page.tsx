@@ -7,7 +7,7 @@ import SimplePhenotypeBuilder, {
 function headerInformation() {
   return (
     <div className="mb-6 text-gray-600 dark:text-gray-400">
-      <p className="text-xl font-bold text-center mb-8 text-indigo-800">
+      <p className="text-xl font-bold text-center mb-8 text-blue-dark">
         Instant, free genome-wide association studies (GWAS) on arbitrary
         phenotypes
       </p>
@@ -15,7 +15,7 @@ function headerInformation() {
         Using{" "}
         <a
           href="/about"
-          className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
+          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-600"
         >
           a new approximation method
         </a>
@@ -23,7 +23,7 @@ function headerInformation() {
         definitions. Whereas the{" "}
         <a
           href="https://pan.ukbb.broadinstitute.org/"
-          className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
+          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-600"
         >
           Pan-UK Biobank
         </a>{" "}

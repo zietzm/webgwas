@@ -1,10 +1,10 @@
 export default function FAQ() {
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-800">
+      <h1 className="text-3xl font-bold mb-6 text-blue-dark">
         Frequently Asked Questions
       </h1>
-      <div className="prose prose-indigo">
+      <div className="prose prose-jet">
         <h2 className="text-xl font-semibold mb-4">What is a GWAS?</h2>
         <p>
           A GWAS is a statistical analysis that compares the frequency of a
@@ -95,7 +95,7 @@ export default function FAQ() {
         <p>
           If you use WebGWAS in your research, please cite the following paper:
         </p>
-        <blockquote className="prose prose-indigo">
+        <blockquote className="prose prose-jet">
           <p>TODO</p>
         </blockquote>
         <br />

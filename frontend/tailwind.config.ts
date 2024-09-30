@@ -7,6 +7,17 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    colors: {
+      "blue-light": "#D5E0EC",
+      "blue-mid": "#9DB5D2",
+      "blue-main": "#5982b3", // Pivot
+      "blue-dark": "#40628C",
+      "green-light": "#DAE7DF",
+      "green-mid": "#C1D7CA",
+      "green-main": "#518065", // Pivot
+      "green-dark": "#40644F",
+      "jet-main": "#353535",
+    },
     extend: {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

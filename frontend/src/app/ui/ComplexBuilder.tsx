@@ -235,7 +235,7 @@ export default function ComplexPhenotypeBuilder() {
               }}
               className={`py-2 px-4 rounded-full transition-colors ${
                 selectedCohort === cohort
-                  ? "bg-blue-600 text-white"
+                  ? "bg-blue-main text-white"
                   : "bg-gray-200 text-gray-800 hover:bg-gray-300"
               }`}
             >
@@ -254,7 +254,7 @@ export default function ComplexPhenotypeBuilder() {
           <Loader className="animate-spin mr-2" size={20} />
         )}
         {jobStatus === "done" && (
-          <CheckCircle className="mr-2 text-green-600" size={20} />
+          <CheckCircle className="mr-2 text-green-main" size={20} />
         )}
         {jobStatus === "error" && (
           <XCircle className="mr-2 text-red-600" size={20} />
@@ -281,7 +281,7 @@ export default function ComplexPhenotypeBuilder() {
     const message = validationResult.message;
     return (
       <div className="flex items-center bg-gray-100 p-2 rounded-lg">
-        {isValid && <CheckCircle className="mr-2 text-green-600" size={20} />}
+        {isValid && <CheckCircle className="mr-2 text-green-main" size={20} />}
         {!isValid && <XCircle className="mr-2 text-red-600" size={20} />}
         <span className="text-gray-700"> {message} </span>
       </div>
@@ -294,7 +294,7 @@ export default function ComplexPhenotypeBuilder() {
         {jobStatus === null && (
           <button
             onClick={handleValidatePhenotype}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
+            className="bg-blue-main hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
           >
             <BookOpenCheck className="mr-2" size={20} />
             Validate Phenotype
@@ -304,7 +304,7 @@ export default function ComplexPhenotypeBuilder() {
         {jobStatus && jobStatus === "valid" && (
           <button
             onClick={handleRunGWAS}
-            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
+            className="bg-green-main hover:bg-green-dark text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
           >
             <Play className="mr-2" size={20} />
             {isSingleField ? "Upload Results" : "Run GWAS"}
@@ -314,7 +314,7 @@ export default function ComplexPhenotypeBuilder() {
         {jobStatus && jobStatus === "done" && (
           <div>
             <a href={downloadUrl!} download>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
+              <button className="bg-blue-main hover:bg-blue-dark text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
                 <Download className="mr-2" size={20} />
                 Download Results
               </button>
