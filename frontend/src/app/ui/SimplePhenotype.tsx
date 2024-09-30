@@ -6,7 +6,6 @@ import {
   XCircle,
   MinusCircle,
   Download,
-  Info,
   Lightbulb,
 } from "lucide-react";
 import FuzzySelect from "./FuzzySelect";
@@ -160,16 +159,13 @@ export default function SimplePhenotypeBuilder() {
           setJobStatus("error");
           break;
         case "uploading":
-          // console.debug("Server is uploading results");
           if (pvals === null) {
             await downloadPvals(requestId);
           }
         default:
-          // console.debug(`Polled job status and got '${result.status}'`);
           setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
       }
     } catch (err) {
-      // console.error("Error polling job status:", err);
       setJobStatus("error");
     }
   }
@@ -179,7 +175,6 @@ export default function SimplePhenotypeBuilder() {
       const result = await getResults(API_URL, requestId);
       setDownloadUrl(result.url);
     } catch (err) {
-      // console.error("Error downloading results:", err);
       alert("Failed to download results. Please try again.");
       setJobStatus("error");
     }
@@ -190,7 +185,6 @@ export default function SimplePhenotypeBuilder() {
       const result = await getPvalues(API_URL, requestId);
       setPvals(result);
     } catch (err) {
-      // console.error("Error downloading pvalues:", err);
       alert("Failed to download pvalues. Please try again.");
       setJobStatus("error");
     }
