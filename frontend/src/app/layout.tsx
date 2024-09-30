@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./ui/Header";
+import Footer from "./ui/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,8 +25,11 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <Header />
-        <main className="container mx-auto px-4 py-8">{children}</main>
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="container mx-auto px-4 py-8 flex-1">{children}</main>
+          <Footer />
+        </div>
         <script
           async
           src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"
