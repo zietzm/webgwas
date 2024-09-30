@@ -6,6 +6,7 @@ import {
   XCircle,
   Download,
   BookOpenCheck,
+  Lightbulb,
 } from "lucide-react";
 import {
   addChild,
@@ -55,6 +56,7 @@ export default function ComplexPhenotypeBuilder() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [showNodeSelector, setShowNodeSelector] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<PhenotypeNode | null>(null);
+  const [isSingleField, setIsSingleField] = useState<boolean>(false);
 
   // Fetch cohorts
   useEffect(() => {
@@ -116,6 +118,18 @@ export default function ComplexPhenotypeBuilder() {
     }
   }
 
+  async function checkSingleField(phenotype: PhenotypeNode): Promise<boolean> {
+    if (phenotype.children.length === 0) {
+      return true;
+    }
+    for (const child of phenotype.children) {
+      if (child.children.length > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   async function handleValidatePhenotype() {
     if (!selectedCohort) {
       alert("Please select a cohort first.");
@@ -126,6 +140,8 @@ export default function ComplexPhenotypeBuilder() {
       return;
     }
     try {
+      const single = await checkSingleField(phenotype);
+      setIsSingleField(single);
       const phenotypeDefinition = convertTreeToRPN(phenotype);
       const validationResult = await validatePhenotype(
         API_URL,
@@ -244,9 +260,14 @@ export default function ComplexPhenotypeBuilder() {
           <XCircle className="mr-2 text-red-600" size={20} />
         )}
         <span className="text-gray-700">
-          {jobStatus === "queued" && "GWAS job queued..."}
-          {jobStatus === "done" && "GWAS job completed."}
-          {jobStatus === "error" && "GWAS job failed. Please try again."}
+          {!isSingleField && jobStatus === "queued" && "GWAS job queued..."}
+          {!isSingleField && jobStatus === "done" && "GWAS job completed."}
+          {!isSingleField &&
+            jobStatus === "error" &&
+            "GWAS job failed. Please try again."}
+          {isSingleField && jobStatus === "queued" && "Upload queued..."}
+          {isSingleField && jobStatus === "done" && "Upload completed"}
+          {isSingleField && jobStatus === "error" && "Upload failed"}
         </span>
       </div>
     );
@@ -286,7 +307,7 @@ export default function ComplexPhenotypeBuilder() {
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors"
           >
             <Play className="mr-2" size={20} />
-            Run GWAS
+            {isSingleField ? "Upload Results" : "Run GWAS"}
           </button>
         )}
         {jobStatus && jobStatus !== "valid" && <JobStatusBoxes />}
@@ -342,6 +363,12 @@ export default function ComplexPhenotypeBuilder() {
         <div className="mb-6">
           <div className="text-xl font-semibold mb-4">Parsed phenotype</div>
           {convertTreeToDisplayString(phenotype)}
+        </div>
+      )}
+      {isSingleField && jobStatus && (
+        <div className="bg-gray-100 p-2 rounded-lg my-2 flex">
+          <Lightbulb className="mr-2 text-yellow-600" size={20} />
+          GWAS already run. WebGWAS will upload pre-computed results.
         </div>
       )}
       {selectedCohort && phenotype.children.length > 0 && <GWASButtons />}
