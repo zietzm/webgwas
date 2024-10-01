@@ -36,8 +36,8 @@ export default function PhenotypeFitPlot({
       text: title,
     },
     xAxis: {
-      min: 0,
-      max: 1,
+      min: -0.02,
+      max: 1.02,
       gridLineWidth: 1,
       minPadding: 0,
       maxPadding: 0,

@@ -18,6 +18,12 @@ export default function PhenotypePlot({
   ylab: string;
   title: string;
 }) {
+  const maxVal = Math.max(...data.map((d) => Math.max(...d)));
+  const minVal = Math.min(...data.map((d) => Math.min(...d)));
+  const dataRange = maxVal - minVal;
+  const displayMinVal = minVal - 0.02 * dataRange;
+  const displayMaxVal = maxVal + 0.02 * dataRange;
+
   const options = {
     credits: {
       enabled: false,
@@ -34,8 +40,8 @@ export default function PhenotypePlot({
       text: title,
     },
     xAxis: {
-      min: 0,
-      max: 1,
+      min: displayMinVal,
+      max: displayMaxVal,
       gridLineWidth: 1,
       minPadding: 0,
       maxPadding: 0,
@@ -49,8 +55,8 @@ export default function PhenotypePlot({
       showLastLabel: true,
     },
     yAxis: {
-      min: 0,
-      max: 1,
+      min: displayMinVal,
+      max: displayMaxVal,
       gridLineWidth: 1,
       minPadding: 0,
       maxPadding: 0,
