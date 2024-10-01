@@ -29,7 +29,7 @@ const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function simplePhenotypeBuilderUsage() {
   return (
-    <div className="p-5 border border-t-0 border-gray-200 dark:border-gray-700">
+    <div className="p-5 bg-white border border-t-0 border-gray-200 dark:border-gray-700">
       <p className="mb-2 text-gray-600 dark:text-gray-400">
         To get started, select a cohort from the buttons below. Then define the
         phenotype that interests you by searching for fields in the search box
@@ -360,8 +360,8 @@ export default function SimplePhenotypeBuilder() {
       <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
       {selectedCohort && jobStatus === null && (
-        <div className="my-2 flex justify-between">
-          <div className="grow mr-2">
+        <div className="my-2 flex justify-between flex-wrap gap-4 md:flex-nowrap">
+          <div className="grow mr-2 flex-1 min-w-[250px]">
             <FuzzySelect
               fuseThreshold={0.3} // Higher number is more lenient
               options={features}
