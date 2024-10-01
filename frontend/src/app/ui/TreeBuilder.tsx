@@ -40,7 +40,7 @@ let startPhenotype: PhenotypeNode = {
   children: [],
 };
 
-export default function ComplexPhenotypeBuilder() {
+export default function TreePhenotypeBuilder() {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [selectedCohort, setSelectedCohort] = useState<Cohort | null>(null);
   const [features, setFeatures] = useState<Feature[]>([]);

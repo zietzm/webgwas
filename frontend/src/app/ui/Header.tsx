@@ -15,7 +15,7 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link href="/complex" className="">
+              <Link href="/tree" className="">
                 Tree
               </Link>
             </li>
