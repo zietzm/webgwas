@@ -37,35 +37,34 @@ function headerInformation() {
   );
 }
 
-function accordionUsage() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div>
-      <h2>
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between w-full p-5 font-medium rtl:text-right bg-gray-100 text-gray-500 border border-gray-200 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 gap-3"
-        >
-          <span>Usage Instructions</span>
-          {isOpen ? (
-            <ChevronUp className="font-bold w-5 h-5 shrink-0" />
-          ) : (
-            <ChevronDown className="font-bold w-5 h-5 shrink-0" />
-          )}
-        </button>
-      </h2>
-      {isOpen && simplePhenotypeBuilderUsage()}
-    </div>
-  );
-}
-
 export default function Home() {
+  function AccordionUsage() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+      <div>
+        <h2>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right bg-gray-100 text-gray-500 border border-gray-200 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 gap-3"
+          >
+            <span>Usage Instructions</span>
+            {isOpen ? (
+              <ChevronUp className="font-bold w-5 h-5 shrink-0" />
+            ) : (
+              <ChevronDown className="font-bold w-5 h-5 shrink-0" />
+            )}
+          </button>
+        </h2>
+        {isOpen && simplePhenotypeBuilderUsage()}
+      </div>
+    );
+  }
   return (
     <div className="max-w-4xl mx-auto">
       {headerInformation()}
-      {accordionUsage()}
+      <AccordionUsage />
       <br />
       <SimplePhenotypeBuilder />
     </div>
