@@ -129,7 +129,7 @@ export default function PhenotypeFitPlot({
         marker: {
           symbol: "circle",
           radius: 5,
-          fillColor: "rgba(84, 79, 197, .1)",
+          fillColor: "rgba(64, 98, 140, .1)",
         },
         opacity: 0,
         zIndex: 1,

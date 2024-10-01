@@ -10,17 +10,17 @@ interface PhenotypeScatterPlotsProps {
 export function SummaryDocumentation() {
   return (
     <div className="my-2">
-      <p className="mb-2 text-gray-600 dark:text-gray-400">
+      <p className="mb-2 text-gray-800 dark:text-gray-400">
         <b>
           *<i>GWAS summary statistic fit</i>
         </b>{" "}
         is the R<sup>2</sup> of negative log<sub>10</sub> p-values between
         approximated GWAS on anonymized data and true GWAS on original data.
       </p>
-      <p className="mb-2 text-gray-600 dark:text-gray-400">
+      <p className="mb-2 text-gray-800 dark:text-gray-400">
         The red line shows the fit quality of your phenotype.
       </p>
-      <p className="text-gray-600 dark:text-gray-400">
+      <p className="text-gray-800 dark:text-gray-400">
         Data are anonymized using k-anonymity with k=10 to ensure that privacy
         is protected.
       </p>
@@ -42,7 +42,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
       <h2 className="text-xl font-bold">
         Phenotype QC: Quality of the approximation
       </h2>
-      <p className="mb-2 text-gray-600 dark:text-gray-400">
+      <p className="mb-2 text-gray-800 dark:text-gray-400">
         WebGWAS provides results quickly by approximating your phenotype. How
         well it can be approximated determines the quality of the GWAS. We use a
         linear regression for this approximation.

@@ -11,7 +11,7 @@ if (typeof Highcharts === "object") {
 
 export function Docs() {
   return (
-    <p className="text-gray-600 dark:text-gray-400 mb-2">
+    <p className="text-gray-800 dark:text-gray-400 mb-2">
       To load quickly, the plot above shows only variants with p &lt; 0.05.
       Download unfiltered results above.
     </p>
@@ -19,7 +19,7 @@ export function Docs() {
 }
 
 export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
-  const colors = ["#1d2f6f", "#8390fa"];
+  const colors = ["rgba(89, 130, 179, .5)", "rgba(64, 98, 140, .5)"];
 
   const chrPositions = data.chromosome_positions.map((chr) => chr.midpoint);
 
@@ -97,7 +97,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
           <p style="user-select: text; cursor: text;" onmousedown="event.stopPropagation();">
             <b>rsid:</b> {point.label}
           </p>
-          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}" target="_blank" rel="noopener noreferrer" style="user-select:text;" onmousedown="event.stopPropagation();" class="text-blue-600 hover:text-blue-800">
+          <a href="https://www.ncbi.nlm.nih.gov/snp/?term={point.label}" target="_blank" rel="noopener noreferrer" style="user-select:text;" onmousedown="event.stopPropagation();" class="text-blue-main hover:text-blue-dark">
             <p><b>DBSNP link</b></p></a>
         </div>`,
       useHTML: true,

@@ -91,7 +91,7 @@ export default function PhenotypePlot({
         marker: {
           symbol: "circle",
           radius: 5,
-          fillColor: "rgba(44, 175, 254, .1)",
+          fillColor: "rgba(89, 130, 179, .1)",
         },
         opacity: 0,
         zIndex: 1,
