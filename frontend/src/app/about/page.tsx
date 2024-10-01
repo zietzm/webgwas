@@ -74,8 +74,8 @@ export default function About() {
       <p className="mb-4">
         Data are anonymized using a method called maximum distance to the
         average vector (MDAV). This method results in k-anonymity with k=10,
-        meaning that every individual's data are shared with at least 9 other
-        individuals.
+        meaning that every individual&apos;s data are shared with at least 9
+        other individuals.
       </p>
       <p className="mb-4">
         Even if our server was hacked and all data stored there were released,
