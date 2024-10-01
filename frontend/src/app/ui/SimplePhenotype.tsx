@@ -203,7 +203,7 @@ export default function SimplePhenotypeBuilder() {
 
   function CohortSelector() {
     return (
-      <div className="mb-6">
+      <div className="mb-4">
         <h2 className="text-xl font-semibold mb-4">Select Cohort</h2>
         <div className="flex flex-wrap gap-2">
           {cohorts.map((cohort) => (
@@ -240,10 +240,10 @@ export default function SimplePhenotypeBuilder() {
 
   function PhenotypeBuilderDisplay() {
     return (
-      <div className="my-6">
+      <div className="mb-6">
         {phenotype.map((node, index) => (
-          <div key={index} className="ml-4 flex-1 flex-row gap-2">
-            {index > 0 && <b className="text-blue-dark">AND </b>}
+          <div key={index} className="my-0.5 ml-4 flex-1 flex-row align-middle">
+            {index > 0 && <b className="align-middle text-blue-dark">AND </b>}
             {node.negated && jobStatus === null && (
               <button
                 onClick={() => {
@@ -254,13 +254,15 @@ export default function SimplePhenotypeBuilder() {
                   });
                 }}
               >
-                <b className="mr-1 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
+                <b className="mr-1 p-1 align-middle text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
                   NOT
                 </b>
               </button>
             )}
             {node.negated && jobStatus !== null && (
-              <b className="mr-1 p-1 text-red-600 bg-red-100 rounded">NOT</b>
+              <b className="mr-1 p-1 align-middle text-red-600 bg-red-100 rounded">
+                NOT
+              </b>
             )}
             {node.feature.name} [{node.feature.code}] (N=
             {node.feature.sample_size})
@@ -274,7 +276,7 @@ export default function SimplePhenotypeBuilder() {
                   });
                 }}
               >
-                <a className="ml-5 p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
+                <a className="ml-5 p-1 align-middle text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
                   Negate
                 </a>
               </button>
@@ -288,7 +290,7 @@ export default function SimplePhenotypeBuilder() {
                     return newPhenotype;
                   });
                 }}
-                className="ml-2 p-1 rounded hover:bg-gray-200 active:bg-gray-300"
+                className="ml-2 p-1 align-middle rounded hover:bg-gray-200 active:bg-gray-300"
               >
                 <MinusCircle size={20} />
               </button>
@@ -360,7 +362,7 @@ export default function SimplePhenotypeBuilder() {
       <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
       {selectedCohort && jobStatus === null && (
-        <div className="my-2 flex justify-between flex-wrap gap-4 md:flex-nowrap">
+        <div className="my-2 flex justify-between flex-wrap gap-2 md:flex-nowrap">
           <div className="grow mr-2 flex-1 min-w-[250px]">
             <FuzzySelect
               fuseThreshold={0.3} // Higher number is more lenient
