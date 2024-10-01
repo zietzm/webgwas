@@ -44,7 +44,7 @@ export function simplePhenotypeBuilderUsage() {
         The resulting phenotype would look like this:
       </p>
       <Image
-        src={"/exampleSimplePt.png"}
+        src={"/list_example.webp"}
         alt={"Example phenotype"}
         width="0"
         height="0"
