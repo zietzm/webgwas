@@ -22,6 +22,15 @@ export default function About() {
           accessible tool for researchers worldwide.
         </p>
       </div>
+      <h1 className="text-3xl font-bold my-6 text-blue-dark">Citing WebGWAS</h1>
+      <div className="prose prose-jet">
+        <blockquote className="prose prose-jet">
+          <p>TODO</p>
+        </blockquote>
+        <br />
+        <p>You can also use the following BibTeX entry:</p>
+        <pre className="bg-gray-100 p-4 rounded-lg">TODO</pre>
+      </div>
     </div>
   );
 }
