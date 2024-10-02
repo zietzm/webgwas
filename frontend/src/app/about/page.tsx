@@ -83,6 +83,48 @@ export default function About() {
         pieces of data stored on are server are anonymized, aggregated phenotype
         data, a phenotypic correlation matrix, and GWAS summary statistics.
       </p>
+      <div className="border-l-4 border-blue-dark pl-4 mt-2 mb-4 font-semibold">
+        <p>What data are available?</p>
+      </div>
+      <p className="mb-4">
+        Currently, WebGWAS only contains data for a White British cohort from
+        the UK Biobank. We are in the process of adding additional cohorts,
+        particularly of different ancestries, using data from the All of Us
+        research program.
+      </p>
+      <div className="border-l-4 border-blue-dark pl-4 mt-2 mb-4 font-semibold">
+        <p>
+          What is the difference between the simple and advanced phenotype
+          builders?
+        </p>
+      </div>
+      <p className="mb-4">
+        The simple phenotype builder allows users to define a phenotype using
+        AND and NOT operators. Because of this, it is limited to binary
+        phenotypes. The advanced phenotype builder allows users to define more
+        complex phenotypes, including arbitrarily complicated phenotype
+        definitions.
+      </p>
+      <div className="border-l-4 border-blue-dark pl-4 mt-2 mb-4 font-semibold">
+        <p>Where can I find more information about WebGWAS?</p>
+      </div>
+      <p className="mb-4">
+        For more information, please open an issue on our{" "}
+        <a
+          href="https://github.com/tatonetti-lab/webgwas"
+          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-600"
+        >
+          GitHub repository
+        </a>{" "}
+        or contact Michael Zietz at{" "}
+        <a
+          href="mailto:michael.zietz@gmail.com"
+          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-600"
+        >
+          michael.zietz@gmail.com
+        </a>
+        .
+      </p>
     </div>
   );
 }
