@@ -6,6 +6,21 @@ import TreePhenotypeBuilder from "../ui/TreeBuilder";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Tree() {
+  function HeaderInformation() {
+    return (
+      <div className="mb-6 text-gray-600 dark:text-gray-400">
+        <p className="text-xl font-bold text-center mb-8 text-blue-dark">
+          Advanced, tree-based builder for phenotype definitions
+        </p>
+        <p>
+          This is the most flexible builder for defining phenotypes. Unlike the
+          simple builder, this includes quantitative features and allows a
+          larger set of operators.
+        </p>
+      </div>
+    );
+  }
+
   function treeBuilderUsage() {
     return (
       <div className="p-5 bg-white border border-t-0 border-gray-200 dark:border-gray-700">
@@ -65,6 +80,7 @@ export default function Tree() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-6">
+        <HeaderInformation />
         <AccordionUsage />
       </div>
       <TreePhenotypeBuilder />
