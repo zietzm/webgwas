@@ -45,7 +45,7 @@ export default function About() {
       </div>
       <h1 className="text-3xl font-bold my-6 text-blue-dark">Citing WebGWAS</h1>
       <div className="">
-        <pre className="bg-gray-100 p-4 rounded-lg">TODO</pre>
+        <pre className="bg-gray-200 p-4 rounded-lg">TODO</pre>
       </div>
       <h1 className="text-3xl font-bold my-6 text-blue-dark">
         Frequently asked questions

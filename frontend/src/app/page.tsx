@@ -47,7 +47,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right bg-gray-100 text-gray-500 border border-gray-200 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 gap-3"
+            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right bg-gray-200 text-gray-500 border border-gray-200 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-800 gap-3"
           >
             <span>Usage Instructions</span>
             {isOpen ? (
