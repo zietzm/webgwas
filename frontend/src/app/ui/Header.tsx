@@ -11,12 +11,12 @@ const Header = () => {
           <ul className="flex space-x-6">
             <li>
               <Link href="/" className="">
-                Home
+                Simple
               </Link>
             </li>
             <li>
               <Link href="/tree" className="">
-                Tree
+                Advanced
               </Link>
             </li>
             <li>
