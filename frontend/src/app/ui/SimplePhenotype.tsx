@@ -266,7 +266,7 @@ export default function SimplePhenotypeBuilder() {
             )}
             {node.feature.name} [{node.feature.code}] (N=
             {node.feature.sample_size})
-            {jobStatus === null && !node.negated && (
+            {jobStatus === null && phenotype.length > 1 && !node.negated && (
               <button
                 onClick={() => {
                   setPhenotype((prevPhenotype) => {
