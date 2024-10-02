@@ -21,7 +21,7 @@ const Footer = () => {
               <TLab className="h-6 w-6" />
             </a>
             <a
-              href="https://github.com/tatonetti-lab"
+              href="https://github.com/tatonetti-lab/webgwas-backend"
               target="_blank"
               className="text-gray-400 hover:text-gray-500"
             >
