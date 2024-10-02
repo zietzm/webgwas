@@ -27,10 +27,13 @@ import {
   convertTreeToDisplayString,
   validatePhenotype,
   ValidationResponse,
+  PvaluesResult,
+  getPvalues,
 } from "../lib/api";
 import PhenotypeScatterPlots from "./PhenotypeSummary";
 import TreeNode from "./TreeNode";
 import NodeSelector from "./NodeSelector";
+import ManhattanPlot from "./ManhattanPlot";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -57,6 +60,7 @@ export default function TreePhenotypeBuilder() {
   const [showNodeSelector, setShowNodeSelector] = useState<boolean>(false);
   const [selectedNode, setSelectedNode] = useState<PhenotypeNode | null>(null);
   const [isSingleField, setIsSingleField] = useState<boolean>(false);
+  const [pvals, setPvals] = useState<PvaluesResult | null>(null);
 
   // Fetch cohorts
   useEffect(() => {
@@ -148,19 +152,24 @@ export default function TreePhenotypeBuilder() {
         phenotypeDefinition,
         selectedCohort,
       );
-      const phenotypeSummary = await getPhenotypeSummary(
-        API_URL,
-        phenotypeDefinition,
-        selectedCohort,
-      );
-      setSummary(phenotypeSummary);
-      if (phenotypeSummary.rsquared === null) {
-        setValidationResult({
-          is_valid: false,
-          message:
-            "R-squared cannot be calculated for this phenotype (all values are the same). Please try a different definition.",
-        });
-        setJobStatus("error");
+      if (!isSingleField) {
+        const phenotypeSummary = await getPhenotypeSummary(
+          API_URL,
+          phenotypeDefinition,
+          selectedCohort,
+        );
+        setSummary(phenotypeSummary);
+        if (phenotypeSummary.rsquared === null) {
+          setValidationResult({
+            is_valid: false,
+            message:
+              "R-squared cannot be calculated for this phenotype (all values are the same). Please try a different definition.",
+          });
+          setJobStatus("error");
+        } else {
+          setValidationResult(validationResult);
+          setJobStatus("valid");
+        }
       } else {
         setValidationResult(validationResult);
         setJobStatus("valid");
@@ -175,11 +184,24 @@ export default function TreePhenotypeBuilder() {
     }
   }
 
+  async function downloadPvals(requestId: string) {
+    try {
+      const result = await getPvalues(API_URL, requestId);
+      setPvals(result);
+    } catch (err) {
+      alert("Failed to download pvalues. Please try again.");
+      setJobStatus("error");
+    }
+  }
+
   async function pollJobStatus(requestId: string) {
     try {
       const result = await getResults(API_URL, requestId);
       if (result.status === "done") {
         setJobStatus("done");
+        if (pvals === null) {
+          await downloadPvals(requestId);
+        }
         downloadResults(requestId);
       } else if (result.status === "error") {
         setJobStatus("error");
@@ -372,7 +394,7 @@ export default function TreePhenotypeBuilder() {
         </div>
       )}
       {selectedCohort && phenotype.children.length > 0 && <GWASButtons />}
-      {summary && (
+      {!isSingleField && summary && (
         <div className="mb-6">
           <PhenotypeScatterPlots data={summary} />
         </div>
@@ -384,6 +406,14 @@ export default function TreePhenotypeBuilder() {
           onSelect={handleSelect}
           onClose={() => setShowNodeSelector(false)}
         />
+      )}
+      {pvals && (
+        <div className="mt-4">
+          <h2 className="text-xl font-bold mb-4">
+            Summary of results: Manhattan plot
+          </h2>
+          <ManhattanPlot data={pvals} />
+        </div>
       )}
     </div>
   );
