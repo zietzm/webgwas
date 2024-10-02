@@ -390,7 +390,7 @@ export default function SimplePhenotypeBuilder() {
       )}
       {isSingleField && jobStatus && (
         <div className="bg-gray-100 p-2 rounded-lg my-2 flex">
-          <Lightbulb className="mr-2 text-yellow-600" size={20} />
+          <Lightbulb className="mr-2" size={20} color="#CA8A04" />
           GWAS already run, please wait for the results to be uploaded.
         </div>
       )}
