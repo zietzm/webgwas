@@ -177,7 +177,7 @@
 
     - name: Ensure that dry run is disabled
       shell: |
-        sed -ie 's/dry_run = true/dry_run = false/g' /root/settings.toml
+        sed -i -e 's/dry_run = true/dry_run = false/g' /root/settings.toml
 
     - name: Copy backend systemd service file
       copy:
