@@ -121,12 +121,14 @@ export default function SimplePhenotypeBuilder() {
     try {
       setJobStatus("submitting");
       const phenotypeDefinition = convertListToRPN(phenotype);
-      const phenotypeSummary = await getPhenotypeSummary(
-        API_URL,
-        phenotypeDefinition,
-        selectedCohort,
-      );
-      setSummary(phenotypeSummary);
+      if (!isSingleField) {
+        const phenotypeSummary = await getPhenotypeSummary(
+          API_URL,
+          phenotypeDefinition,
+          selectedCohort,
+        );
+        setSummary(phenotypeSummary);
+      }
       const result = await runGWAS(
         API_URL,
         phenotypeDefinition,
