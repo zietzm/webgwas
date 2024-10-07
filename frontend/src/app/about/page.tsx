@@ -44,8 +44,25 @@ export default function About() {
         </p>
       </div>
       <h1 className="text-3xl font-bold my-6 text-blue-dark">Citing WebGWAS</h1>
-      <div className="">
-        <pre className="bg-gray-200 p-4 rounded-lg">TODO</pre>
+      <div className="border-l-4 border-gray-300 pl-4 bg-gray-50 p-4 rounded-md">
+        <p className="italic text-lg">
+          Phenotype projections accelerate biobank-scale GWAS
+        </p>
+        <p className="mt-2">
+          Michael Zietz, Undina Gisladottir, Kathleen LaRow Brown, Nicholas P.
+          Tatonetti
+        </p>
+        <p className="mt-2">
+          bioRxiv 2023.11.20.567948; doi:
+          <a
+            href="https://doi.org/10.1101/2023.11.20.567948"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            10.1101/2023.11.20.567948
+          </a>
+        </p>
       </div>
       <h1 className="text-3xl font-bold my-6 text-blue-dark">
         Frequently asked questions
