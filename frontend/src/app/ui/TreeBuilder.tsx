@@ -30,10 +30,10 @@ import {
   PvaluesResult,
   getPvalues,
 } from "../lib/api";
-import PhenotypeScatterPlots from "./PhenotypeSummary";
 import TreeNode from "./TreeNode";
 import NodeSelector from "./NodeSelector";
 import ManhattanPlot from "./ManhattanPlot";
+import QualityInformation from "./QualityInformation";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -394,11 +394,7 @@ export default function TreePhenotypeBuilder() {
         </div>
       )}
       {selectedCohort && phenotype.children.length > 0 && <GWASButtons />}
-      {!isSingleField && summary && (
-        <div className="mb-6">
-          <PhenotypeScatterPlots data={summary} />
-        </div>
-      )}
+      {!isSingleField && summary && <QualityInformation data={summary} />}
       {showNodeSelector && (
         <NodeSelector
           features={features}

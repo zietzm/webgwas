@@ -21,9 +21,9 @@ import {
   getPvalues,
   PvaluesResult,
 } from "../lib/api";
-import PhenotypeScatterPlots from "./PhenotypeSummary";
 import ManhattanPlot from "./ManhattanPlot";
 import { ImFeelingLuckyList } from "./ImFeelingLucky";
+import QualityInformation from "./QualityInformation";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -395,10 +395,10 @@ export default function SimplePhenotypeBuilder() {
         </div>
       )}
       {phenotype.length > 0 && <GWASButtons />}
-      {!isSingleField && summary && <PhenotypeScatterPlots data={summary} />}
+      {!isSingleField && summary && <QualityInformation data={summary} />}
       {pvals && (
         <div className="mt-4">
-          <h2 className="text-xl font-bold mb-4">
+          <h2 className="text-2xl font-bold mb-4">
             Summary of results: Manhattan plot
           </h2>
           <ManhattanPlot data={pvals} />
