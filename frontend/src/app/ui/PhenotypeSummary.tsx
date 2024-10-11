@@ -47,8 +47,8 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
         well it can be approximated determines the quality of the GWAS. We use a
         linear regression for this approximation.
       </p>
-      <div className="flex flex-row space-x-2">
-        <div className="w-1/2">
+      <div className="flex flex-wrap gap-2">
+        <div className="min-w-[300px] md:basis-2/5 grow">
           <PhenotypePlot
             data={phenotypeData}
             xlab="True phenotype"
@@ -56,7 +56,7 @@ const PhenotypeScatterPlots: React.FC<PhenotypeScatterPlotsProps> = ({
             title="True vs predicted phenotype"
           />
         </div>
-        <div className="w-1/2">
+        <div className="min-w-[300px] md:basis-2/5 grow">
           <PhenotypeFitPlot
             data={fitQualityData}
             rsquared={data.rsquared}
