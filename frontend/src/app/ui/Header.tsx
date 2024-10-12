@@ -21,7 +21,7 @@ const sections = [
   },
 ];
 
-const Header = () => {
+export default function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -89,6 +89,4 @@ const Header = () => {
       </div>
     </header>
   );
-};
-
-export default Header;
+}
