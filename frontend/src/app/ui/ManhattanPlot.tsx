@@ -44,7 +44,7 @@ const Legend: React.FC<LegendProps> = ({ colorMap, title = "Shared hits" }) => {
 };
 
 export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
-  const mainColors = ["rgba(89, 130, 179, .5)", "rgba(64, 98, 140, .5)"];
+  const mainColors = ["rgba(89, 130, 179, .25)", "rgba(64, 98, 140, .25)"];
   const highlightColors = [
     "#ea5545",
     "#f46a9b",
@@ -160,7 +160,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
         turboThreshold: 0,
         boostThreshold: 1,
         marker: {
-          radius: 2,
+          radius: 3,
         },
         allowPointSelect: true,
         accessibility: {
