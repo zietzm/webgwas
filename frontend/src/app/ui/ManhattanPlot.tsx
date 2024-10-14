@@ -8,18 +8,54 @@ if (typeof Highcharts === "object") {
   Highcharts.AST.allowedAttributes.push("rel");
   Highcharts.AST.allowedAttributes.push("onmousedown");
 }
+import React from "react";
 
 export function Docs() {
   return (
-    <p className="text-gray-800 dark:text-gray-400 mb-2">
-      To load quickly, the plot above shows only variants with p &lt; 0.05.
-      Download unfiltered results above.
+    <p className="text-gray-800 dark:text-gray-400">
+      Only variants with p &lt; 0.05 are shown. Unfiltered results are available
+      for download above.
     </p>
   );
 }
 
+interface LegendProps {
+  colorMap: Record<string, string>;
+  title?: string;
+}
+
+const Legend: React.FC<LegendProps> = ({ colorMap, title = "Shared hits" }) => {
+  return (
+    <div className="flex flex-row gap-4">
+      {title && <h3 className="text-lg font-semibold">{title}</h3>}
+      <div className="flex flex-wrap gap-4">
+        {Object.entries(colorMap).map(([phenotype, color]) => (
+          <div key={phenotype} className="flex items-center">
+            <div
+              className="w-4 h-4 mr-2"
+              style={{ backgroundColor: color }}
+            ></div>
+            <span>{phenotype}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
-  const colors = ["rgba(89, 130, 179, .5)", "rgba(64, 98, 140, .5)"];
+  const mainColors = ["rgba(89, 130, 179, .5)", "rgba(64, 98, 140, .5)"];
+  const highlightColors = [
+    "#ea5545",
+    "#f46a9b",
+    "#ef9b20",
+    "#edbf33",
+    "#ede15b",
+    "#bdcf32",
+    "#87bc45",
+    "#27aeef",
+    "#b33dc6",
+  ];
 
   const chrPositions = data.chromosome_positions.map((chr) => chr.midpoint);
 
@@ -28,19 +64,33 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
     chrIdxToLabel.set(chr.midpoint, chr.chromosome);
   });
 
-  const chrToColor: Map<string, string> = new Map();
-  data.chromosome_positions.forEach((chr, index) => {
-    chrToColor.set(chr.chromosome, colors[index % colors.length]);
+  const colorIdxToColor: Map<number, string> = new Map();
+  data.color_map.forEach((_, colorIdx) => {
+    if (colorIdx < 23) {
+      colorIdxToColor.set(colorIdx, mainColors[colorIdx % mainColors.length]);
+    } else {
+      colorIdxToColor.set(
+        colorIdx,
+        highlightColors[(colorIdx - 23) % highlightColors.length],
+      );
+    }
   });
 
   const variants = data.pvalues.map((p) => {
     return {
       x: p.index,
       y: p.pvalue,
-      color: chrToColor.get(p.chromosome)!,
+      color: colorIdxToColor.get(p.color)!,
       label: p.label,
     };
   });
+
+  const colorMap: Record<string, string> = {};
+  for (const [colorIdx, colorName] of data.color_map) {
+    if (colorIdx >= 23) {
+      colorMap[colorName] = colorIdxToColor.get(colorIdx)!;
+    }
+  }
 
   const options = {
     credits: {
@@ -122,6 +172,9 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
   return (
     <div>
       <HighchartsReact highcharts={Highcharts} options={options} />
+      <div className="flex flex-row justify-center mb-4">
+        <Legend colorMap={colorMap} />
+      </div>
       <Docs />
     </div>
   );

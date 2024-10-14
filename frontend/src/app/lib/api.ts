@@ -31,6 +31,7 @@ export interface Pvalue {
   index: number;
   pvalue: number;
   chromosome: string;
+  color: number;
   label: string;
 }
 
@@ -45,11 +46,13 @@ export interface PvaluesResponse {
   error_msg?: string;
   pvalues?: Pvalue[];
   chromosome_positions?: ChromosomePosition[];
+  color_map?: Map<number, string>;
 }
 
 export interface PvaluesResult {
   pvalues: Pvalue[];
   chromosome_positions: ChromosomePosition[];
+  color_map: Map<number, string>;
 }
 
 export async function fetchCohorts(url: string): Promise<Cohort[]> {
@@ -191,27 +194,38 @@ export async function getResults(
 export async function getPvalues(
   url: string,
   requestId: string,
+  cohortId: number,
+  feature_codes: string[],
 ): Promise<PvaluesResult> {
   const myUrl = new URL(`${url}/igwas/results/pvalues/${requestId}`);
-  myUrl.searchParams.set("minp", "1.3"); // Hard coded to -log10(0.05) for faster rendering
   const response = await fetch(myUrl.href, {
-    method: "GET",
+    method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
       "Accept-Encoding": "zstd",
     },
+    body: JSON.stringify({
+      cohort_id: cohortId,
+      minp: 1.3, // Hard coded to -log10(0.05) for faster rendering
+      features: feature_codes,
+    }),
   });
   if (!response.ok) {
     throw new Error(`Failed to fetch results: ${response.status}`);
   }
   const rawResult: any = await response.json();
-  if (rawResult.pvalues !== null && rawResult.chromosome_positions !== null) {
+  if (
+    rawResult.pvalues !== null &&
+    rawResult.chromosome_positions !== null &&
+    rawResult.color_map !== null
+  ) {
     const formattedPvalues: Pvalue[] = rawResult.pvalues.map((p: any) => {
       return {
         index: p.i,
         pvalue: p.p,
         chromosome: p.c,
+        color: p.g,
         label: p.l,
       };
     });
@@ -222,9 +236,14 @@ export async function getPvalues(
           midpoint: p.m,
         };
       });
+    const colorMap: Map<number, string> = new Map();
+    for (const key in rawResult.color_map) {
+      colorMap.set(parseInt(key), rawResult.color_map[key]);
+    }
     return {
       pvalues: formattedPvalues,
       chromosome_positions: formattedChromosomePositions,
+      color_map: colorMap,
     };
   }
   console.log(rawResult);
@@ -303,5 +322,16 @@ export function convertTreeToDisplayString(phenotype: PhenotypeNode): string {
     }
   } else {
     throw new Error("Invalid node type" + phenotype.data);
+  }
+}
+
+export function convertTreeToListOfCodes(node: PhenotypeNode): string[] {
+  if (isFeature(node.data)) {
+    return [node.data.code];
+  } else if (isOperator(node.data)) {
+    const childrenCodes = node.children.map(convertTreeToListOfCodes);
+    return childrenCodes.flat();
+  } else {
+    return [];
   }
 }

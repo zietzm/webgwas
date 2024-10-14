@@ -29,6 +29,7 @@ import {
   ValidationResponse,
   PvaluesResult,
   getPvalues,
+  convertTreeToListOfCodes,
 } from "../lib/api";
 import TreeNode from "./TreeNode";
 import NodeSelector from "./NodeSelector";
@@ -186,7 +187,13 @@ export default function TreePhenotypeBuilder() {
 
   async function downloadPvals(requestId: string) {
     try {
-      const result = await getPvalues(API_URL, requestId);
+      const featureCodes = convertTreeToListOfCodes(phenotype);
+      const result = await getPvalues(
+        API_URL,
+        requestId,
+        selectedCohort!.id,
+        featureCodes,
+      );
       setPvals(result);
     } catch (err) {
       alert("Failed to download pvalues. Please try again.");

@@ -184,7 +184,13 @@ export default function SimplePhenotypeBuilder() {
 
   async function downloadPvals(requestId: string) {
     try {
-      const result = await getPvalues(API_URL, requestId);
+      const featureCodes = phenotype.map((p) => p.feature.code);
+      const result = await getPvalues(
+        API_URL,
+        requestId,
+        selectedCohort!.id,
+        featureCodes,
+      );
       setPvals(result);
     } catch (err) {
       alert("Failed to download pvalues. Please try again.");
