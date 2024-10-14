@@ -359,7 +359,7 @@ export default function SimplePhenotypeBuilder() {
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6 items-center mb-6">
+    <div className="bg-white shadow-md rounded-lg p-4 md:p-6 items-center mb-6">
       <CohortSelector />
       <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}
