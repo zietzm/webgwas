@@ -64,6 +64,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
       },
       tickPositions: chrPositions,
       labels: {
+        overflow: false,
         formatter: function (this: any, _ctx: any): any {
           return chrIdxToLabel.get(this.value);
         },
