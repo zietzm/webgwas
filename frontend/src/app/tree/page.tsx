@@ -43,7 +43,7 @@ export default function Tree() {
           width="0"
           height="0"
           sizes="100vw"
-          className="w-1/2 h-auto"
+          className="w-full md:w-1/2 h-auto"
         />
         <p className="my-2 text-gray-600 dark:text-gray-400">
           Once built, you can validate your phenotype and run the GWAS. Our
