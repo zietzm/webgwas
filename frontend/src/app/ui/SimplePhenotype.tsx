@@ -24,6 +24,7 @@ import {
 import ManhattanPlot from "./ManhattanPlot";
 import { ImFeelingLuckyList } from "./ImFeelingLucky";
 import QualityInformation from "./QualityInformation";
+import usagePic from "../../../public/list_example.webp";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -43,14 +44,11 @@ export function simplePhenotypeBuilderUsage() {
       <p className="mb-2 text-gray-600 dark:text-gray-400">
         The resulting phenotype would look like this:
       </p>
-      <Image
-        src={"/list_example.webp"}
-        alt={"Example phenotype"}
-        width="0"
-        height="0"
-        sizes="100vw"
-        className="w-full md:w-1/2 h-auto"
-      />
+      <div className="flex flex-row">
+        <div className="basis-full md:basis-3/5">
+          <Image src={usagePic} alt="Usage example for the simple builder" />
+        </div>
+      </div>
       <p className="my-2 text-gray-600 dark:text-gray-400">
         Once built, you can validate your phenotype and run the GWAS. Our server
         will then start the GWAS calculation and display the status of the job.
