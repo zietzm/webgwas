@@ -46,13 +46,13 @@ export interface PvaluesResponse {
   error_msg?: string;
   pvalues?: Pvalue[];
   chromosome_positions?: ChromosomePosition[];
-  color_map?: Map<number, string>;
+  color_map?: string[];
 }
 
 export interface PvaluesResult {
   pvalues: Pvalue[];
   chromosome_positions: ChromosomePosition[];
-  color_map: Map<number, string>;
+  color_map: string[];
 }
 
 export async function fetchCohorts(url: string): Promise<Cohort[]> {
@@ -236,10 +236,10 @@ export async function getPvalues(
           midpoint: p.m,
         };
       });
-    const colorMap: Map<number, string> = new Map();
-    for (const key in rawResult.color_map) {
-      colorMap.set(parseInt(key), rawResult.color_map[key]);
-    }
+
+    const colorMap: string[] = rawResult.color_map;
+    console.log("Color map in result", colorMap);
+    console.log("UUID", rawResult.request_id);
     return {
       pvalues: formattedPvalues,
       chromosome_positions: formattedChromosomePositions,

@@ -19,8 +19,13 @@ export function Docs() {
   );
 }
 
+interface ColorMapItem {
+  phenotype: string;
+  color: string;
+}
+
 interface LegendProps {
-  colorMap: Record<string, string>;
+  colorMap: Array<ColorMapItem>;
   title?: string;
 }
 
@@ -29,7 +34,7 @@ const Legend: React.FC<LegendProps> = ({ colorMap, title = "Shared hits" }) => {
     <div className="flex flex-row gap-4">
       {title && <h3 className="text-lg font-semibold">{title}</h3>}
       <div className="flex flex-wrap gap-4">
-        {Object.entries(colorMap).map(([phenotype, color]) => (
+        {colorMap.map(({ phenotype, color }) => (
           <div key={phenotype} className="flex items-center">
             <div
               className="w-4 h-4 mr-2"
@@ -65,6 +70,7 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
   });
 
   const colorIdxToColor: Map<number, string> = new Map();
+  console.log("Color map in plot", data.color_map);
   data.color_map.forEach((_, colorIdx) => {
     if (colorIdx < 23) {
       colorIdxToColor.set(colorIdx, mainColors[colorIdx % mainColors.length]);
@@ -85,12 +91,12 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
     };
   });
 
-  const colorMap: Record<string, string> = {};
-  for (const [colorIdx, colorName] of data.color_map) {
+  const colorMap: Array<ColorMapItem> = [];
+  data.color_map.forEach((phenotype, colorIdx) => {
     if (colorIdx >= 23) {
-      colorMap[colorName] = colorIdxToColor.get(colorIdx)!;
+      colorMap.push({ phenotype, color: colorIdxToColor.get(colorIdx)! });
     }
-  }
+  });
 
   const options = {
     credits: {
