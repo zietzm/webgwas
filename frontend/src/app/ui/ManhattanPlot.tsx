@@ -70,7 +70,6 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
   });
 
   const colorIdxToColor: Map<number, string> = new Map();
-  console.log("Color map in plot", data.color_map);
   data.color_map.forEach((_, colorIdx) => {
     if (colorIdx < 23) {
       colorIdxToColor.set(colorIdx, mainColors[colorIdx % mainColors.length]);

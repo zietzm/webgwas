@@ -238,8 +238,6 @@ export async function getPvalues(
       });
 
     const colorMap: string[] = rawResult.color_map;
-    console.log("Color map in result", colorMap);
-    console.log("UUID", rawResult.request_id);
     return {
       pvalues: formattedPvalues,
       chromosome_positions: formattedChromosomePositions,
