@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Play,
   CheckCircle,
@@ -72,6 +72,11 @@ export default function SimplePhenotypeBuilder() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [pvals, setPvals] = useState<PvaluesResult | null>(null);
   const [isSingleField, setIsSingleField] = useState<boolean>(false);
+
+  const pvalsRef = useRef(pvals);
+  useEffect(() => {
+    pvalsRef.current = pvals;
+  }, [pvals]);
 
   // Fetch cohorts
   useEffect(() => {
@@ -150,7 +155,7 @@ export default function SimplePhenotypeBuilder() {
       switch (result.status) {
         case "done":
           setJobStatus("done");
-          if (pvals === null) {
+          if (pvalsRef.current === null) {
             await downloadPvals(requestId);
           }
           downloadResults(requestId);
@@ -159,7 +164,7 @@ export default function SimplePhenotypeBuilder() {
           setJobStatus("error");
           break;
         case "uploading":
-          if (pvals === null) {
+          if (pvalsRef.current === null) {
             await downloadPvals(requestId);
           }
         default:
