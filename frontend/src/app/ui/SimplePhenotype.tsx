@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import FuzzySelect from "./FuzzySelect";
 import { Cohort, Feature, ListNode, PhenotypeSummary } from "../lib/types";
-import Image from "next/image";
 import {
   fetchCohorts,
   convertListToRPN,
@@ -24,7 +23,6 @@ import {
 import ManhattanPlot from "./ManhattanPlot";
 import { ImFeelingLuckyList } from "./ImFeelingLucky";
 import QualityInformation from "./QualityInformation";
-import usagePic from "../../../public/list_example.webp";
 
 const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -46,7 +44,10 @@ export function simplePhenotypeBuilderUsage() {
       </p>
       <div className="flex flex-row">
         <div className="basis-full md:basis-3/5">
-          <Image src={usagePic} alt="Usage example for the simple builder" />
+          <img
+            src="/list_example.webp"
+            alt="Usage example for the simple builder"
+          />
         </div>
       </div>
       <p className="my-2 text-gray-600 dark:text-gray-400">

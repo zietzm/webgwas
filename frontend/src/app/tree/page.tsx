@@ -1,10 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import TreePhenotypeBuilder from "../ui/TreeBuilder";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import usagePic from "../../../public/tree_example.webp";
 
 export default function Tree() {
   function HeaderInformation() {
@@ -40,7 +38,10 @@ export default function Tree() {
         </p>
         <div className="flex flex-row">
           <div className="basis-full md:basis-1/2">
-            <Image src={usagePic} alt="Usage example for the simple builder" />
+            <img
+              src="/tree_example.webp"
+              alt="Usage example for the simple builder"
+            />
           </div>
         </div>
         <p className="my-2 text-gray-600 dark:text-gray-400">
