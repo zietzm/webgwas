@@ -55,7 +55,7 @@ export default function TreePhenotypeBuilder() {
     useState<ValidationResponse | null>(null);
   const [summary, setSummary] = useState<PhenotypeSummary | null>(null);
   const [jobStatus, setJobStatus] = useState<
-    "valid" | "submitting" | "queued" | "done" | "error" | null
+    "cached" | "valid" | "submitting" | "queued" | "done" | "error" | null
   >(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [showNodeSelector, setShowNodeSelector] = useState<boolean>(false);
