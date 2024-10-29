@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Play,
   CheckCircle,
@@ -7,6 +7,7 @@ import {
   MinusCircle,
   Download,
   Lightbulb,
+  DatabaseZap,
 } from "lucide-react";
 import FuzzySelect from "./FuzzySelect";
 import { Cohort, Feature, ListNode, PhenotypeSummary } from "../lib/types";
@@ -68,16 +69,12 @@ export default function SimplePhenotypeBuilder() {
   const [error, setError] = useState("");
   const [summary, setSummary] = useState<PhenotypeSummary | null>(null);
   const [jobStatus, setJobStatus] = useState<
-    "submitting" | "queued" | "done" | "error" | null
+    "cached" | "queued" | "done" | "error" | null
   >(null);
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [pvals, setPvals] = useState<PvaluesResult | null>(null);
   const [isSingleField, setIsSingleField] = useState<boolean>(false);
-
-  const pvalsRef = useRef(pvals);
-  useEffect(() => {
-    pvalsRef.current = pvals;
-  }, [pvals]);
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [isCached, setIsCached] = useState<boolean>(false);
 
   // Fetch cohorts
   useEffect(() => {
@@ -123,7 +120,7 @@ export default function SimplePhenotypeBuilder() {
       setIsSingleField(true);
     }
     try {
-      setJobStatus("submitting");
+      setJobStatus("queued");
       const phenotypeDefinition = convertListToRPN(phenotype);
       if (!isSingleField) {
         const phenotypeSummary = await getPhenotypeSummary(
@@ -139,6 +136,10 @@ export default function SimplePhenotypeBuilder() {
         selectedCohort,
       );
       setJobStatus(result.status);
+      if (result.status === "cached") {
+        setIsCached(true);
+      }
+      setRequestId(result.request_id);
       await pollJobStatus(result.request_id);
     } catch (err) {
       let errorMessage = "Error running GWAS";
@@ -154,34 +155,19 @@ export default function SimplePhenotypeBuilder() {
     try {
       const result = await getResults(API_URL, requestId);
       switch (result.status) {
+        case "cached":
+          setIsCached(true);
         case "done":
-          setJobStatus("done");
-          if (pvalsRef.current === null) {
-            await downloadPvals(requestId);
-          }
-          downloadResults(requestId);
+          setJobStatus(result.status);
+          await downloadPvals(requestId);
           return;
         case "error":
           setJobStatus("error");
           break;
-        case "uploading":
-          if (pvalsRef.current === null) {
-            await downloadPvals(requestId);
-          }
         default:
           setTimeout(() => pollJobStatus(requestId), 1000); // Poll every second
       }
     } catch (err) {
-      setJobStatus("error");
-    }
-  }
-
-  async function downloadResults(requestId: string) {
-    try {
-      const result = await getResults(API_URL, requestId);
-      setDownloadUrl(result.url);
-    } catch (err) {
-      alert("Failed to download results. Please try again.");
       setJobStatus("error");
     }
   }
@@ -222,13 +208,16 @@ export default function SimplePhenotypeBuilder() {
             <button
               key={cohort.id}
               onClick={() => {
-                if (jobStatus === null || jobStatus === "done") {
+                if (
+                  jobStatus === null ||
+                  jobStatus === "done" ||
+                  jobStatus === "cached"
+                ) {
                   setSelectedCohort(cohort);
                   setPhenotype([]);
                   setJobStatus(null);
                   setSummary(null);
                   setPvals(null);
-                  setDownloadUrl(null);
                   setIsSingleField(false);
                   setError("");
                   setIsLoading(false);
@@ -289,7 +278,7 @@ export default function SimplePhenotypeBuilder() {
                 }}
               >
                 <a className="ml-5 p-1 align-middle text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded">
-                  Negate
+                  Click to negate
                 </a>
               </button>
             )}
@@ -316,23 +305,28 @@ export default function SimplePhenotypeBuilder() {
   function JobStatusBoxes() {
     return (
       <div className="flex items-center bg-gray-100 p-2 rounded-lg">
-        {(jobStatus === "submitting" || jobStatus === "queued") && (
+        {jobStatus === "queued" && (
           <Loader className="animate-spin mr-2" size={20} />
         )}
-        {jobStatus === "done" && (
+        {isCached && <DatabaseZap className="mr-2 text-green-main" size={20} />}
+        {!isCached && jobStatus === "done" && (
           <CheckCircle className="mr-2 text-green-main" size={20} />
         )}
         {jobStatus === "error" && (
           <XCircle className="mr-2 text-red-600" size={20} />
         )}
         <span className="text-gray-700">
+          {isCached && "GWAS cached."}
           {!isSingleField && jobStatus === "queued" && "GWAS queued..."}
-          {!isSingleField && jobStatus === "done" && "GWAS completed."}
+          {!isSingleField &&
+            !isCached &&
+            jobStatus === "done" &&
+            "GWAS completed."}
           {!isSingleField &&
             jobStatus === "error" &&
             "GWAS failed. Please try again."}{" "}
           {isSingleField && jobStatus === "queued" && "Upload queued..."}
-          {isSingleField && jobStatus === "done" && "Upload completed"}
+          {isSingleField && jobStatus === "done" && "Ready for download."}
           {isSingleField && jobStatus === "error" && "Upload failed"}
         </span>
       </div>
@@ -354,9 +348,9 @@ export default function SimplePhenotypeBuilder() {
           </button>
         )}
         {jobStatus && <JobStatusBoxes />}
-        {jobStatus && jobStatus === "done" && (
+        {jobStatus && (jobStatus === "done" || jobStatus === "cached") && (
           <div>
-            <a href={downloadUrl!} download>
+            <a href={`${API_URL}/download/${requestId}`} download>
               <button className="bg-blue-main hover:bg-blue-dark text-white font-semibold py-2 px-4 rounded-lg flex items-center transition-colors">
                 <Download className="mr-2" size={20} />
                 Download Results
@@ -401,11 +395,11 @@ export default function SimplePhenotypeBuilder() {
       {isSingleField && jobStatus && (
         <div className="bg-gray-100 p-2 rounded-lg my-2 flex">
           <Lightbulb className="mr-2" size={20} color="#CA8A04" />
-          GWAS already run, please wait for the results to be uploaded.
+          GWAS already run, please wait for the results to be made available.
         </div>
       )}
       {phenotype.length > 0 && <GWASButtons />}
-      {!isSingleField && summary && <QualityInformation data={summary} />}
+      {summary && <QualityInformation data={summary} />}
       {pvals && (
         <div className="mt-4">
           <h2 className="text-2xl font-bold mb-4">

@@ -11,7 +11,7 @@ import {
 
 export interface PostGWASResponse {
   request_id: string;
-  status: "queued" | "done" | "error";
+  status: "queued" | "done" | "error" | "cached";
   message: string | null;
 }
 
@@ -22,7 +22,7 @@ export interface ValidationResponse {
 
 export interface ResultsResponse {
   request_id: string;
-  status: "queued" | "uploading" | "done" | "error";
+  status: "queued" | "done" | "error" | "cached";
   error_msg: string | null;
   url: string | null;
 }
@@ -42,7 +42,7 @@ export interface ChromosomePosition {
 
 export interface PvaluesResponse {
   request_id: string;
-  status: "queued" | "done" | "error" | "uploading";
+  status: "queued" | "cached" | "done" | "error";
   error_msg?: string;
   pvalues?: Pvalue[];
   chromosome_positions?: ChromosomePosition[];
