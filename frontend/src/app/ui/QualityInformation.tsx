@@ -40,7 +40,9 @@ export default function QualityInformation({
       <div className="">
         <Accordion type="single" collapsible>
           <AccordionItem value="item-1">
-            <AccordionTrigger>More information</AccordionTrigger>
+            <AccordionTrigger className="bg-gray-50 hover:bg-gray-100 px-2">
+              More information
+            </AccordionTrigger>
             <AccordionContent>
               <PhenotypeScatterPlots data={data} />
             </AccordionContent>
