@@ -83,7 +83,6 @@ export async function pollJobStatus(requestId: string): Promise<PollResult> {
     const checkStatus = async () => {
       try {
         const result = await getResults(requestId);
-        console.log(result.status);
 
         switch (result.status) {
           case "cached":

@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
 const sections = [
   {
     name: "Simple",
-    href: "/",
+    href: "/simple",
   },
   {
     name: "Advanced",

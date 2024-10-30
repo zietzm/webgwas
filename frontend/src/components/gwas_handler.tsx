@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import {
+  BookOpenCheck,
   CheckCircle,
   DatabaseZap,
   Download,
@@ -8,12 +9,15 @@ import {
   Play,
   XCircle,
 } from "lucide-react";
+
 import { Cohort, PhenotypeSummary } from "@/app/lib/types";
 import {
   API_URL,
   PostGWASResponse,
   PvaluesResult,
   runGWAS,
+  validatePhenotype,
+  ValidationResponse,
 } from "@/app/lib/api";
 import { convertToRPN, isSingleField, Phenotype } from "@/lib/phenotype";
 import { downloadPvals, pollJobStatus, summarize } from "@/lib/gwas";
@@ -22,7 +26,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./ui/tooltip";
+} from "@/components/ui/tooltip";
 
 export function GwasHandlerNoValidate({
   cohort,
@@ -101,6 +105,129 @@ export function GwasHandlerNoValidate({
       <div className="flex flex-wrap gap-4">
         {status === null && <RunGwasButton handleRunGWAS={handleRunGWAS} />}
         {status !== null && <JobStatusBoxes status={status} error={error} />}
+        {requestId && (status === "done" || status === "cached") && (
+          <DownloadButton requestId={requestId} />
+        )}
+      </div>
+      <div className="flex flex-wrap">
+        <ResetButton
+          handleReset={handleReset}
+          isMutable={status !== "running"}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function GwasHandlerDoValidate({
+  cohort,
+  phenotype,
+  setIsMutable,
+  setFitQuality,
+  setResults,
+  handleReset,
+}: {
+  cohort: Cohort;
+  phenotype: Phenotype;
+  setIsMutable: React.Dispatch<React.SetStateAction<boolean>>;
+  setFitQuality: React.Dispatch<React.SetStateAction<PhenotypeSummary | null>>;
+  setResults: React.Dispatch<React.SetStateAction<PvaluesResult | null>>;
+  handleReset: React.MouseEventHandler;
+}) {
+  const [status, setStatus] = useState<
+    "running" | "done" | "error" | "cached" | null
+  >(null);
+  const [requestId, setRequestId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [phenotypeValidity, setPhenotypeValidity] = useState<
+    "valid" | "invalid" | null
+  >(null);
+
+  const phenotypeString = convertToRPN(phenotype);
+  const isTrivialPhenotype = isSingleField(phenotype);
+
+  const handleValidatePhenotype: React.MouseEventHandler<
+    HTMLButtonElement
+  > = async () => {
+    setIsMutable(false);
+    let validationResponse: ValidationResponse;
+    try {
+      validationResponse = await validatePhenotype(phenotypeString, cohort);
+      setPhenotypeValidity(validationResponse.is_valid ? "valid" : "invalid");
+    } catch (err) {
+      let errorMessage = "Error validating the phenotype";
+      if (err instanceof Error) {
+        errorMessage = `Error validating the phenotype: ${err.message}`;
+      }
+      console.log(errorMessage);
+      setError(errorMessage);
+      return;
+    }
+  };
+
+  const handleRunGWAS: React.MouseEventHandler<
+    HTMLButtonElement
+  > = async () => {
+    setIsMutable(false);
+    setStatus("running");
+    if (!isTrivialPhenotype) {
+      const result = await summarize(cohort, phenotype);
+      if (result.ok) {
+        setFitQuality(result.fitQuality);
+      } else {
+        setError(result.error);
+        return;
+      }
+    }
+    let gwasResponse: PostGWASResponse;
+    try {
+      gwasResponse = await runGWAS(phenotypeString, cohort);
+      setRequestId(gwasResponse.request_id);
+      if (gwasResponse.status === "cached" || gwasResponse.status === "done") {
+        setStatus(gwasResponse.status);
+      } else if (gwasResponse.status === "error") {
+        throw new Error(gwasResponse.message || "Unknown error");
+      } else {
+        const result = await pollJobStatus(gwasResponse.request_id);
+        setStatus(result.status);
+        setError(result.error);
+      }
+    } catch (err) {
+      let errorMessage = "Error running GWAS";
+      if (err instanceof Error) {
+        errorMessage = `Error running GWAS: ${err.message}`;
+      }
+      console.log(errorMessage);
+      setError(errorMessage);
+      return;
+    }
+    const result = await downloadPvals(
+      gwasResponse.request_id,
+      cohort,
+      phenotype,
+    );
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setResults(result.result);
+  };
+
+  return (
+    <div className="flex flex-wrap gap-4 justify-between">
+      <div className="flex flex-wrap gap-4">
+        {status === null && (
+          <ValidateButton
+            handleValidatePhenotype={handleValidatePhenotype}
+            validity={phenotypeValidity}
+          />
+        )}
+        {status === null && phenotypeValidity === "valid" && (
+          <RunGwasButton handleRunGWAS={handleRunGWAS} />
+        )}
+        {status !== null && phenotypeValidity === "valid" && (
+          <JobStatusBoxes status={status} error={error} />
+        )}
         {requestId && (status === "done" || status === "cached") && (
           <DownloadButton requestId={requestId} />
         )}
@@ -222,5 +349,43 @@ function ResetButton({
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
+  );
+}
+
+function ValidateButton({
+  handleValidatePhenotype,
+  validity,
+}: {
+  handleValidatePhenotype: React.MouseEventHandler<HTMLButtonElement>;
+  validity: "valid" | "invalid" | null;
+}) {
+  let color: string;
+  if (validity === null) {
+    color = "bg-green-main hover:bg-green-dark text-white font-semibold";
+  } else if (validity === "invalid") {
+    color = "bg-red-500 text-white font-semibold";
+  } else {
+    color = "bg-gray-100";
+  }
+  const disabled = validity !== null;
+  let text: string;
+  if (validity === "valid") {
+    text = "Phenotype is valid";
+  } else if (validity === "invalid") {
+    text = "Phenotype is invalid";
+  } else {
+    text = "Validate phenotype";
+  }
+  return (
+    <button
+      onClick={handleValidatePhenotype}
+      className={`py-2 px-4 rounded-lg flex items-center transition-colors ${
+        color
+      }`}
+      disabled={disabled}
+    >
+      <BookOpenCheck className="mr-2" size={20} />
+      {text}
+    </button>
   );
 }
