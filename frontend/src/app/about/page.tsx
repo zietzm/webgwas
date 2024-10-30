@@ -1,6 +1,6 @@
 export default function About() {
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto mt-8">
       <h1 className="text-3xl font-bold mb-6 text-blue-dark">About WebGWAS</h1>
       <div className="prose prose-jet">
         <p className="my-4">
