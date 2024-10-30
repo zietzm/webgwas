@@ -155,9 +155,9 @@ export function ImFeelingLuckyList({
   return (
     <button
       onClick={handleClick}
-      className="bg-blue-main hover:bg-blue-dark text-white text-l font-semibold py-1 px-4 rounded-lg flex items-center transition-colors"
+      className="bg-primary hover:bg-blue-dark text-primary-foreground text-l font-semibold py-1 px-4 h-[38px] rounded-lg flex gap-2 items-center transition-colors text-nowrap"
     >
-      <Shuffle className="mr-2" size={20} />
+      <Shuffle size={20} />
       I&apos;m Feeling Lucky
     </button>
   );

@@ -18,22 +18,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link
-          href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css"
-          rel="stylesheet"
-        />
-      </head>
       <body className={inter.className}>
         <div className="flex flex-col min-h-screen min-w-fit">
           <Header />
-          <main className="container mx-auto px-4 py-8 flex-1">{children}</main>
+          <div className="flex flex-row flex-1">
+            <main className="mx-auto p-4 flex-1 max-w-4xl">{children}</main>
+          </div>
           <Footer />
         </div>
-        <script
-          async
-          src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"
-        ></script>
       </body>
     </html>
   );

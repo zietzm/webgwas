@@ -138,3 +138,17 @@ export function addChild(
   alert(`Failed to find node ${parentId}`);
   return phenotype;
 }
+
+/** Breadth first search the tree to find all codes in the tree */
+export function getCodesTree(phenotype: PhenotypeNode): string[] {
+  const codes: string[] = [];
+  function visit(node: PhenotypeNode): void {
+    if (isFeature(node.data)) {
+      codes.push(node.data.code);
+    } else if (isOperator(node.data)) {
+      node.children.forEach(visit);
+    }
+  }
+  visit(phenotype);
+  return codes;
+}

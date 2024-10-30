@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import SimplePhenotypeBuilder, {
-  simplePhenotypeBuilderUsage,
+  SimplePhenotypeBuilderUsage,
 } from "@/app/ui/SimplePhenotype";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import Accordion from "@/components/accordion";
 
 function headerInformation() {
   return (
     <div className="mb-6 text-gray-600 dark:text-gray-400">
-      <p className="text-xl font-bold text-center mb-8 text-blue-dark">
+      <p className="text-3xl font-bold text-center mb-8 text-blue-dark">
         Instant, free genome-wide association studies (GWAS) on arbitrary
         phenotypes
       </p>
@@ -17,7 +16,7 @@ function headerInformation() {
         Using{" "}
         <a
           href="/about"
-          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-600"
+          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-800"
         >
           a new approximation method
         </a>
@@ -25,7 +24,7 @@ function headerInformation() {
         definitions. Whereas the{" "}
         <a
           href="https://pan.ukbb.broadinstitute.org/"
-          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-600"
+          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-800"
         >
           Pan-UK Biobank
         </a>{" "}
@@ -38,33 +37,12 @@ function headerInformation() {
 }
 
 export default function Home() {
-  function AccordionUsage() {
-    const [isOpen, setIsOpen] = useState(false);
-
-    return (
-      <div>
-        <h2>
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center justify-between w-full p-5 font-medium rtl:text-right bg-gray-50 text-gray-500 border border-gray-200 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3"
-          >
-            <span>Usage Instructions</span>
-            {isOpen ? (
-              <ChevronUp className="font-bold w-5 h-5 shrink-0" />
-            ) : (
-              <ChevronDown className="font-bold w-5 h-5 shrink-0" />
-            )}
-          </button>
-        </h2>
-        {isOpen && simplePhenotypeBuilderUsage()}
-      </div>
-    );
-  }
   return (
     <div className="max-w-4xl mx-auto">
       {headerInformation()}
-      <AccordionUsage />
+      <Accordion title="Usage Instructions">
+        <SimplePhenotypeBuilderUsage />
+      </Accordion>
       <br />
       <SimplePhenotypeBuilder />
     </div>

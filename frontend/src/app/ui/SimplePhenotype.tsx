@@ -24,12 +24,11 @@ import {
 import ManhattanPlot from "./ManhattanPlot";
 import { ImFeelingLuckyList } from "./ImFeelingLucky";
 import QualityInformation from "./QualityInformation";
+import { API_URL } from "@/app/lib/api";
 
-const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
-
-export function simplePhenotypeBuilderUsage() {
+export function SimplePhenotypeBuilderUsage() {
   return (
-    <div className="p-5 bg-white border border-t-0 border-gray-200 dark:border-gray-700">
+    <div className="p-5 bg-white border border-t-0 border-gray-200 dark:border-gray-700 rounded-b-lg">
       <p className="mb-2 text-gray-600 dark:text-gray-400">
         To get started, select a cohort from the buttons below. Then define the
         phenotype that interests you by searching for fields in the search box
@@ -81,7 +80,7 @@ export default function SimplePhenotypeBuilder() {
     async function doFetch() {
       setIsLoading(true);
       try {
-        const cohorts = await fetchCohorts(API_URL);
+        const cohorts = await fetchCohorts();
         setCohorts(cohorts);
         setSelectedCohort(cohorts[0]);
       } catch (error) {
@@ -100,7 +99,7 @@ export default function SimplePhenotypeBuilder() {
   useEffect(() => {
     async function handleFetchFeatures() {
       if (selectedCohort) {
-        const cohortFeatures = await fetchFeatures(API_URL, selectedCohort);
+        const cohortFeatures = await fetchFeatures(selectedCohort);
         const binaryFeatures = cohortFeatures.filter((f) => f.type === "BOOL");
         setFeatures(binaryFeatures);
       }
@@ -124,17 +123,12 @@ export default function SimplePhenotypeBuilder() {
       const phenotypeDefinition = convertListToRPN(phenotype);
       if (!isSingleField) {
         const phenotypeSummary = await getPhenotypeSummary(
-          API_URL,
           phenotypeDefinition,
           selectedCohort,
         );
         setSummary(phenotypeSummary);
       }
-      const result = await runGWAS(
-        API_URL,
-        phenotypeDefinition,
-        selectedCohort,
-      );
+      const result = await runGWAS(phenotypeDefinition, selectedCohort);
       setJobStatus(result.status);
       if (result.status === "cached") {
         setIsCached(true);
@@ -153,7 +147,7 @@ export default function SimplePhenotypeBuilder() {
 
   async function pollJobStatus(requestId: string) {
     try {
-      const result = await getResults(API_URL, requestId);
+      const result = await getResults(requestId);
       switch (result.status) {
         case "cached":
           setIsCached(true);
@@ -176,7 +170,6 @@ export default function SimplePhenotypeBuilder() {
     try {
       const featureCodes = phenotype.map((p) => p.feature.code);
       const result = await getPvalues(
-        API_URL,
         requestId,
         selectedCohort!.id,
         featureCodes,
@@ -363,7 +356,7 @@ export default function SimplePhenotypeBuilder() {
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 md:p-6 items-center mb-6">
+    <div className="bg-white border shadow-sm rounded-lg p-4 md:p-6 items-center mb-6">
       <CohortSelector />
       <h2 className="text-xl font-semibold mb-4">Build GWAS phenotype</h2>
       {phenotype.length > 0 && <PhenotypeBuilderDisplay />}

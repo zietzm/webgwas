@@ -9,6 +9,8 @@ import {
   ListNode,
 } from "./types";
 
+export const API_URL: string = process.env.NEXT_PUBLIC_API_URL || "";
+
 export interface PostGWASResponse {
   request_id: string;
   status: "queued" | "done" | "error" | "cached";
@@ -24,7 +26,6 @@ export interface ResultsResponse {
   request_id: string;
   status: "queued" | "done" | "error" | "cached";
   error_msg: string | null;
-  url: string | null;
 }
 
 export interface Pvalue {
@@ -55,8 +56,8 @@ export interface PvaluesResult {
   color_map: string[];
 }
 
-export async function fetchCohorts(url: string): Promise<Cohort[]> {
-  const response = await fetch(`${url}/cohorts`, {
+export async function fetchCohorts(): Promise<Cohort[]> {
+  const response = await fetch(`${API_URL}/cohorts`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -69,11 +70,8 @@ export async function fetchCohorts(url: string): Promise<Cohort[]> {
   return data as Cohort[];
 }
 
-export async function fetchFeatures(
-  url: string,
-  cohort: Cohort,
-): Promise<Feature[]> {
-  const myUrl = new URL(`${url}/features`);
+export async function fetchFeatures(cohort: Cohort): Promise<Feature[]> {
+  const myUrl = new URL(`${API_URL}/features`);
   myUrl.searchParams.set("cohort_id", cohort.id.toString());
   const response = await fetch(myUrl.href, {
     method: "GET",
@@ -98,11 +96,10 @@ export async function fetchFeatures(
 }
 
 export async function validatePhenotype(
-  url: string,
   phenotypeDefinition: string,
   cohort: Cohort,
 ): Promise<ValidationResponse> {
-  const myUrl = new URL(`${url}/phenotype`);
+  const myUrl = new URL(`${API_URL}/phenotype`);
   const response = await fetch(myUrl.href, {
     method: "PUT",
     headers: {
@@ -125,11 +122,10 @@ export async function validatePhenotype(
 }
 
 export async function getPhenotypeSummary(
-  url: string,
   phenotypeDefinition: string,
   selectedCohort: Cohort,
 ): Promise<PhenotypeSummary> {
-  const myUrl = new URL(`${url}/phenotype_summary`);
+  const myUrl = new URL(`${API_URL}/phenotype_summary`);
   const response = await fetch(myUrl.href, {
     method: "POST",
     headers: {
@@ -150,11 +146,10 @@ export async function getPhenotypeSummary(
 }
 
 export async function runGWAS(
-  url: string,
   phenotypeDefinition: string,
   selectedCohort: Cohort,
 ): Promise<PostGWASResponse> {
-  const myUrl = new URL(`${url}/igwas`);
+  const myUrl = new URL(`${API_URL}/igwas`);
   const response = await fetch(myUrl.href, {
     method: "POST",
     headers: {
@@ -172,11 +167,8 @@ export async function runGWAS(
   return result as PostGWASResponse;
 }
 
-export async function getResults(
-  url: string,
-  requestId: string,
-): Promise<ResultsResponse> {
-  const myUrl = new URL(`${url}/igwas/results/${requestId}`);
+export async function getResults(requestId: string): Promise<ResultsResponse> {
+  const myUrl = new URL(`${API_URL}/igwas/results/${requestId}`);
   const response = await fetch(myUrl.href, {
     method: "GET",
     headers: {
@@ -192,12 +184,11 @@ export async function getResults(
 }
 
 export async function getPvalues(
-  url: string,
   requestId: string,
   cohortId: number,
   feature_codes: string[],
 ): Promise<PvaluesResult> {
-  const myUrl = new URL(`${url}/igwas/results/pvalues/${requestId}`);
+  const myUrl = new URL(`${API_URL}/igwas/results/pvalues/${requestId}`);
   const response = await fetch(myUrl.href, {
     method: "POST",
     headers: {
