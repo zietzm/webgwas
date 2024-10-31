@@ -35,7 +35,7 @@ export default function NodeSelector({
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-lg font-semibold">Operators</h3>
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
         {operators.map((op) => (
           <button
             key={op.id}
