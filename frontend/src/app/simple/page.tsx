@@ -90,21 +90,9 @@ function HeaderInformation() {
         phenotypes
       </p>
       <p>
-        Using{" "}
-        <a
-          href="/about"
-          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-800"
-        >
-          a new approximation method
-        </a>
-        , WebGWAS provides GWAS summary statistics for arbitrary phenotype
-        definitions. Whereas the{" "}
-        <a
-          href="https://pan.ukbb.broadinstitute.org/"
-          className="underline text-jet font-medium hover:text-blue-dark visited:text-purple-800"
-        >
-          Pan-UK Biobank
-        </a>{" "}
+        Using <a href="/about">a new approximation method</a>, WebGWAS provides
+        GWAS summary statistics for arbitrary phenotype definitions. Whereas the{" "}
+        <a href="https://pan.ukbb.broadinstitute.org/">Pan-UK Biobank</a>{" "}
         provides pre-computed results for individual phenotypes (e.g.
         hypertension defined as ICD-10: I10), WebGWAS lets you study any
         phenotypes that interest you.

@@ -114,7 +114,7 @@ function PhenotypeBuilderDisplay({
             });
           }}
         >
-          <a className="p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded inline align-middle">
+          <a className="p-1 text-red-600 bg-red-100 hover:bg-red-200 active:bg-red-300 rounded inline align-middle no-underline">
             Negate?
           </a>
         </button>

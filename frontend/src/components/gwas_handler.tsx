@@ -306,7 +306,11 @@ function JobStatusBoxes({
 function DownloadButton({ requestId }: { requestId: string }) {
   return (
     <div>
-      <a href={`${API_URL}/download/${requestId}`} download>
+      <a
+        href={`${API_URL}/download/${requestId}`}
+        className="no-underline"
+        download
+      >
         <button className="bg-primary hover:bg-blue-dark text-primary-foreground text-l font-semibold py-1 px-4 h-[38px] rounded-lg flex gap-1 items-center transition-colors text-nowrap">
           <Download className="mr-2" size={20} />
           Download Results

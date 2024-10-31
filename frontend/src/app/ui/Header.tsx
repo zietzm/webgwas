@@ -32,7 +32,7 @@ export default function Header() {
         <div className="mx-auto py-4 md:py-0 md:px-4 flex justify-between items-center">
           <Link
             href="/"
-            className="flex items-center gap-2 text-2xl text-white font-bold"
+            className="flex items-center gap-2 text-2xl text-white font-bold no-underline"
           >
             <Image
               src="/logo.webp"
@@ -50,10 +50,10 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-2 py-2 rounded-md text-lg ${
+                  className={`px-2 py-2 rounded-md text-lg no-underline ${
                     pathname === item.href
                       ? "bg-white text-blue-main hover:text-gray-900"
-                      : "text-white hover:bg-blue-dark"
+                      : "text-white hover:bg-blue-dark hover:text-white"
                   }`}
                 >
                   {item.name}

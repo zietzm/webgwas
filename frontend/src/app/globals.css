@@ -92,4 +92,7 @@ body {
   p {
     @apply text-gray-600 dark:text-gray-400;
   }
+  a {
+    @apply text-jet hover:text-gray-500 underline;
+  }
 }
