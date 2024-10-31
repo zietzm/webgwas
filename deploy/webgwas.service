@@ -3,10 +3,10 @@ Description=WebGWAS Backend Service
 After=network.target
 
 [Service]
-User=root
-WorkingDirectory=/root/
+User={{ app_user }}
+WorkingDirectory={{ app_path }}
 Environment="RUST_LOG=info"
-ExecStart=/root/webgwas_backend
+ExecStart={{ backend_dest }}
 Restart=always
 RestartSec=1
 

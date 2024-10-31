@@ -1,8 +1,9 @@
-# Include the default Nginx mime types
-include /etc/nginx/mime.types;
-
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name api.webgwas.org www.api.webgwas.org;
+    listen 80;
+    server_name {{ domain_name }} www.{{ domain_name }};
+
+    # Required for Let's Encrypt verification
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
 }

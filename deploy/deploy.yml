@@ -22,51 +22,173 @@
 
     - name: Compile the backend if there are changes or binary is missing
       shell: |
-        cargo zigbuild --release --bin webgwas-backend --target aarch64-unknown-linux-gnu
-        mv target/aarch64-unknown-linux-gnu/release/webgwas-backend ../{{ binary_dest }}
+        cargo zigbuild --release --bin webgwas-backend --target x86_64-unknown-linux-gnu
+        mv target/x86_64-unknown-linux-gnu/release/webgwas-backend ../{{ binary_dest }}
       args:
         chdir: "{{ repo_dest }}"
       when: git_repo.before != git_repo.after or not binary_stat.stat.exists
 
+
+- name: Build frontend locally
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    repo_url: https://github.com/zietzm/webgwas-frontend.git
+    repo_dest: webgwas-frontend
+  tasks:
+    - name: Clone or update the frontend repository
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dest }}"
+        version: main
+        update: yes
+        force: yes
+        accept_hostkey: yes
+
+    - name: Install frontend dependencies
+      args:
+        chdir: "{{ repo_dest }}"
+      shell: |
+        bun install --frozen-lockfile
+
+    - name: Build the frontend
+      args:
+        chdir: "{{ repo_dest }}"
+      shell: |
+        bun run next build
+      environment:
+        NEXT_PUBLIC_API_URL: "https://webgwas.org/api"
+
+
 - name: Deploy WebGWAS
-  hosts: webgwas
+  hosts: hetzner
   become: yes
   vars:
-    nginx_conf_path: "/etc/nginx/conf.d/webgwas.conf"
-    nginx_basic_conf_file: "nginx-basic.conf"
-    nginx_conf_file: "nginx.conf"
-    frontend_repo_url: https://github.com/zietzm/webgwas-frontend.git
-    frontend_repo_dest: /root/webgwas-frontend
-    backend_binary_dest: /root/webgwas_backend
+    app_name: webgwas
+    app_user: "{{ app_name }}"
+    domain_name: webgwas.org
+    nginx_basic_source: "nginx-basic.conf.j2"
+    nginx_source: "nginx.conf.j2"
+    nginx_dest: "/etc/nginx/conf.d/webgwas.conf"
+    frontend_source: webgwas-frontend/out
+    app_path: "/opt/{{ app_name }}"
+    frontend_dest: "{{ app_path }}/frontend"
+    backend_dest: "{{ app_path }}/webgwas"
+    data_dest: "{{ app_path }}/data"
+    results_dest: "{{ app_path }}/results"
+    email: michael.zietz@gmail.com
   tasks:
     - name: Update and upgrade packages
-      dnf:
+      apt:
         update_cache: yes
         name: '*'
         state: latest
 
     - name: Install required packages
-      dnf:
+      apt:
         name:
           - nginx
-          - perl-FindBin
-          - perl-core
+          - sqlite3
+          - curl
           - tmux
           - htop
-          - sqlite
-          - curl
           - cronie
-          - nodejs
+          - zip
+          - unzip
         state: present
 
-    - name: Copy Nginx config file
-      template:
-        src: "{{ nginx_basic_conf_file }}.j2"
-        dest: "{{ nginx_conf_path }}"
-        owner: root
-        group: root
+    - name: Install AWS CLI
+      args:
+        executable: /bin/bash
+        chdir: /tmp
+        creates: /usr/local/bin/aws
+      shell: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        create_home: no
+        shell: /usr/sbin/nologin
+
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+      with_items:
+        - "{{ app_path }}"
+        - "{{ frontend_dest }}"
+        - "{{ data_dest }}"
+
+    - name: Copy frontend static files
+      synchronize:
+        src: "{{ frontend_source }}/"
+        dest: "{{ frontend_dest }}"
+        rsync_opts:
+          - "--delete"
+          - "--compress"
+          - "--recursive"
+
+    - name: Sync data from S3 to EC2
+      shell: |
+        aws s3 sync s3://webgwas/webgwas/ {{ data_dest }} --delete
+
+    - name: Copy backend binary
+      copy:
+        src: webgwas_backend
+        dest: "{{ backend_dest }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Make the backend executable
+      file:
+        path: "{{ backend_dest }}"
+        mode: '0755'
+
+    - name: Copy settings file
+      copy:
+        src: webgwas-backend/settings-deploy.toml
+        dest: "{{ app_path }}/settings.toml"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
         mode: '0644'
-      notify: Reload Nginx
+
+    - name: Ensure the directory gives proper permissions for the app user
+      file:
+        path: "{{ app_path }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        recurse: yes
+
+    - name: Copy backend systemd service file
+      template:
+        src: webgwas.service
+        dest: /etc/systemd/system/webgwas.service
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Enable and restart backend service
+      systemd:
+        name: webgwas
+        state: restarted
+        enabled: yes
+
+    - name: Install UV
+      shell: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+      args:
+        creates:
+          - /root/.cargo/bin/uv
+          - /root/.cargo/bin/uvx
+      register: uv_install
 
     - name: Ensure default Nginx config is removed
       file:
@@ -74,125 +196,39 @@
         state: absent
       notify: Reload Nginx
 
-    - name: Ensure Nginx is started and enabled
-      systemd:
-        name: nginx
-        state: started
-        enabled: yes
+    - name: Create directory for certbot challenges
+      file:
+        path: /var/www/certbot
+        state: directory
+        mode: '0755'
 
-    - name: Install Bun
-      shell: |
-        if [ ! -d "/root/.bun" ]; then
-          curl -fsSL https://bun.sh/install | bash
-        fi
-      args:
-        executable: /bin/bash
-
-    - name: Clone or update the frontend repository
-      git:
-        repo: "{{ frontend_repo_url }}"
-        dest: "{{ frontend_repo_dest }}"
-        version: main
-        update: yes
-        force: yes
-        accept_hostkey: yes
-
-    - name: Install frontend dependencies
-      shell: |
-        /root/.bun/bin/bun install --frozen-lockfile
-      args:
-        chdir: "{{ frontend_repo_dest }}"
-
-    - name: Build the frontend
-      shell: |
-        /root/.bun/bin/bun run next build
-      args:
-        chdir: "{{ frontend_repo_dest }}"
-      environment:
-        NEXT_PUBLIC_API_URL: "https://webgwas.org/api"
-
-    - name: Copy frontend systemd service file
+    - name: Copy basic Nginx config file
       template:
-        src: frontend.service
-        dest: /etc/systemd/system/frontend.service
-        owner: root
-        group: root
+        src: "{{ nginx_basic_source }}"
+        dest: "{{ nginx_dest }}"
         mode: '0644'
-      notify: Reload systemd
-
-    - name: Enable and restart frontend service
-      systemd:
-        name: frontend
-        state: restarted
-        enabled: yes
+      notify: Reload Nginx
 
     - name: Obtain and install SSL certificate
       shell:
-        uvx --with certbot --with certbot-nginx certbot --nginx -d webgwas.org -d www.webgwas.org --non-interactive --agree-tos --email michael.zietz@gmail.com
+        /root/.cargo/bin/uvx --with certbot-nginx certbot --nginx -d {{ domain_name }} -d www.{{ domain_name }} --non-interactive --agree-tos --email {{ email }} --redirect
       args:
         executable: /bin/bash
-        creates: /etc/letsencrypt/live/webgwas.org/fullchain.pem
+        creates: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem
 
     - name: Ensure Certbot renew timer is enabled
       cron:
         name: "Certbot Renew"
         minute: "0"
         hour: "0,12"
-        user: root
-        job: '/opt/certbot/bin/python -c "import random; import time; time.sleep(random.random() * 3600)" && sudo certbot renew -q'
+        job: '/root/.cargo/bin/uv run python -c "import random; import time; time.sleep(random.random() * 3600)" && /root/.cargo/bin/uvx --with certbot-nginx certbot renew -q'
 
     - name: Copy full Nginx config file
       template:
-        src: "{{ nginx_conf_file }}.j2"
-        dest: "{{ nginx_conf_path }}"
-        owner: root
-        group: root
+        src: "{{ nginx_source }}"
+        dest: "{{ nginx_dest }}"
         mode: '0644'
       notify: Reload Nginx
-
-    - name: Sync data from S3 to EC2
-      shell: |
-        aws s3 sync s3://webgwas/webgwas/ /root/webgwas/ --delete
-
-    - name: Copy backend binary
-      copy:
-        src: webgwas_backend
-        dest: "{{ backend_binary_dest }}"
-        owner: root
-        group: root
-        mode: '0755'
-
-    - name: Make the backend executable
-      file:
-        path: "{{ backend_binary_dest }}"
-        mode: '0755'
-
-    - name: Copy settings file
-      copy:
-        src: webgwas-backend/settings.toml
-        dest: /root/settings.toml
-        owner: root
-        group: root
-        mode: '0644'
-
-    - name: Ensure that dry run is disabled
-      shell: |
-        sed -i -e 's/dry_run = true/dry_run = false/g' /root/settings.toml
-
-    - name: Copy backend systemd service file
-      copy:
-        src: backend.service
-        dest: /etc/systemd/system/backend.service
-        owner: root
-        group: root
-        mode: '0644'
-      notify: Reload systemd
-
-    - name: Enable and restart backend service
-      systemd:
-        name: backend
-        state: restarted
-        enabled: yes
 
   handlers:
     - name: Reload Nginx
@@ -203,3 +239,9 @@
     - name: Reload systemd
       systemd:
         daemon_reload: yes
+
+    - name: Restart Nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes

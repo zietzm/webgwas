@@ -1,43 +1,35 @@
-# Include the default Nginx mime types
-include /etc/nginx/mime.types;
-
 # Rate limiting configuration
 limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
 
 # Redirect all HTTP requests to HTTPS
 server {
     listen 80;
-    listen [::]:80;
-    server_name webgwas.org www.webgwas.org;
+    server_name {{ domain_name }} www.{{ domain_name }};
+
+    # Required for Let's Encrypt verification
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
 
     # Redirect HTTP to HTTPS
-    return 301 https://$host$request_uri;
+    location / {
+        return 301 https://$host$request_uri;
+    }
 }
 
-# HTTPS server block for webgwas.org
+# HTTPS server block
 server {
     listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name webgwas.org www.webgwas.org;
+    server_name {{ domain_name }} www.{{ domain_name }};
 
-    # SSL configuration for webgwas.org
-    ssl_certificate /etc/letsencrypt/live/webgwas.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/webgwas.org/privkey.pem;
+    # SSL configuration
+    ssl_certificate /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ domain_name }}/privkey.pem;
 
     # Recommended SSL settings
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers on;
     ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-
-    # Frontend application
-    location / {
-        proxy_pass http://localhost:3000;  # Adjust the port if needed
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
 
     # Backend API
     location /api/ {
@@ -64,5 +56,53 @@ server {
             add_header 'Content-Length' 0;
             return 204;
         }
+    }
+
+    # Internal location for protected downloads
+    location /protected-downloads/ {
+        internal;  # Only allows internal redirects, not direct access
+        alias {{ results_dest }}/;
+
+        gzip on;
+        gzip_comp_level 6;  # Balance between CPU usage and compression ratio
+        gzip_min_length 1024;  # Only compress files larger than 1KB
+        gzip_types application/zip;  # Specifically target zip files
+        gzip_vary on;  # Sends Vary: Accept-Encoding header
+        gzip_proxied any;
+        gzip_buffers 16 32k;  # Increase buffer size for better compression
+        gzip_http_version 1.1;
+
+        # Ensure proper MIME types
+        types {
+            application/zip     zip;
+        }
+
+        # Essential headers for downloads
+        add_header Content-Type application/zip;
+        add_header Content-Disposition attachment;
+
+        # Optional but recommended settings
+        client_max_body_size 0;  # Disable client body size check for downloads
+        keepalive_timeout 300s;  # Longer keepalive for large downloads
+        client_body_timeout 300s;
+        send_timeout 300s;
+
+        # Enable sendfile for better performance
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+
+        # Enable byte-range requests
+        add_header Accept-Ranges bytes;
+
+        # Remove any caching headers for downloads
+        expires off;
+        add_header Cache-Control "private, no-cache, no-store, must-revalidate";
+    }
+
+    # Frontend
+    location / {
+        root {{ frontend_dest }};
+        try_files $uri $uri.html $uri/ =404;
     }
 }
