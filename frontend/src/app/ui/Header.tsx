@@ -32,7 +32,7 @@ export default function Header() {
         <div className="mx-auto py-4 md:py-0 md:px-4 flex justify-between items-center">
           <Link
             href="/"
-            className="flex items-center gap-2 text-2xl text-white font-bold no-underline"
+            className="flex items-center gap-2 text-2xl text-white font-bold hover:text-white no-underline"
           >
             <Image
               src="/logo.webp"
