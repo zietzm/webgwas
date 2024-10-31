@@ -71,9 +71,9 @@ export default function Header() {
               className="z-20 mx-2"
             >
               {open ? (
-                <X className="h-8 w-8 text-sky-800" />
+                <X className="h-8 w-8 text-white" />
               ) : (
-                <Menu className="h-8 w-8 text-sky-800" />
+                <Menu className="h-8 w-8 text-white" />
               )}
             </Button>
           </div>
