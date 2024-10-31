@@ -84,7 +84,7 @@ export default function SimplePage() {
 
 function HeaderInformation() {
   return (
-    <div className="my-6 text-gray-600 dark:text-gray-400">
+    <div className="mt-6 text-gray-600 dark:text-gray-400">
       <p className="text-3xl font-bold text-center mb-8 text-blue-dark">
         Instant, free genome-wide association studies (GWAS) on arbitrary
         phenotypes
