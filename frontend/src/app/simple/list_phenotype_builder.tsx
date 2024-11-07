@@ -34,7 +34,7 @@ export default function SimplePhenotypeBuilder({
 
   return (
     <div className="flex flex-col gap-4">
-      {phenotype.length > 0 && (
+      {phenotype && phenotype.length > 0 && (
         <PhenotypeBuilderDisplay
           phenotype={phenotype}
           setPhenotype={setPhenotype}

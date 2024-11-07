@@ -52,7 +52,7 @@ export default function SimplePage() {
             />
           </>
         )}
-        {cohort && phenotype.length > 0 && (
+        {cohort && phenotype && phenotype.length > 0 && (
           <GwasHandlerNoValidate
             cohort={cohort}
             phenotype={{
