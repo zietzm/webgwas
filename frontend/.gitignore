@@ -2,3 +2,6 @@
 node_modules
 **.DS_Store
 out
+pyproject.toml
+uv.lock
+.env_COPY.production
