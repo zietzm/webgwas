@@ -144,6 +144,7 @@ export function GwasHandlerDoValidate({
   >(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [computeTime, setComputeTime] = useState<number | null>(null);
   const [phenotypeValidity, setPhenotypeValidity] = useState<
     "valid" | "invalid" | null
   >(null);
@@ -186,6 +187,7 @@ export function GwasHandlerDoValidate({
     }
     let gwasResponse: PostGWASResponse;
     try {
+      const startTime = Date.now();
       gwasResponse = await runGWAS(phenotypeString, cohort);
       setRequestId(gwasResponse.request_id);
       if (gwasResponse.status === "cached" || gwasResponse.status === "done") {
@@ -196,6 +198,7 @@ export function GwasHandlerDoValidate({
         const result = await pollJobStatus(gwasResponse.request_id);
         setStatus(result.status);
         setError(result.error);
+        setComputeTime((Date.now() - startTime) / 1000);
       }
     } catch (err) {
       let errorMessage = "Error running GWAS";
@@ -231,7 +234,7 @@ export function GwasHandlerDoValidate({
           <RunGwasButton handleRunGWAS={handleRunGWAS} />
         )}
         {status !== null && phenotypeValidity === "valid" && (
-          <JobStatusBoxes status={status} error={error} />
+          <JobStatusBoxes status={status} error={error} time={computeTime} />
         )}
         {requestId && (status === "done" || status === "cached") && (
           <DownloadButton requestId={requestId} />
