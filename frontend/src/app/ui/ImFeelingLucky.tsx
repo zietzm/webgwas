@@ -148,8 +148,7 @@ export function ImFeelingLuckyList({
   }
 
   function handleClick() {
-    const randomSelection = getRandomSelection();
-    setPhenotype(randomSelection);
+    setPhenotype(getRandomSelection());
   }
 
   return (
