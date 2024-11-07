@@ -48,6 +48,7 @@ export function GwasHandlerNoValidate({
   >(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [computeTime, setComputeTime] = useState<number | null>(null);
 
   const phenotypeString = convertToRPN(phenotype);
   const isTrivialPhenotype = isSingleField(phenotype);
@@ -68,6 +69,7 @@ export function GwasHandlerNoValidate({
     }
     let gwasResponse: PostGWASResponse;
     try {
+      const startTime = Date.now();
       gwasResponse = await runGWAS(phenotypeString, cohort);
       setRequestId(gwasResponse.request_id);
       if (gwasResponse.status === "cached" || gwasResponse.status === "done") {
@@ -78,6 +80,7 @@ export function GwasHandlerNoValidate({
         const result = await pollJobStatus(gwasResponse.request_id);
         setStatus(result.status);
         setError(result.error);
+        setComputeTime((Date.now() - startTime) / 1000);
       }
     } catch (err) {
       let errorMessage = "Error running GWAS";
@@ -104,7 +107,9 @@ export function GwasHandlerNoValidate({
     <div className="flex flex-wrap gap-4 justify-between">
       <div className="flex flex-wrap gap-4">
         {status === null && <RunGwasButton handleRunGWAS={handleRunGWAS} />}
-        {status !== null && <JobStatusBoxes status={status} error={error} />}
+        {status !== null && (
+          <JobStatusBoxes status={status} error={error} time={computeTime} />
+        )}
         {requestId && (status === "done" || status === "cached") && (
           <DownloadButton requestId={requestId} />
         )}
@@ -261,9 +266,11 @@ function RunGwasButton({
 function JobStatusBoxes({
   status,
   error,
+  time,
 }: {
   status: "running" | "done" | "error" | "cached";
   error: string | null;
+  time: number | null;
 }) {
   function getIcon(status: "running" | "done" | "error" | "cached") {
     switch (status) {
@@ -278,12 +285,19 @@ function JobStatusBoxes({
     }
   }
 
-  function getText(status: "running" | "done" | "error" | "cached") {
+  function getText(
+    status: "running" | "done" | "error" | "cached",
+    time: number | null,
+  ) {
     switch (status) {
       case "running":
         return "Job running...";
       case "done":
-        return "GWAS completed.";
+        if (time === null) {
+          return "GWAS completed.";
+        } else {
+          return `GWAS completed in ${time.toFixed(1)} s.`;
+        }
       case "error":
         if (error === null) {
           return "GWAS failed. Please try again.";
@@ -298,7 +312,7 @@ function JobStatusBoxes({
   return (
     <div className="flex items-center bg-gray-100 p-2 rounded-lg">
       {getIcon(status)}
-      <span className="text-gray-700">{getText(status)}</span>
+      <span className="text-gray-700">{getText(status, time)}</span>
     </div>
   );
 }
