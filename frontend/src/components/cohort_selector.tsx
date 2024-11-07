@@ -35,7 +35,7 @@ export default function CohortSelector({
       setIsLoading(false);
     };
     doFetch();
-  }, []);
+  }, [setSelectedCohort]);
 
   if (isLoading) {
     return (
