@@ -57,13 +57,7 @@ export default function TreePhenotypeBuilder({
       setSelectedNode(null);
       setShowNodeSelector(false);
     },
-    [
-      phenotype,
-      selectedNode,
-      setPhenotype,
-      setSelectedNode,
-      setShowNodeSelector,
-    ],
+    [selectedNode, setPhenotype, setSelectedNode, setShowNodeSelector],
   );
 
   const handleRemove = useCallback(
