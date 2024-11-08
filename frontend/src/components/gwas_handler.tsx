@@ -297,9 +297,9 @@ function JobStatusBoxes({
         return "Job running...";
       case "done":
         if (time === null) {
-          return "GWAS completed.";
+          return "Completed.";
         } else {
-          return `GWAS completed in ${time.toFixed(1)} s.`;
+          return `Completed in ${time.toFixed(1)} s.`;
         }
       case "error":
         if (error === null) {
