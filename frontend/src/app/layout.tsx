@@ -3,6 +3,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./ui/Header";
 import Footer from "./ui/Footer";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -175,8 +175,11 @@ export default function ManhattanPlot({ data }: { data: PvaluesResult }) {
     ],
   };
   return (
-    <div>
-      <HighchartsReact highcharts={Highcharts} options={options} />
+    <div className="w-full max-w-full relative mx-auto">
+      <div className="absolute w-full">
+        <HighchartsReact highcharts={Highcharts} options={options} />
+      </div>
+      <div className="w-full h-[400px]" />
       <div className="flex flex-row justify-center mb-4">
         <Legend colorMap={colorMap} />
       </div>
