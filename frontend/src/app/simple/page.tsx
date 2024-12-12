@@ -21,7 +21,6 @@ export default function SimplePage() {
   const [results, setResults] = useState<PvaluesResult | null>(null);
 
   function handleReset() {
-    setCohort(null);
     setPhenotype([]);
     setIsMutable(true);
     setFitQuality(null);
