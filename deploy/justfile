@@ -1,0 +1,2 @@
+deploy:
+    uvx --from ansible-core ansible-playbook deploy.yml
